@@ -41,6 +41,16 @@ const config = courseJson.units as CourseUnitConfig[];
  * not visible, so disabling a skill removes its lessons from the course rather
  * than leaving a broken entry behind.
  */
+/**
+ * How far above a learner's age a lesson may still be offered.
+ *
+ * Zero would wall a child off from anything slightly ahead, which is where
+ * learning happens; unlimited is what produced the current problem, where a
+ * five-year-old meets Grade 2 place value inside a skill labelled for ages 5-7.
+ * One year is the stretch band.
+ */
+const STRETCH_YEARS = 1;
+
 function resolve(ref: string, levelNumber: number, viewer: Viewer): ResolvedLesson | undefined {
   const [pluginId, lessonId] = ref.split("/");
   const owner = getPlugin(pluginId);
@@ -48,6 +58,10 @@ function resolve(ref: string, levelNumber: number, viewer: Viewer): ResolvedLess
 
   const lesson = owner.lessons.find((l) => l.id === lessonId);
   if (!lesson) return undefined;
+
+  // A lesson carries the age band of the standard it teaches. Anything more
+  // than a year beyond the learner is held back rather than shown and failed.
+  if (lesson.ageBand && lesson.ageBand[0] > viewer.age + STRETCH_YEARS) return undefined;
 
   return { ...lesson, ref, pluginId, levelNumber };
 }

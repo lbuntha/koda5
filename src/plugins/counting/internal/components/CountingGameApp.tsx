@@ -668,7 +668,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   }, [currentLevelNumber, questionParams]);
 
   // ============================================================
-  // LEVEL 13-15 STATE (Base-10 Galaxy Foundry)
+  // LEVEL 13-15 STATE (place value with base-ten blocks)
   // ============================================================
   const [l13Ones, setL13Ones] = useState<number>(0);
   const [l13Tens, setL13Tens] = useState<number>(0);
@@ -2641,7 +2641,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-                          Hundreds Flats (x100)
+                          Hundreds
                         </span>
                         <span className="px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/25 font-mono text-xs font-bold text-rose-700 dark:text-rose-300">
                           How many: {l13Hundreds}
@@ -2741,7 +2741,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs font-bold text-slate-800 dark:text-amber-300 flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                        Tens (x10)
+                        Tens
                       </span>
                       <span className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/25 font-mono text-xs font-bold text-slate-800 dark:text-amber-300">
                         How many: {l13Tens}
@@ -2840,7 +2840,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300 flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse" />
-                        Ones (x1)
+                        Ones
                       </span>
                       <span className="px-2 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/25 font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300">
                         How many: {l13Ones}
@@ -2909,7 +2909,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
 
                 {/* Info Board */}
                 <div className="p-3 bg-canvas rounded-2xl border border-line font-mono text-xs text-center text-muted flex flex-wrap items-center justify-center gap-2">
-                  <span>🚀 Galaxy Foundry Total:</span>
+                  <span>🚀 Your number:</span>
                   <span className="text-ink font-bold text-sm">
                     {l13Hundreds} Hundreds + {l13Tens} Tens + {l13Ones} Ones =
                   </span>
