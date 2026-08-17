@@ -1,6 +1,7 @@
 export * from "./sidebarIcons";
 export * from "./ThemeUI";
 export * from "./UIFeatureCard";
+export * from "./UIKidMessage";
 export * from "./UIMenu";
 export * from "./UIPathNode";
 export * from "./UISectionHeader";

@@ -81,7 +81,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Tap objects in a straight line from left to right to find the total count",
     icon: "⭐",
     skillConcept: "One-to-One Correspondence & Total Amount",
-    targetObjective: "Touch each item one by one. The last number you count is the total number of items.",
+    targetObjective: "Touch each one. The last number tells how many.",
     stepByStep: [
       "Touch each item once from left to right in order.",
       "Listen as the numbers count up: 1, 2, 3...",
@@ -101,7 +101,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Touch all scattered objects across the screen without skipping or double-counting",
     icon: "✨",
     skillConcept: "Tracking Scattered Objects",
-    targetObjective: "Scan the scattered items and touch each one once to tag and count them all.",
+    targetObjective: "Touch every one. Do not miss any!",
     stepByStep: [
       "Look across the screen from top to bottom.",
       "Tap each uncounted item once to give it a number tag.",
@@ -121,7 +121,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "See that spreading items out or grouping them does not change the total count",
     icon: "⚖️",
     skillConcept: "Conservation of Quantity",
-    targetObjective: "Compare Group A and Group B to verify that moving items does not change how many there are.",
+    targetObjective: "Count both groups. Which one has more?",
     stepByStep: [
       "Look at Group A (clustered) and Group B (spread out in a line).",
       "Count the items in both groups.",
@@ -141,7 +141,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Recognize dice dot patterns in a quick flash without counting one by one",
     icon: "🎲",
     skillConcept: "Instant Recognition of Dot Patterns",
-    targetObjective: "See standard dot patterns (1 to 6) in a quick flash and tap the matching number.",
+    targetObjective: "Look fast! How many dots did you see?",
     stepByStep: [
       "Look at the center when the dots flash.",
       "Recognize the dot pattern right away.",
@@ -161,7 +161,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Recognize scattered dot amounts in a fast flash without one-by-one counting",
     icon: "⚡",
     skillConcept: "Seeing Amounts at a Glance",
-    targetObjective: "Look at dot groups (3 to 7) in a fast flash and identify the total amount.",
+    targetObjective: "Look fast! How many dots?",
     stepByStep: [
       "Look at the dot group as a whole.",
       "Feel how many dots are there without counting each one.",
@@ -181,7 +181,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "See two colored groups in a flash and combine them together (e.g. 3 + 4 = 7)",
     icon: "🔮",
     skillConcept: "Seeing Parts and Total Amount",
-    targetObjective: "Look at two colored groups, combine them in your mind, and find the total.",
+    targetObjective: "Two colours. How many all together?",
     stepByStep: [
       "Look at the two different color groups in the flash.",
       "Notice how many in Color 1 and how many in Color 2.",
@@ -201,7 +201,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Fill the top 5 first as your anchor, then add more on the bottom row",
     icon: "🛸",
     skillConcept: "Using 5 as an Anchor Benchmark",
-    targetObjective: "Fill all 5 top cells first, then add dots to the bottom row to reach the target number.",
+    targetObjective: "Fill the top row first. Then add more.",
     stepByStep: [
       "Look at your target number (like 7 or 8).",
       "Fill all 5 cells in the top row first.",
@@ -222,7 +222,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Find how many empty spaces are needed to make a full ten-frame of 10",
     icon: "🔋",
     skillConcept: "Number Pairs that Make 10",
-    targetObjective: "Look at the dots in the frame and find how many more are needed to make 10.",
+    targetObjective: "How many more to make 10?",
     stepByStep: [
       "Look at the dots already placed in the ten-frame.",
       "Count the empty spaces needed to reach 10.",
@@ -242,7 +242,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Build numbers from 11 to 19 using 1 full ten-frame plus extra ones",
     icon: "🛰️",
     skillConcept: "Place Value for Numbers 11 to 19",
-    targetObjective: "Build teen numbers using 1 full ten-frame (10) plus extra ones in the second frame.",
+    targetObjective: "Fill one frame to make 10. Then add more.",
     stepByStep: [
       "Notice the first ten-frame is full with 10.",
       "Add dots to the second frame for the ones digit.",
@@ -262,7 +262,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Hop along the path by equal steps of 2 or 5 to reach the goal",
     icon: "🐸",
     skillConcept: "Equal-Step Linear Counting",
-    targetObjective: "Hop along the path by equal steps of 2 or 5 to build rhythm and number patterns.",
+    targetObjective: "Hop the same size steps. Count as you go!",
     stepByStep: [
       "Check the step size (+2 or +5) on the path.",
       "Tap Hop to jump forward by equal amounts.",
@@ -282,7 +282,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Take big leaps of 10 to move smoothly along the path up to 100",
     icon: "🌊",
     skillConcept: "Decade Jumps and Patterns up to 100",
-    targetObjective: "Make leaps of 10 to see how numbers grow from 10 to 100.",
+    targetObjective: "Big hops of 10! Count up to 100.",
     stepByStep: [
       "Check the starting number and the +10 step size.",
       "Notice how the tens digit increases with every hop.",
@@ -302,7 +302,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Discover the step rule in the sequence and fill in the missing number",
     icon: "🔍",
     skillConcept: "Number Sequences & Pattern Rules",
-    targetObjective: "Find the pattern in the number line and pick the correct missing number.",
+    targetObjective: "Which number is missing?",
     stepByStep: [
       "Check the difference between the numbers shown.",
       "See if the numbers are counting up (+) or down (-).",
@@ -322,7 +322,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Gather 10 loose single blocks and group them into 1 solid Ten-Rod",
     icon: "💎",
     skillConcept: "Grouping: 10 Ones Become 1 Ten",
-    targetObjective: "Collect loose single blocks and group 10 Ones into 1 Ten-Rod (10 x 1 = 10).",
+    targetObjective: "Put 10 ones together. They make 1 ten!",
     stepByStep: [
       "Look at your loose single blocks.",
       "Gather 10 single blocks together.",
@@ -342,7 +342,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Group 10 Ten-Rods into 1 Hundred-Flat and see numbers in expanded form",
     icon: "🌌",
     skillConcept: "Place Value: Hundreds, Tens, and Ones",
-    targetObjective: "Group 10 Ten-Rods into 1 Hundred-Flat (10 x 10 = 100) and explore expanded form (H + T + O).",
+    targetObjective: "Put 10 tens together. They make 100!",
     stepByStep: [
       "Group Ten-Rods into a 100-Flat whenever you have 10 tens.",
       "Watch the place value counter show Hundreds, Tens, and Ones.",
@@ -362,7 +362,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
     shortDesc: "Build any given number using hundreds, tens, and single ones blocks",
     icon: "👑",
     skillConcept: "Building Numbers up to 100 and Beyond",
-    targetObjective: "Build the target number using hundreds flats, tens rods, and single ones blocks.",
+    targetObjective: "Build the number with the blocks.",
     stepByStep: [
       "Look at your target number.",
       "Use blocks (+), group (⚡), and break apart (🔄) to make the exact amount.",

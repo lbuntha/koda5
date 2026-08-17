@@ -58,7 +58,7 @@ import {
 } from "../data/countingAssets";
 
 import { LiveVoiceCoachModal } from "../../../../components/LiveVoiceCoachModal";
-import { PracticeFeedbackBanner } from "../../../../components/PracticeFeedbackBanner";
+import { UIKidMessage } from "../../../../components/ui";
 import { PracticeStepHeader } from "../../../../components/PracticeStepHeader";
 import { PracticeRoundCompleteModal } from "../../../../components/PracticeRoundCompleteModal";
 import { PluginManagerPage } from "../../../../components/plugins/PluginManagerPage";
@@ -737,7 +737,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
 
     setQuizFeedback({
       status: "correct",
-      title: "Splendid Math Work!",
+      title: "Great counting!",
       message: successMsg,
       xpEarned: xpReward,
     });
@@ -803,7 +803,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
 
     if (currentCount === l1TargetCount) {
       handleQuestionSuccess(
-        `You counted all ${l1TargetCount} ${l1ActiveAsset.name.toLowerCase()}! The last number (${l1TargetCount}) represents the total quantity.`
+        `You counted ${l1TargetCount} ${l1ActiveAsset.name.toLowerCase()}. The last number you said is how many!`
       );
     }
   };
@@ -864,11 +864,11 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
     if (choice === correctAnswer) {
       let successMsg = "";
       if (correctAnswer === "SAME") {
-        successMsg = `Spot on! Both Group A and Group B have ${countA} items. Rearranging or spreading items does not change the total quantity!`;
+        successMsg = `Both groups have ${countA}. Moving things around does not change how many!`;
       } else if (correctAnswer === "A") {
-        successMsg = `Excellent counting! Group A has ${countA} and Group B has ${countB} (${countA} > ${countB}). Group A has more!`;
+        successMsg = `The left group has ${countA}. The right group has ${countB}. Left has more!`;
       } else {
-        successMsg = `Terrific observation! Group B has ${countB} and Group A has ${countA} (${countB} > ${countA}). Group B has more!`;
+        successMsg = `The right group has ${countB}. The left group has ${countA}. Right has more!`;
       }
       handleQuestionSuccess(successMsg, 25);
     } else {
@@ -876,7 +876,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       setStreakCount(0);
       let hintMsg = "";
       if (correctAnswer === "SAME") {
-        hintMsg = `Even though the groups look visually different, count them one-by-one! Both Group A (${countA}) and Group B (${countB}) have the exact same count (${countA}).`;
+        hintMsg = `Even though the groups look visually different, count them one-by-one! Both Left group (${countA}) and Right group (${countB}) have the exact same count (${countA}).`;
       } else if (correctAnswer === "A") {
         hintMsg = `Count each group carefully: Group A has ${countA} ${themeA.name.toLowerCase()} and Group B has ${countB} ${themeB.name.toLowerCase()}. ${countA} is greater than ${countB}!`;
       } else {
@@ -884,7 +884,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       }
       setQuizFeedback({
         status: "incorrect",
-        title: "Count Both Groups",
+        title: "Count them again",
         message: hintMsg,
       });
     }
@@ -907,8 +907,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       setStreakCount(0);
       setQuizFeedback({
         status: "incorrect",
-        title: "Almost!",
-        message: `You picked ${guess}, but there were ${l4Target} dots. Tap 'Show Flash Again' to peek!`,
+        title: "So close!",
+        message: `You said ${guess}. There were ${l4Target} dots. Have another look!`,
       });
     }
   };
@@ -936,7 +936,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       setStreakCount(0);
       setQuizFeedback({
         status: "incorrect",
-        title: "Adjust the Fuel Cells",
+        title: "Try again",
         message: `Currently filled: ${filledCount}. We need exactly ${l7SingleTarget} filled spots.`,
       });
     }
@@ -957,7 +957,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       setStreakCount(0);
       setQuizFeedback({
         status: "incorrect",
-        title: "Try Another Complement",
+        title: "Try another number",
         message: `There are ${l8ComplementInitial} filled spots. Count the empty ones: we need ${correctComplement} more to make 10.`,
       });
     }
@@ -987,7 +987,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       setStreakCount(0);
       setQuizFeedback({
         status: "incorrect",
-        title: "Adjust Frame 2",
+        title: "Try the second frame",
         message: `Currently 10 + ${onesFilled} = ${total}. We need ${l9TeenTarget - 10} extra ones in Frame 2.`,
       });
     }
@@ -1026,7 +1026,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       setStreakCount(0);
       setQuizFeedback({
         status: "incorrect",
-        title: "Check the Step Size",
+        title: "Check your hops",
         message: `Look at the jump between neighboring pads to find the missing number.`,
       });
     }
@@ -1096,14 +1096,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         triggerSound("error");
         setQuizFeedback({
           status: "incorrect",
-          title: "Adjust Quantity",
+          title: "Try a different number",
           message: `Your current total is ${total} blocks, but you need to build exactly ${l13Target}.`,
         });
       } else if (l13Ones >= 10) {
         triggerSound("error");
         setQuizFeedback({
           status: "incorrect",
-          title: "More Ones to Fuse",
+          title: "A few more ones",
           message: `Great total! But you have ${l13Ones} Ones. Can you group 10 of them into a Ten-Rod? Click "Fuse 10 Ones" below!`,
         });
       } else {
@@ -1114,14 +1114,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         triggerSound("error");
         setQuizFeedback({
           status: "incorrect",
-          title: "Adjust Quantity",
+          title: "Try a different number",
           message: `Your current total is ${total} blocks, but you need to build exactly ${l14Target}.`,
         });
       } else if (l13Tens >= 10) {
         triggerSound("error");
         setQuizFeedback({
           status: "incorrect",
-          title: "More Tens to Fuse",
+          title: "A few more tens",
           message: `Great total! But you have ${l13Tens} Tens. Can you group 10 of them into a Hundred-Flat? Click "Fuse 10 Tens" below!`,
         });
       } else {
@@ -1132,21 +1132,21 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         triggerSound("error");
         setQuizFeedback({
           status: "incorrect",
-          title: "Adjust Quantity",
+          title: "Try a different number",
           message: `Your current total is ${total} blocks, but you need to build exactly ${l15Target}.`,
         });
       } else if (l13Ones >= 10) {
         triggerSound("error");
         setQuizFeedback({
           status: "incorrect",
-          title: "Bundle Your Ones",
+          title: "Group your ones",
           message: `Excellent sum! But you have ${l13Ones} Ones. Click "Fuse 10 Ones" to put them in standard place value form.`,
         });
       } else if (l13Tens >= 10) {
         triggerSound("error");
         setQuizFeedback({
           status: "incorrect",
-          title: "Bundle Your Tens",
+          title: "Group your tens",
           message: `Excellent sum! But you have ${l13Tens} Tens. Click "Fuse 10 Tens" to put them in standard place value form.`,
         });
       } else {
@@ -1165,38 +1165,38 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   }, [difficultyFilter]);
 
   const currentQuestionText = useMemo(() => {
-    if (currentLevelNumber === 1) return `Count the ${l1ActiveAsset.name.toLowerCase()} from left to right by touching each one.`;
-    if (currentLevelNumber === 2) return `Touch each scattered ${l1ActiveAsset.name.toLowerCase()} to count the total.`;
+    if (currentLevelNumber === 1) return `Touch each ${l1ActiveAsset.name.toLowerCase()}. Count as you go!`;
+    if (currentLevelNumber === 2) return `Touch every ${l1ActiveAsset.name.toLowerCase()}. Do not miss any!`;
     if (currentLevelNumber === 3) {
       return l3ConservationData.countA === l3ConservationData.countB
-        ? `Compare Group A and Group B. Does changing the spatial arrangement change the total amount?`
-        : `Compare Group A and Group B. Which group has more items, or do they have the same amount?`;
+        ? `Count both groups. Do they have the same?`
+        : `Count both groups. Which one has more?`;
     }
-    if (currentLevelNumber >= 4 && currentLevelNumber <= 6) return `Look at the quick flash and pick the total amount without counting one by one!`;
-    if (currentLevelNumber === 7) return `Fill the ten-frame to show ${l7SingleTarget} dots (5 on top + extra ones).`;
-    if (currentLevelNumber === 8) return `How many more dots are needed to fill the frame of 10? (${l8ComplementInitial} + ? = 10)`;
-    if (currentLevelNumber === 9) return `Build the teen number ${l9TeenTarget} using 10 in Frame 1 and extra ones in Frame 2.`;
-    if (currentLevelNumber === 10) return `Hop the frog by equal steps of +${l10Track.step} to reach ${l10Track.targetNumber}.`;
-    if (currentLevelNumber === 11) return `Skip count by tens (+10) all the way to ${l10Track.targetNumber}.`;
-    if (currentLevelNumber === 12) return `Find the missing number in the jump sequence.`;
+    if (currentLevelNumber >= 4 && currentLevelNumber <= 6) return `Look fast! How many did you see?`;
+    if (currentLevelNumber === 7) return `Make ${l7SingleTarget} dots. Fill the top row first.`;
+    if (currentLevelNumber === 8) return `You have ${l8ComplementInitial}. How many more to make 10?`;
+    if (currentLevelNumber === 9) return `Make ${l9TeenTarget}. Fill one frame with 10, then add more.`;
+    if (currentLevelNumber === 10) return `Hop by ${l10Track.step} to get to ${l10Track.targetNumber}!`;
+    if (currentLevelNumber === 11) return `Hop by 10 all the way to ${l10Track.targetNumber}!`;
+    if (currentLevelNumber === 12) return `Which number is missing?`;
     if (currentLevelNumber === 13) {
       const diff = l13Target - currentTotalBlocks;
       if (diff > 0) {
-        return `Build ${l13Target}: You have ${currentTotalBlocks} blocks. Add ${diff} more using the (+) buttons!`;
+        return `Make ${l13Target}. You have ${currentTotalBlocks}. Add ${diff} more!`;
       } else if (diff < 0) {
-        return `Build ${l13Target}: You have ${currentTotalBlocks} blocks. Remove ${Math.abs(diff)} using the (-) buttons!`;
+        return `Make ${l13Target}. You have ${currentTotalBlocks}. Take away ${Math.abs(diff)}!`;
       } else if (l13Ones >= 10) {
-        return `You reached ${l13Target}! Now fuse 10 Ones into a Ten-Rod to bundle your numbers. Click "Fuse 10 Ones" below!`;
+        return `You made ${l13Target}! Now put 10 ones together to make a ten.`;
       } else {
-        return `Perfect! You built ${l13Target} in the most bundled way. Click "Check Blocks" to complete this step!`;
+        return `You made ${l13Target}! Press Check Blocks.`;
       }
     }
     if (currentLevelNumber === 14) {
       const diff = l14Target - currentTotalBlocks;
       if (diff > 0) {
-        return `Build ${l14Target}: You have ${currentTotalBlocks} blocks. Add ${diff} more using the (+) buttons!`;
+        return `Make ${l14Target}. You have ${currentTotalBlocks}. Add ${diff} more!`;
       } else if (diff < 0) {
-        return `Build ${l14Target}: You have ${currentTotalBlocks} blocks. Remove ${Math.abs(diff)} using the (-) buttons!`;
+        return `Make ${l14Target}. You have ${currentTotalBlocks}. Take away ${Math.abs(diff)}!`;
       } else if (l13Tens >= 10) {
         return `You reached ${l14Target}! Now fuse 10 Ten-Rods into a Hundred-Flat to bundle your numbers. Click "Fuse 10 Tens" below!`;
       } else {
@@ -1684,7 +1684,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 </div>
                 <div className="text-center">
                   <span className="text-xs font-mono text-muted" role="status" aria-live="polite">
-                    Tagged: <strong className="text-cyan-700 dark:text-cyan-400 text-sm">{l1TappedList.length}</strong> / {l1TargetCount}
+                    Counted: <strong className="text-cyan-700 dark:text-cyan-400 text-sm">{l1TappedList.length}</strong> / {l1TargetCount}
                   </span>
                 </div>
               </div>
@@ -1698,10 +1698,10 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   <div className="bg-canvas/60 p-4 sm:p-5 rounded-3xl border border-purple-500/30 flex flex-col items-center justify-between space-y-3 min-h-[170px] shadow-lg">
                     <div className="flex items-center justify-between w-full px-1">
                       <span className="font-mono text-xs font-bold text-purple-600 dark:text-purple-300">
-                        Group A ({l3ConservationData.layoutA.label})
+                        Left group ({l3ConservationData.layoutA.label})
                       </span>
                       <span className="text-[11px] font-mono text-muted">
-                        Tagged: <strong className="text-purple-600 dark:text-purple-300">{l3ConservationData.tappedA.length}</strong>
+                        Counted: <strong className="text-purple-600 dark:text-purple-300">{l3ConservationData.tappedA.length}</strong>
                       </span>
                     </div>
 
@@ -1875,10 +1875,10 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   <div className="bg-canvas/60 p-4 sm:p-5 rounded-3xl border border-cyan-500/30 flex flex-col items-center justify-between space-y-3 min-h-[170px] shadow-lg">
                     <div className="flex items-center justify-between w-full px-1">
                       <span className="font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300">
-                        Group B ({l3ConservationData.layoutB.label})
+                        Right group ({l3ConservationData.layoutB.label})
                       </span>
                       <span className="text-[11px] font-mono text-muted">
-                        Tagged: <strong className="text-cyan-700 dark:text-cyan-300">{l3ConservationData.tappedB.length}</strong>
+                        Counted: <strong className="text-cyan-700 dark:text-cyan-300">{l3ConservationData.tappedB.length}</strong>
                       </span>
                     </div>
 
@@ -2059,7 +2059,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         : "bg-surface hover:bg-purple-950/40 border-line/80 text-slate-200"
                     }`}
                   >
-                    Group A Has More
+                    Left has more
                   </button>
 
                   <button
@@ -2070,7 +2070,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         : "bg-surface hover:bg-amber-950/40 border-line/80 text-slate-200"
                     }`}
                   >
-                    Both Have the Same Count
+                    Same!
                   </button>
 
                   <button
@@ -2081,7 +2081,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         : "bg-surface hover:bg-cyan-950/40 border-line/80 text-slate-200"
                     }`}
                   >
-                    Group B Has More
+                    Right has more
                   </button>
                 </div>
               </div>
@@ -2398,9 +2398,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       {currentLevelNumber === 15 && `Build the exact target number: ${l15Target}`}
                     </h3>
                     <p className="text-xs text-muted">
-                      {currentLevelNumber === 13 && "Create the number using Ten-Rods and Ones Units, then group loose ones into rods."}
-                      {currentLevelNumber === 14 && "Create the number using Hundreds, Tens, and Ones, then group extra tens into flats."}
-                      {currentLevelNumber === 15 && "Add or subtract blocks in each chamber until the total matches the target."}
+                      {currentLevelNumber === 13 && "Make the number. Put 10 ones together to make a ten."}
+                      {currentLevelNumber === 14 && "Make the number. Put 10 tens together to make a hundred."}
+                      {currentLevelNumber === 15 && "Add or take away blocks until you get the number."}
                     </p>
                   </div>
                   {(currentLevelNumber === 13 || currentLevelNumber === 14 || currentLevelNumber === 15) && (
@@ -2914,15 +2914,19 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       {/* ============================================================ */}
       {/* 3. INSTANT BOTTOM ACTION & FEEDBACK DRAWER                   */}
       {/* ============================================================ */}
+      {/* Feedback uses the shared kid message, so every skill speaks the same
+          way: one icon, one short line, one action. */}
       {quizFeedback && (
-        <PracticeFeedbackBanner
-          status={quizFeedback.status}
-          title={quizFeedback.title}
-          message={quizFeedback.message}
-          xpEarned={quizFeedback.xpEarned}
-          onNext={handleNextQuestionOrComplete}
-          onAskVoice={() => setShowLiveVoiceModal(true)}
-        />
+        <div className="sticky bottom-0 left-0 right-0 z-30 p-3 sm:p-4 bg-canvas/95 backdrop-blur-sm">
+          <UIKidMessage
+            tone={quizFeedback.status === "correct" ? "correct" : "tryAgain"}
+            title={quizFeedback.title}
+            message={quizFeedback.message}
+            xpEarned={quizFeedback.xpEarned}
+            actionLabel={quizFeedback.status === "correct" ? "Next" : "Try again"}
+            onAction={handleNextQuestionOrComplete}
+          />
+        </div>
       )}
 
       {/* ============================================================ */}

@@ -16,6 +16,7 @@ export type StatTone = "primary" | "streak" | "success" | "danger";
 export type SurfaceVariant = "default" | "glass" | "bordered" | "interactive";
 export type FeatureVariant = "default" | "accent" | "subtle";
 export type PathNodeState = "completed" | "current" | "available" | "locked";
+export type KidMessageTone = "correct" | "tryAgain" | "hint" | "celebrate";
 
 /**
  * Central Theme & Design System Function/Utility Engine
@@ -266,6 +267,47 @@ export const themeSystem = {
     description: "text-xs sm:text-[13px] text-indigo-100 dark:text-indigo-200/90 font-bold",
     badge:
       "bg-indigo-500 dark:bg-indigo-800 text-white border-2 border-b-4 border-indigo-700 dark:border-indigo-950 px-3 py-1.5 rounded-xl text-xs font-mono font-black uppercase tracking-wider whitespace-nowrap",
+  },
+
+  /* Feedback shown to a learner. Large type and a big single action, because
+     the reader is five. Tone carries an icon as well as a colour. */
+  kidMessage: {
+    wrap: (tone: KidMessageTone = "correct") => {
+      const base =
+        "flex items-start gap-3 p-4 sm:p-5 rounded-2xl border-2 w-full max-w-3xl mx-auto";
+      return `${base} ${{
+        correct: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800",
+        celebrate: "bg-indigo-50 dark:bg-indigo-950/40 border-indigo-300 dark:border-indigo-800",
+        tryAgain: "bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800",
+        hint: "bg-slate-50 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700",
+      }[tone]}`;
+    },
+
+    icon: (tone: KidMessageTone = "correct") => {
+      const base =
+        "shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center [&>svg]:w-6 [&>svg]:h-6";
+      return `${base} ${{
+        correct: "bg-emerald-600 text-white",
+        celebrate: "bg-indigo-600 text-white",
+        tryAgain: "bg-amber-400 text-slate-900",
+        hint: "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200",
+      }[tone]}`;
+    },
+
+    title: "text-lg sm:text-xl font-black text-slate-900 dark:text-white",
+    message: "text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 mt-0.5",
+    xp: "text-xs font-black font-mono px-2 py-1 rounded-lg bg-amber-400 text-slate-900",
+
+    action: (tone: KidMessageTone = "correct") => {
+      const base =
+        "shrink-0 self-center px-5 py-3 min-h-[48px] rounded-2xl font-black font-mono uppercase tracking-wider text-sm text-white border-2 border-b-4 active:border-b-2 active:translate-y-0.5 transition-all duration-100 cursor-pointer";
+      return `${base} ${{
+        correct: "bg-emerald-600 hover:bg-emerald-500 border-emerald-800",
+        celebrate: "bg-indigo-600 hover:bg-indigo-500 border-indigo-800",
+        tryAgain: "bg-amber-500 hover:bg-amber-400 border-amber-700 !text-slate-900",
+        hint: "bg-slate-600 hover:bg-slate-500 border-slate-800",
+      }[tone]}`;
+    },
   },
 
   menu: {
