@@ -56,189 +56,23 @@ export interface PluginActionLog {
 }
 
 /**
- * Legacy built-ins.
+ * No built-in plugins.
  *
- * "counting-mastery" used to live here, duplicating the counting plugin's own
- * manifest.json and disagreeing with it about how many features exist. Skills
- * now register themselves from src/plugins/registry.ts, so the manifest is the
- * single source of truth.
+ * This array previously declared five: counting-mastery (which duplicated the
+ * counting plugin's manifest) and four UI fragments — step-header-tagger,
+ * feedback-drawer, gemini-coach, whiteboard-scratchpad. Between them the four
+ * owned 14 feature flags, and an audit found **not one of them was ever checked
+ * in code**: every toggle in Plugin Lab did nothing.
  *
- * What remains are UI fragments rather than skills — they should become
- * `features` of the plugin they belong to.
+ * A switch that does not switch anything is worse than no switch, so they are
+ * gone. The UI they nominally described (step header, feedback banner, voice
+ * coach, whiteboard) is untouched — it was never gated by these flags.
+ *
+ * Plugins now come from src/plugins/registry.ts via registerPlugin(), which
+ * means everything Plugin Lab lists is real.
  */
-const DEFAULT_PLUGINS: LearningPlugin[] = [
-  {
-    id: "step-header-tagger",
-    name: "Contextual Step Header",
-    version: "1.2.0",
-    description: "Dynamic progression tracking pills, difficulty markers, and audio question reader.",
-    category: "visualizer",
-    author: "Koda Pedagogical Core",
-    isEnabled: true,
-    iconName: "Layers",
-    stats: { totalEvents: 88, lastActive: new Date().toISOString() },
-    settings: {
-      showDifficultyPill: true,
-      showStepBreadcrumb: true,
-      highContrastHeader: false,
-    },
-    features: [
-      {
-        id: "step_progress_badge",
-        name: "Step Progression Breadcrumb",
-        description: "Displays current question number and total step checkpoints (e.g. Step 1 of 5).",
-        isEnabled: true,
-        tag: "Visual",
-      },
-      {
-        id: "tts_readout_button",
-        name: "Question Text-to-Speech Button",
-        description: "Allows children to listen to the question prompt with natural voice synthesis.",
-        isEnabled: true,
-        tag: "Accessibility",
-      },
-      {
-        id: "concept_banner",
-        name: "Collapsible Pedagogical Concept Banner",
-        description: "Shows underlying math learning objectives and mastery domain tags.",
-        isEnabled: true,
-        tag: "Pedagogy",
-      },
-      {
-        id: "difficulty_badge",
-        name: "Bloom's Difficulty Rating Pill",
-        description: "Indicates skill difficulty level (Foundation, Intermediate, Mastery).",
-        isEnabled: true,
-        tag: "Pedagogy",
-      },
-    ],
-  },
-  {
-    id: "feedback-drawer",
-    name: "Adaptive Feedback Drawer",
-    version: "1.3.0",
-    description: "Socratic success celebrations, structured error guidance, and instant AI tutor links.",
-    category: "utility",
-    author: "Synthesis Adaptive Engine",
-    isEnabled: true,
-    iconName: "Zap",
-    stats: { totalEvents: 64, lastActive: new Date().toISOString() },
-    settings: {
-      autoDismissSeconds: 0,
-      showKodaVoiceLink: true,
-    },
-    features: [
-      {
-        id: "celebration_banner",
-        name: "Celebration Banner with Stars",
-        description: "Displays rich feedback modal highlighting specific mathematical achievements.",
-        isEnabled: true,
-        tag: "Visual",
-      },
-      {
-        id: "socratic_error_hint",
-        name: "Socratic Error Guidance & Clarification",
-        description: "Breaks down incorrect attempts with helpful guiding questions rather than plain answers.",
-        isEnabled: true,
-        tag: "Pedagogy",
-      },
-      {
-        id: "koda_voice_launcher",
-        name: "Koda Live Voice Link",
-        description: "Quick 1-tap button to chat with Koda Live Voice for instant conversational help.",
-        isEnabled: true,
-        tag: "AI Assistant",
-      },
-      {
-        id: "streak_counter_hud",
-        name: "Streak Multiplier HUD",
-        description: "Maintains active streak counter and fires streak bonus sounds.",
-        isEnabled: true,
-        tag: "Gamification",
-      },
-    ],
-  },
-  {
-    id: "gemini-coach",
-    name: "Gemini Live Voice Coach",
-    version: "3.1.0",
-    description: "Multi-modal AI assistant providing real-time low-latency voice feedback and whiteboard vision.",
-    category: "assistant",
-    author: "Google Gemini Core",
-    isEnabled: true,
-    iconName: "Mic",
-    stats: { totalEvents: 42, lastActive: new Date().toISOString() },
-    settings: {
-      voicePersona: "Kore",
-      autoPcmPlayback: true,
-      maxTurnTokens: 250,
-    },
-    features: [
-      {
-        id: "live_audio_stream",
-        name: "Real-time Voice Conversation",
-        description: "Bi-directional Socratic audio dialogue via Gemini 2.5/Flash WebSocket stream.",
-        isEnabled: true,
-        tag: "AI Audio",
-      },
-      {
-        id: "socratic_prompting",
-        name: "Pedagogical Socratic Scaffolding",
-        description: "Guides learners with questions instead of revealing answers directly.",
-        isEnabled: true,
-        tag: "Pedagogy",
-      },
-      {
-        id: "whiteboard_vision",
-        name: "Whiteboard Canvas Vision",
-        description: "Transmits whiteboard doodles and handwritten math formulas to Gemini for visual analysis.",
-        isEnabled: true,
-        tag: "Multimodal",
-      },
-    ],
-  },
-  {
-    id: "whiteboard-scratchpad",
-    name: "Interactive Whiteboard Scratchpad",
-    version: "1.1.0",
-    description: "Full-featured digital canvas for freehand drawing, tally counting, and equation scratch work.",
-    category: "visualizer",
-    author: "Koda Creative Tools",
-    isEnabled: true,
-    iconName: "PenTool",
-    stats: { totalEvents: 31, lastActive: new Date().toISOString() },
-    settings: {
-      defaultStrokeWidth: 4,
-      defaultColor: "#818cf8",
-      enableGridBackground: true,
-    },
-    features: [
-      {
-        id: "freehand_canvas",
-        name: "Smooth Drawing & Stroke Smoothing",
-        description: "Fluid touch/mouse drawing canvas with high-contrast color palette.",
-        isEnabled: true,
-        tag: "Tools",
-      },
-      {
-        id: "math_tally_helper",
-        name: "Tally & Grouping Dot Helper",
-        description: "Quick dot stamps for tallying numbers and grouping quantities.",
-        isEnabled: true,
-        tag: "Manipulative",
-      },
-      {
-        id: "undo_redo_history",
-        name: "Undo / Redo Stroke Memory",
-        description: "Full action history stack for safe sketching and experimentation.",
-        isEnabled: true,
-        tag: "Utility",
-      },
-    ],
-  },
-];
+const DEFAULT_PLUGINS: LearningPlugin[] = [];
 
-// LocalStorage Persistence Keys
 const STORAGE_KEY_PLUGINS = "koda_learning_plugins_v2";
 const STORAGE_KEY_LOGS = "koda_plugin_logs_v2";
 
