@@ -116,6 +116,9 @@ function saveStoredPlugins(plugins: LearningPlugin[]) {
   }
 }
 
+/** Pristine manifests, keyed by id. Populated by registerPlugin(). */
+const registeredDefaults = new Map<string, LearningPlugin>();
+
 let globalPlugins: LearningPlugin[] = loadStoredPlugins();
 
 // Starts empty. The seed entry referenced a plugin id that no longer exists and
@@ -147,6 +150,11 @@ export const PluginManagerAPI = {
    * Idempotent: registering the same id twice re-merges rather than duplicating.
    */
   registerPlugin: (incoming: LearningPlugin): void => {
+    // The manifest as declared, before any user change. This is what "factory
+    // defaults" now means — DEFAULT_PLUGINS is empty because skills come from
+    // the registry, so resets must restore from here instead.
+    registeredDefaults.set(incoming.id, structuredClone(incoming));
+
     const existing = globalPlugins.find((p) => p.id === incoming.id);
 
     if (!existing) {
@@ -310,17 +318,25 @@ export const PluginManagerAPI = {
 
   // Reset all plugins to default configurations
   resetAllToDefaults: (): void => {
-    globalPlugins = DEFAULT_PLUGINS;
-    saveStoredPlugins(DEFAULT_PLUGINS);
+    // Restore every registered plugin to its manifest, keeping the list intact.
+    // This previously assigned DEFAULT_PLUGINS, which is now empty — it would
+    // have wiped every skill from the store until the next reload.
+    globalPlugins = [
+      ...DEFAULT_PLUGINS,
+      ...[...registeredDefaults.values()].map((p) => structuredClone(p)),
+    ];
+    saveStoredPlugins(globalPlugins);
     notifyPlugins();
     PluginManagerAPI.logAction("system", "PLUGIN_STATE", 0, undefined, "info", "All plugins reset to factory defaults.");
   },
 
   // Reset single plugin to default
   resetPluginToDefaults: (pluginId: string): void => {
-    const def = DEFAULT_PLUGINS.find((p) => p.id === pluginId);
+    const def = registeredDefaults.get(pluginId) ?? DEFAULT_PLUGINS.find((p) => p.id === pluginId);
     if (!def) return;
-    globalPlugins = globalPlugins.map((p) => (p.id === pluginId ? def : p));
+    globalPlugins = globalPlugins.map((p) =>
+      p.id === pluginId ? structuredClone(def) : p,
+    );
     notifyPlugins();
     PluginManagerAPI.logAction(pluginId, "PLUGIN_STATE", 0, undefined, "info", `Plugin '${def.name}' reset to factory defaults.`);
   },
