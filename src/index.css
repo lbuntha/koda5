@@ -322,4 +322,55 @@ html.theme-light,
   z-index: 30;
 }
 
+/* ==========================================================================
+   REDUCED MOTION
+   A learner who has asked their OS to reduce motion must not be bounced,
+   pulsed or spun at. Feedback still happens — it just stops moving, so a
+   correct answer is still confirmed by colour, icon and sound.
 
+   koda-v4 gated its animations this way; the rule was missed when the theme
+   was ported here.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  /* Anything decorative simply stops. */
+  .animate-bounce,
+  .animate-ping,
+  .animate-pulse,
+  .animate-spin-slow,
+  .ready-to-unlock-node,
+  .block-draggable:active,
+  .chamber-snap-hundreds::before,
+  .chamber-snap-tens::before,
+  .chamber-snap-ones::before {
+    animation: none !important;
+  }
+
+  /* Entrances become instant rather than absent, so nothing pops in unseen. */
+  .animate-fade-in,
+  .animate-scale-up,
+  .animate-slide-in-right,
+  .tap-pop-anim,
+  .block-snap-pull {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  /* Hover and press lifts flatten. */
+  .block-draggable,
+  .block-draggable:hover {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* A spinner still needs to say "working", so it keeps turning — slowly. */
+  .animate-spin {
+    animation-duration: 2s !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

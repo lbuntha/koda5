@@ -319,7 +319,7 @@ export const themeSystem = {
     brandSubtitle:
       "text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono",
     iconButton:
-      "p-1.5 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition border-2 border-slate-200 dark:border-slate-700",
+      "p-2 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition border-2 border-slate-200 dark:border-slate-700",
     sectionLabel:
       "text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono px-3 mb-2",
     footer: "pt-3 border-t border-slate-200 dark:border-slate-800/90 space-y-3",

@@ -1245,8 +1245,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* Fullscreen / Zen Toggle */}
             <button
               onClick={toggleFullscreen}
-              className="p-1 sm:p-1.5 rounded-xl text-muted hover:text-ink hover:bg-surface-muted transition shrink-0 flex items-center justify-center"
+              className="p-2 min-w-[40px] min-h-[40px] rounded-xl text-muted hover:text-ink hover:bg-surface-muted transition shrink-0 flex items-center justify-center"
               title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+              aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             >
               {isFullscreen ? (
                 <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-800 dark:text-amber-400" />
@@ -1292,6 +1293,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     : "bg-surface text-muted border-line hover:text-body"
                 }`}
                 title="Unlock all levels to inspect and preview their Socratic questions"
+              aria-label="Unlock all levels to inspect and preview their Socratic questions"
               >
                 <span>{teacherPreviewMode ? "🔓 Preview Mode: ON" : "🔒 Teacher Preview"}</span>
               </button>
@@ -1427,6 +1429,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
               }}
               className="flex items-center gap-2 bg-surface/90 hover:bg-surface-muted/90 px-3 py-1.5 rounded-2xl border border-line shadow-sm transition min-w-0 text-left cursor-pointer"
               title="Select Practice Level"
+              aria-label="Select Practice Level"
             >
               <LevelLucideIcon levelNumber={currentLevelNumber} className="w-5 h-5 shrink-0" />
               <div className="min-w-0">
@@ -1483,8 +1486,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 triggerSound("pop");
                 setShowLiveVoiceModal(true);
               }}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition transform active:scale-95 shrink-0"
+              className="flex items-center gap-1 px-3 py-2 min-h-[40px] rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition transform active:scale-95 shrink-0"
               title="Talk to Koda with Live Voice"
+              aria-label="Talk to Koda with Live Voice"
             >
               <Mic className="w-3.5 h-3.5 text-slate-950 animate-pulse" />
               <span className="hidden sm:inline">Voice</span>
@@ -1493,8 +1497,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* Audio toggle */}
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="p-1 sm:p-1.5 rounded-xl text-muted hover:text-ink transition shrink-0"
+              className="p-2 min-w-[40px] min-h-[40px] rounded-xl text-muted hover:text-ink transition shrink-0"
               title={soundEnabled ? "Mute Sound" : "Unmute Sound"}
+              aria-label={soundEnabled ? "Mute Sound" : "Unmute Sound"}
             >
               {soundEnabled ? (
                 <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700 dark:text-emerald-400" />
@@ -1509,8 +1514,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 triggerSound("pop");
                 setShowPluginSettingsModal(true);
               }}
-              className="p-1 sm:p-1.5 rounded-xl text-muted hover:text-slate-800 dark:text-amber-300 hover:bg-surface-muted transition shrink-0 flex items-center justify-center cursor-pointer"
+              className="p-2 min-w-[40px] min-h-[40px] rounded-xl text-muted hover:text-slate-800 dark:text-amber-300 hover:bg-surface-muted transition shrink-0 flex items-center justify-center cursor-pointer"
               title="Manage Counting Plugin & Features"
+              aria-label="Manage Counting Plugin & Features"
             >
               <Sliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-800 dark:text-amber-400" />
             </button>
@@ -1518,8 +1524,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* Fullscreen / Zen Toggle */}
             <button
               onClick={toggleFullscreen}
-              className="p-1 sm:p-1.5 rounded-xl text-muted hover:text-ink hover:bg-surface-muted transition shrink-0 flex items-center justify-center"
+              className="p-2 min-w-[40px] min-h-[40px] rounded-xl text-muted hover:text-ink hover:bg-surface-muted transition shrink-0 flex items-center justify-center"
               title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+              aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             >
               {isFullscreen ? (
                 <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-800 dark:text-amber-400" />
@@ -1535,8 +1542,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 koda?.log("EXIT_GAME", "User exited Learn quiz arena.", currentLevelNumber, currentQuestionIndex);
                 onBackToHome();
               }}
-              className="p-1 sm:p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-700 dark:text-rose-400 hover:text-white transition shrink-0 flex items-center justify-center cursor-pointer border border-rose-500/20"
+              className="p-2 min-w-[40px] min-h-[40px] rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-700 dark:text-rose-400 hover:text-white transition shrink-0 flex items-center justify-center cursor-pointer border border-rose-500/20"
               title="Exit Learn"
+              aria-label="Exit Learn"
             >
               <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
@@ -1596,6 +1604,11 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         key={idx}
                         onClick={() => handleTouchL1Object(idx)}
                         disabled={isTapped}
+                        aria-label={
+                          isTapped
+                            ? `Item ${idx + 1} of ${l1TargetCount}, counted as number ${tagNumber}`
+                            : `Item ${idx + 1} of ${l1TargetCount}, not counted yet`
+                        }
                         className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex flex-col items-center justify-center transition-all transform active:scale-95 ${
                           isRecentlyPopped
                             ? "tap-pop-anim bg-amber-400/30 text-slate-800 dark:text-amber-300 ring-4 ring-amber-400/70 shadow-xl shadow-amber-400/40 scale-125 z-20"
@@ -1618,7 +1631,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 </div>
 
                 <div className="text-center">
-                  <span className="text-xs font-mono text-muted">
+                  <span className="text-xs font-mono text-muted" role="status" aria-live="polite">
                     Tapped: <strong className="text-slate-800 dark:text-amber-400 text-sm">{l1TappedList.length}</strong> / {l1TargetCount}
                   </span>
                 </div>
@@ -1639,6 +1652,11 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         key={idx}
                         onClick={() => handleTouchL2Object(idx)}
                         disabled={isTapped}
+                        aria-label={
+                          isTapped
+                            ? `Item ${idx + 1} of ${l2ScatterPositions.length}, counted as number ${tagNumber}`
+                            : `Item ${idx + 1} of ${l2ScatterPositions.length}, not counted yet`
+                        }
                         style={{
                           top: pos.top,
                           left: pos.left,
@@ -1665,7 +1683,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   })}
                 </div>
                 <div className="text-center">
-                  <span className="text-xs font-mono text-muted">
+                  <span className="text-xs font-mono text-muted" role="status" aria-live="polite">
                     Tagged: <strong className="text-cyan-700 dark:text-cyan-400 text-sm">{l1TappedList.length}</strong> / {l1TargetCount}
                   </span>
                 </div>
@@ -2952,6 +2970,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       : "bg-surface-muted text-muted border-line hover:text-slate-200"
                   }`}
                   title="Unlock all levels to inspect and preview their Socratic questions"
+              aria-label="Unlock all levels to inspect and preview their Socratic questions"
                 >
                   <span>{teacherPreviewMode ? "🔓 Preview Mode: ON" : "🔒 Teacher Preview"}</span>
                 </button>

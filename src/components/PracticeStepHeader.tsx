@@ -51,15 +51,16 @@ export const PracticeStepHeader: React.FC<PracticeStepHeaderProps> = ({
       <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
         <button
           onClick={onReadAloud}
-          className="p-2.5 rounded-xl bg-surface hover:bg-surface text-slate-800 dark:text-amber-400 hover:text-amber-300 transition border border-line active:scale-95 cursor-pointer"
+          className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-surface hover:bg-surface text-slate-800 dark:text-amber-400 hover:text-amber-300 transition border border-line active:scale-95 cursor-pointer"
           title="Read question aloud"
+            aria-label="Read question aloud"
         >
           <Volume2 className="w-4 h-4" />
         </button>
 
         <button
           onClick={onToggleTip}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-500/20 text-xs font-mono font-bold text-indigo-700 dark:text-indigo-300 transition active:scale-95 cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-500/20 text-xs font-mono font-bold text-indigo-700 dark:text-indigo-300 transition active:scale-95 cursor-pointer"
         >
           <Lightbulb className="w-3.5 h-3.5 text-slate-800 dark:text-amber-400" />
           <span>{showTip ? "Hide Hint" : "Hint"}</span>
