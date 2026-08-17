@@ -190,7 +190,7 @@ export const themeSystem = {
     body: "relative z-10 flex flex-col md:flex-row items-center justify-between gap-4",
     icon: "w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-600/20 border-2 border-indigo-200 dark:border-indigo-500/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 [&>svg]:w-4 [&>svg]:h-4",
     eyebrow:
-      "bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-mono font-black text-xs px-3 py-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 uppercase tracking-wider",
+      "bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 font-mono font-black text-xs px-3 py-1.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 uppercase tracking-wider",
     title:
       "text-2xl sm:text-3xl font-black tracking-tight leading-tight text-slate-900 dark:text-white",
     note: "flex items-start gap-2.5 bg-slate-50 dark:bg-slate-800/40 p-3 rounded-2xl border-2 border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 text-xs sm:text-sm max-w-xl font-medium",
@@ -199,7 +199,7 @@ export const themeSystem = {
     metaLead: "text-indigo-700 dark:text-indigo-400 font-mono text-xs font-black uppercase tracking-wider",
     metaItem:
       "flex items-center gap-1.5 text-slate-600 dark:text-slate-300 text-xs font-mono font-bold [&>svg]:w-3.5 [&>svg]:h-3.5 [&>svg]:shrink-0",
-    metaDot: "text-slate-300 dark:text-slate-700",
+    metaDot: "text-slate-500 dark:text-slate-400",
     action:
       "w-full md:w-auto shrink-0 px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm font-mono uppercase tracking-wider border-2 border-b-4 border-indigo-700 active:border-b-2 active:translate-y-0.5 transition-all duration-100 flex items-center justify-center gap-2 cursor-pointer group",
   },
@@ -239,7 +239,7 @@ export const themeSystem = {
         completed: "text-slate-700 dark:text-slate-200",
         current: "text-indigo-700 dark:text-indigo-300",
         available: "text-slate-700 dark:text-slate-300",
-        locked: "text-slate-400 dark:text-slate-400",
+        locked: "text-slate-500 dark:text-slate-400",
       };
       return `${base} ${states[state]}`;
     },
@@ -353,7 +353,7 @@ export const themeSystem = {
       }`,
 
     navBadge:
-      "text-[11px] font-mono px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700 font-black uppercase",
+      "text-[11px] font-mono px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-2 border-slate-200 dark:border-slate-700 font-black uppercase",
 
     profileRow:
       "w-full flex items-center gap-2.5 p-2 rounded-2xl bg-white dark:bg-slate-800/80 border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer text-left",

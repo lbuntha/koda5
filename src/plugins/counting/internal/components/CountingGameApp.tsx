@@ -68,37 +68,37 @@ import { triggerHaptic, triggerTapPopHaptic } from "../../../../utils/haptics";
 const LevelLucideIcon: React.FC<{ levelNumber: number; className?: string }> = ({ levelNumber, className = "w-5 h-5" }) => {
   switch (levelNumber) {
     case 1:
-      return <Star className={`${className} text-amber-400 fill-amber-400/20`} />;
+      return <Star className={`${className} text-slate-800 dark:text-amber-400 fill-amber-400/20`} />;
     case 2:
-      return <Sparkles className={`${className} text-cyan-400`} />;
+      return <Sparkles className={`${className} text-cyan-700 dark:text-cyan-400`} />;
     case 3:
-      return <Scale className={`${className} text-indigo-400`} />;
+      return <Scale className={`${className} text-indigo-600 dark:text-indigo-400`} />;
     case 4:
-      return <Dices className={`${className} text-purple-400`} />;
+      return <Dices className={`${className} text-purple-600 dark:text-purple-400`} />;
     case 5:
-      return <Zap className={`${className} text-amber-400`} />;
+      return <Zap className={`${className} text-slate-800 dark:text-amber-400`} />;
     case 6:
       return <CircleDot className={`${className} text-pink-400`} />;
     case 7:
-      return <Rocket className={`${className} text-cyan-400`} />;
+      return <Rocket className={`${className} text-cyan-700 dark:text-cyan-400`} />;
     case 8:
-      return <BatteryCharging className={`${className} text-emerald-400`} />;
+      return <BatteryCharging className={`${className} text-emerald-700 dark:text-emerald-400`} />;
     case 9:
-      return <Boxes className={`${className} text-indigo-400`} />;
+      return <Boxes className={`${className} text-indigo-600 dark:text-indigo-400`} />;
     case 10:
-      return <Footprints className={`${className} text-emerald-400`} />;
+      return <Footprints className={`${className} text-emerald-700 dark:text-emerald-400`} />;
     case 11:
-      return <Waves className={`${className} text-cyan-400`} />;
+      return <Waves className={`${className} text-cyan-700 dark:text-cyan-400`} />;
     case 12:
-      return <Search className={`${className} text-amber-400`} />;
+      return <Search className={`${className} text-slate-800 dark:text-amber-400`} />;
     case 13:
-      return <Gem className={`${className} text-purple-400`} />;
+      return <Gem className={`${className} text-purple-600 dark:text-purple-400`} />;
     case 14:
-      return <Layers className={`${className} text-indigo-400`} />;
+      return <Layers className={`${className} text-indigo-600 dark:text-indigo-400`} />;
     case 15:
-      return <Crown className={`${className} text-amber-400 fill-amber-400/20`} />;
+      return <Crown className={`${className} text-slate-800 dark:text-amber-400 fill-amber-400/20`} />;
     default:
-      return <Star className={`${className} text-indigo-400`} />;
+      return <Star className={`${className} text-indigo-600 dark:text-indigo-400`} />;
   }
 };
 
@@ -1225,12 +1225,12 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   // ============================================================
   if (viewMode === "map") {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+      <div className="flex-1 min-h-0 bg-canvas text-ink flex flex-col">
         {/* Map Header */}
-        <header className="px-2.5 sm:px-4 py-2.5 sm:py-3 bg-slate-950/90 flex items-center justify-between gap-2">
+        <header className="px-2.5 sm:px-4 py-2.5 sm:py-3 bg-canvas/90 flex items-center justify-between gap-2">
           <button
             onClick={() => setViewMode("quiz")}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-300 hover:text-white transition shrink-0"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-surface hover:bg-surface-muted text-xs font-bold text-body hover:text-ink transition shrink-0"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Resume Level {currentLevelNumber}</span>
@@ -1238,18 +1238,18 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
           </button>
 
           <div className="flex items-center gap-2 font-mono">
-            <span className="text-xs sm:text-base font-black text-white truncate">🗺️ Journey Map</span>
+            <span className="text-xs sm:text-base font-black text-ink truncate">🗺️ Journey Map</span>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Fullscreen / Zen Toggle */}
             <button
               onClick={toggleFullscreen}
-              className="p-1 sm:p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 flex items-center justify-center"
+              className="p-1 sm:p-1.5 rounded-xl text-muted hover:text-ink hover:bg-surface-muted transition shrink-0 flex items-center justify-center"
               title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             >
               {isFullscreen ? (
-                <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+                <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-800 dark:text-amber-400" />
               ) : (
                 <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               )}
@@ -1270,7 +1270,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     className={`px-2.5 py-1 rounded-xl text-xs font-mono font-bold transition shrink-0 ${
                       difficultyFilter === diff
                         ? "bg-amber-400 text-slate-950 shadow"
-                        : "bg-slate-900 text-slate-400 hover:text-white"
+                        : "bg-surface text-muted hover:text-ink"
                     }`}
                   >
                     {diff}
@@ -1288,15 +1288,15 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-[11px] font-bold border transition ${
                   teacherPreviewMode
-                    ? "bg-indigo-500/20 text-indigo-300 border-indigo-400/50 shadow-[0_0_15px_rgba(129,140,248,0.2)]"
-                    : "bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-300"
+                    ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-indigo-400/50 shadow-[0_0_15px_rgba(129,140,248,0.2)]"
+                    : "bg-surface text-muted border-line hover:text-body"
                 }`}
                 title="Unlock all levels to inspect and preview their Socratic questions"
               >
                 <span>{teacherPreviewMode ? "🔓 Preview Mode: ON" : "🔒 Teacher Preview"}</span>
               </button>
 
-              <span className="text-xs text-slate-400 font-mono">
+              <span className="text-xs text-muted font-mono">
                 {Object.keys(completedLevels).length} / 15 Mastered
               </span>
             </div>
@@ -1322,17 +1322,17 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     isCurrent
                       ? "bg-amber-500/10 border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.2)] ring-2 ring-amber-400/50"
                       : isDone
-                      ? "bg-slate-900/80 border-emerald-500/40 hover:border-emerald-400 cursor-pointer"
+                      ? "bg-surface/80 border-emerald-500/40 hover:border-emerald-400 cursor-pointer"
                       : isUnlocked
-                      ? "bg-slate-900/50 border-slate-700 hover:border-slate-500 cursor-pointer"
-                      : "bg-slate-950/40 border-slate-800 opacity-45 cursor-not-allowed"
+                      ? "bg-surface/50 border-line hover:border-slate-500 cursor-pointer"
+                      : "bg-canvas/40 border-line opacity-45 cursor-not-allowed"
                   }`}
                 >
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <LevelLucideIcon levelNumber={lvl.levelNumber} className="w-5 h-5 shrink-0" />
-                        <span className="font-mono font-black text-xs text-white">
+                        <span className="font-mono font-black text-xs text-ink">
                           Level {lvl.levelNumber}
                         </span>
                       </div>
@@ -1340,12 +1340,12 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       <span
                         className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
                           lvl.difficulty === "Easy"
-                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                            ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                             : lvl.difficulty === "Medium"
-                            ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/30"
+                            ? "bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border-cyan-500/30"
                             : lvl.difficulty === "Challenging"
-                            ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
-                            : "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                            ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 border-purple-500/30"
+                            : "bg-amber-500/20 text-slate-800 dark:text-amber-300 border-amber-500/30"
                         }`}
                       >
                         {lvl.difficulty}
@@ -1353,22 +1353,22 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     </div>
 
                     <div>
-                      <h4 className="font-bold text-white text-sm leading-snug">{lvl.title}</h4>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                      <h4 className="font-bold text-ink text-sm leading-snug">{lvl.title}</h4>
+                      <p className="text-xs text-muted mt-1 line-clamp-2 leading-relaxed">
                         {lvl.shortDesc}
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between mt-3 text-xs font-mono">
+                  <div className="pt-3 border-t border-line flex items-center justify-between mt-3 text-xs font-mono">
                     <span className="text-slate-500 text-[11px]">{lvl.category}</span>
                     {isDone ? (
-                      <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <span className="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Mastered</span>
                       </span>
                     ) : isUnlocked ? (
-                      <span className="text-amber-400 font-bold flex items-center gap-1">
+                      <span className="text-slate-800 dark:text-amber-400 font-bold flex items-center gap-1">
                         <span>Play Quiz</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </span>
@@ -1394,29 +1394,29 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   // ============================================================
   // Dynamic Background Theme Classes depending on Kid Settings Page
   // ============================================================
+  // Each kid theme is a tint over the canvas. Light gets a pale wash, dark the
+  // deep original — the gradient stops used to be dark-only, so in light mode
+  // the whole arena stayed near-black.
   const getThemeBgClass = () => {
-    switch (kidThemeMode) {
-      case "magical":
-        return "bg-slate-950 bg-gradient-to-b from-teal-950/40 via-slate-950 to-slate-950";
-      case "cyber":
-        return "bg-slate-950 bg-gradient-to-b from-indigo-950/40 via-slate-950 to-slate-950";
-      case "candy":
-        return "bg-slate-950 bg-gradient-to-b from-pink-950/40 via-slate-950 to-slate-950";
-      case "retro":
-        return "bg-slate-950 bg-gradient-to-b from-amber-950/40 via-slate-950 to-slate-950";
-      default:
-        return "bg-slate-950";
-    }
+    const tint: Record<string, string> = {
+      magical: "from-teal-50 dark:from-teal-950/40",
+      cyber: "from-indigo-50 dark:from-indigo-950/40",
+      candy: "from-pink-50 dark:from-pink-950/40",
+      retro: "from-amber-50 dark:from-amber-950/40",
+    };
+    const from = tint[kidThemeMode];
+    if (!from) return "bg-canvas";
+    return `bg-canvas bg-gradient-to-b ${from} via-canvas to-canvas`;
   };
 
   const progressPercent = (currentQuestionIndex / TOTAL_QUESTIONS_PER_ROUND) * 100;
 
   return (
-    <div className={`min-h-screen ${getThemeBgClass()} text-slate-100 flex flex-col select-none`}>
+    <div className={`flex-1 min-h-0 ${getThemeBgClass()} text-ink flex flex-col select-none`}>
       {/* ============================================================ */}
       {/* 1. SINGLE CLEAN RESPONSIVE QUIZ TOPBAR                        */}
       {/* ============================================================ */}
-      <header className="px-2.5 sm:px-4 py-2 sm:py-2.5 bg-slate-950/90 sticky top-0 z-30 backdrop-blur-md">
+      <header className="px-2.5 sm:px-4 py-2 sm:py-2.5 bg-canvas/90 sticky top-0 z-30 backdrop-blur-md">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-1.5 sm:gap-3">
           {/* Left: Level Identity & Switcher */}
           <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial shrink">
@@ -1425,34 +1425,34 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 triggerSound("pop");
                 setShowLevelPicker(true);
               }}
-              className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-800/90 px-3 py-1.5 rounded-2xl border border-slate-800 shadow-sm transition min-w-0 text-left cursor-pointer"
+              className="flex items-center gap-2 bg-surface/90 hover:bg-surface-muted/90 px-3 py-1.5 rounded-2xl border border-line shadow-sm transition min-w-0 text-left cursor-pointer"
               title="Select Practice Level"
             >
               <LevelLucideIcon levelNumber={currentLevelNumber} className="w-5 h-5 shrink-0" />
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-black text-white font-mono truncate max-w-[100px] xs:max-w-[160px] sm:max-w-[280px]">
+                  <span className="text-xs font-black text-ink font-mono truncate max-w-[100px] xs:max-w-[160px] sm:max-w-[280px]">
                     L{currentLevelNumber}: {activeLevelConfig.title}
                   </span>
-                  <span className="hidden xs:inline-block text-[10px] font-mono font-bold text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded-md border border-amber-400/20 shrink-0">
+                  <span className="hidden xs:inline-block text-[10px] font-mono font-bold text-slate-800 dark:text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded-md border border-amber-400/20 shrink-0">
                     {currentLevelNumber}/15
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium hidden md:block truncate max-w-[260px]">
+                <span className="text-[10px] text-muted font-medium hidden md:block truncate max-w-[260px]">
                   {activeLevelConfig.skillConcept}
                 </span>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1 hidden xs:block" />
+              <ChevronDown className="w-3.5 h-3.5 text-muted shrink-0 ml-1 hidden xs:block" />
             </button>
           </div>
 
           {/* Center: Question Progress Bar */}
           <div className="flex flex-col items-center gap-0.5 sm:gap-1 min-w-[70px] xs:min-w-[100px] sm:min-w-[160px] shrink-0">
-            <div className="flex items-center justify-between w-full text-[10px] sm:text-[11px] font-mono font-bold text-slate-400">
+            <div className="flex items-center justify-between w-full text-[10px] sm:text-[11px] font-mono font-bold text-muted">
               <span><span className="hidden xs:inline">Q </span>{currentQuestionIndex}/{TOTAL_QUESTIONS_PER_ROUND}</span>
-              <span className="text-amber-400 ml-1">{Math.round(progressPercent)}%</span>
+              <span className="text-slate-800 dark:text-amber-400 ml-1">{Math.round(progressPercent)}%</span>
             </div>
-            <div className="w-full h-1.5 sm:h-2 bg-slate-900 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 sm:h-2 bg-surface rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
@@ -1462,16 +1462,16 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
 
           {/* Right: Gamified Stats & Voice Assistant */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            <div className="hidden lg:flex items-center gap-2 bg-slate-900/60 px-2 py-1 rounded-xl text-xs font-mono">
-              <div className="flex items-center gap-1 text-orange-400" title="Current Streak">
+            <div className="hidden lg:flex items-center gap-2 bg-surface/60 px-2 py-1 rounded-xl text-xs font-mono">
+              <div className="flex items-center gap-1 text-orange-700 dark:text-orange-400" title="Current Streak">
                 <Flame className="w-3.5 h-3.5 fill-orange-400" />
                 <span className="font-bold">{streakCount}</span>
               </div>
-              <div className="flex items-center gap-1 text-amber-400" title="Coins">
+              <div className="flex items-center gap-1 text-slate-800 dark:text-amber-400" title="Coins">
                 <Coins className="w-3.5 h-3.5" />
                 <span className="font-bold">{playerCoins}</span>
               </div>
-              <div className="flex items-center gap-1 text-rose-400" title="Hearts">
+              <div className="flex items-center gap-1 text-rose-700 dark:text-rose-400" title="Hearts">
                 <Heart className="w-3.5 h-3.5 fill-rose-500" />
                 <span className="font-bold">{playerHearts}</span>
               </div>
@@ -1493,11 +1493,11 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* Audio toggle */}
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="p-1 sm:p-1.5 rounded-xl text-slate-400 hover:text-white transition shrink-0"
+              className="p-1 sm:p-1.5 rounded-xl text-muted hover:text-ink transition shrink-0"
               title={soundEnabled ? "Mute Sound" : "Unmute Sound"}
             >
               {soundEnabled ? (
-                <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
+                <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700 dark:text-emerald-400" />
               ) : (
                 <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
               )}
@@ -1509,20 +1509,20 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 triggerSound("pop");
                 setShowPluginSettingsModal(true);
               }}
-              className="p-1 sm:p-1.5 rounded-xl text-slate-400 hover:text-amber-300 hover:bg-slate-800 transition shrink-0 flex items-center justify-center cursor-pointer"
+              className="p-1 sm:p-1.5 rounded-xl text-muted hover:text-slate-800 dark:text-amber-300 hover:bg-surface-muted transition shrink-0 flex items-center justify-center cursor-pointer"
               title="Manage Counting Plugin & Features"
             >
-              <Sliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+              <Sliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-800 dark:text-amber-400" />
             </button>
 
             {/* Fullscreen / Zen Toggle */}
             <button
               onClick={toggleFullscreen}
-              className="p-1 sm:p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 flex items-center justify-center"
+              className="p-1 sm:p-1.5 rounded-xl text-muted hover:text-ink hover:bg-surface-muted transition shrink-0 flex items-center justify-center"
               title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             >
               {isFullscreen ? (
-                <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+                <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-800 dark:text-amber-400" />
               ) : (
                 <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               )}
@@ -1535,7 +1535,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 koda?.log("EXIT_GAME", "User exited Learn quiz arena.", currentLevelNumber, currentQuestionIndex);
                 onBackToHome();
               }}
-              className="p-1 sm:p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition shrink-0 flex items-center justify-center cursor-pointer border border-rose-500/20"
+              className="p-1 sm:p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-700 dark:text-rose-400 hover:text-white transition shrink-0 flex items-center justify-center cursor-pointer border border-rose-500/20"
               title="Exit Learn"
             >
               <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1549,7 +1549,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       {/* ============================================================ */}
       <main className="flex-1 p-3 sm:p-6 pb-32 flex flex-col justify-center max-w-4xl mx-auto w-full">
         {/* Prominent Question Header */}
-        <div className="bg-slate-900/50 rounded-3xl p-4 sm:p-6 space-y-4">
+        <div className="bg-surface/50 rounded-3xl p-4 sm:p-6 space-y-4">
           <PracticeStepHeader
             stepNumber={currentQuestionIndex}
             totalSteps={TOTAL_QUESTIONS_PER_ROUND}
@@ -1571,8 +1571,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
           {showTip && (
             <div className="p-3.5 sm:p-4 bg-indigo-950/40 rounded-2xl text-xs sm:text-[13px] text-indigo-200 leading-relaxed space-y-1.5 animate-fadeIn">
               <div className="leading-snug">
-                <span className="font-bold text-white mr-1.5">💡 Pedagogical Concept:</span>
-                <span className="font-bold text-amber-300">{activeLevelConfig.skillConcept}</span>
+                <span className="font-bold text-ink mr-1.5">💡 Pedagogical Concept:</span>
+                <span className="font-bold text-slate-800 dark:text-amber-300">{activeLevelConfig.skillConcept}</span>
               </div>
               <p className="text-indigo-200/90">{activeLevelConfig.pedagogyTip}</p>
             </div>
@@ -1585,7 +1585,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* LEVEL 1: Linear 1-to-1 Counting */}
             {currentLevelNumber === 1 && (
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center justify-center gap-3.5 p-6 bg-slate-950/60 rounded-2xl min-h-[160px]">
+                <div className="flex flex-wrap items-center justify-center gap-3.5 p-6 bg-canvas/60 rounded-2xl min-h-[160px]">
                   {Array.from({ length: l1TargetCount }).map((_, idx) => {
                     const isTapped = l1TappedList.includes(idx);
                     const tagNumber = isTapped ? l1TappedList.indexOf(idx) + 1 : null;
@@ -1598,10 +1598,10 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         disabled={isTapped}
                         className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl flex flex-col items-center justify-center transition-all transform active:scale-95 ${
                           isRecentlyPopped
-                            ? "tap-pop-anim bg-amber-400/30 text-amber-300 ring-4 ring-amber-400/70 shadow-xl shadow-amber-400/40 scale-125 z-20"
+                            ? "tap-pop-anim bg-amber-400/30 text-slate-800 dark:text-amber-300 ring-4 ring-amber-400/70 shadow-xl shadow-amber-400/40 scale-125 z-20"
                             : isTapped
-                            ? "bg-amber-400/20 text-amber-300 shadow-sm scale-105"
-                            : "bg-slate-900 hover:bg-slate-800 hover:scale-105"
+                            ? "bg-amber-400/20 text-slate-800 dark:text-amber-300 shadow-sm scale-105"
+                            : "bg-surface hover:bg-surface-muted hover:scale-105"
                         }`}
                       >
                         <span className={`text-4xl filter drop-shadow transition-transform duration-300 ${isRecentlyPopped ? "scale-125" : ""}`}>
@@ -1618,8 +1618,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 </div>
 
                 <div className="text-center">
-                  <span className="text-xs font-mono text-slate-400">
-                    Tapped: <strong className="text-amber-400 text-sm">{l1TappedList.length}</strong> / {l1TargetCount}
+                  <span className="text-xs font-mono text-muted">
+                    Tapped: <strong className="text-slate-800 dark:text-amber-400 text-sm">{l1TappedList.length}</strong> / {l1TargetCount}
                   </span>
                 </div>
               </div>
@@ -1628,7 +1628,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* LEVEL 2: Scattered Objects */}
             {currentLevelNumber === 2 && (
               <div className="space-y-3">
-                <div className="relative w-full h-[260px] bg-slate-950/60 rounded-2xl overflow-hidden">
+                <div className="relative w-full h-[260px] bg-canvas/60 rounded-2xl overflow-hidden">
                   {l2ScatterPositions.map((pos, idx) => {
                     const isTapped = l1TappedList.includes(idx);
                     const tagNumber = isTapped ? l1TappedList.indexOf(idx) + 1 : null;
@@ -1648,8 +1648,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                           isRecentlyPopped
                             ? "tap-pop-anim bg-cyan-400/40 text-cyan-200 ring-4 ring-cyan-400/80 shadow-xl shadow-cyan-400/50 z-30 pointer-events-none"
                             : isTapped
-                            ? "bg-cyan-500/25 text-cyan-300 shadow-sm pointer-events-none"
-                            : "bg-slate-900 hover:scale-105 hover:bg-slate-800"
+                            ? "bg-cyan-500/25 text-cyan-700 dark:text-cyan-300 shadow-sm pointer-events-none"
+                            : "bg-surface hover:scale-105 hover:bg-surface-muted"
                         }`}
                       >
                         <span className={`text-2xl transition-transform duration-300 ${isRecentlyPopped ? "scale-125" : ""}`}>
@@ -1665,8 +1665,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   })}
                 </div>
                 <div className="text-center">
-                  <span className="text-xs font-mono text-slate-400">
-                    Tagged: <strong className="text-cyan-400 text-sm">{l1TappedList.length}</strong> / {l1TargetCount}
+                  <span className="text-xs font-mono text-muted">
+                    Tagged: <strong className="text-cyan-700 dark:text-cyan-400 text-sm">{l1TappedList.length}</strong> / {l1TargetCount}
                   </span>
                 </div>
               </div>
@@ -1677,13 +1677,13 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
               <div className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Group A */}
-                  <div className="bg-slate-950/60 p-4 sm:p-5 rounded-3xl border border-purple-500/30 flex flex-col items-center justify-between space-y-3 min-h-[170px] shadow-lg">
+                  <div className="bg-canvas/60 p-4 sm:p-5 rounded-3xl border border-purple-500/30 flex flex-col items-center justify-between space-y-3 min-h-[170px] shadow-lg">
                     <div className="flex items-center justify-between w-full px-1">
-                      <span className="font-mono text-xs font-bold text-purple-300">
+                      <span className="font-mono text-xs font-bold text-purple-600 dark:text-purple-300">
                         Group A ({l3ConservationData.layoutA.label})
                       </span>
-                      <span className="text-[11px] font-mono text-slate-400">
-                        Tagged: <strong className="text-purple-300">{l3ConservationData.tappedA.length}</strong>
+                      <span className="text-[11px] font-mono text-muted">
+                        Tagged: <strong className="text-purple-600 dark:text-purple-300">{l3ConservationData.tappedA.length}</strong>
                       </span>
                     </div>
 
@@ -1854,13 +1854,13 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   </div>
 
                   {/* Group B */}
-                  <div className="bg-slate-950/60 p-4 sm:p-5 rounded-3xl border border-cyan-500/30 flex flex-col items-center justify-between space-y-3 min-h-[170px] shadow-lg">
+                  <div className="bg-canvas/60 p-4 sm:p-5 rounded-3xl border border-cyan-500/30 flex flex-col items-center justify-between space-y-3 min-h-[170px] shadow-lg">
                     <div className="flex items-center justify-between w-full px-1">
-                      <span className="font-mono text-xs font-bold text-cyan-300">
+                      <span className="font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300">
                         Group B ({l3ConservationData.layoutB.label})
                       </span>
-                      <span className="text-[11px] font-mono text-slate-400">
-                        Tagged: <strong className="text-cyan-300">{l3ConservationData.tappedB.length}</strong>
+                      <span className="text-[11px] font-mono text-muted">
+                        Tagged: <strong className="text-cyan-700 dark:text-cyan-300">{l3ConservationData.tappedB.length}</strong>
                       </span>
                     </div>
 
@@ -2038,7 +2038,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     className={`px-4 py-3 rounded-2xl border text-xs sm:text-sm font-mono font-bold transition transform active:scale-95 cursor-pointer ${
                       l3ConservationSelection === "A"
                         ? "bg-purple-500 text-white border-purple-300 ring-2 ring-purple-400 shadow-md"
-                        : "bg-slate-900 hover:bg-purple-950/40 border-slate-700/80 text-slate-200"
+                        : "bg-surface hover:bg-purple-950/40 border-line/80 text-slate-200"
                     }`}
                   >
                     Group A Has More
@@ -2049,7 +2049,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     className={`px-4 py-3 rounded-2xl border text-xs sm:text-sm font-mono font-bold transition transform active:scale-95 cursor-pointer ${
                       l3ConservationSelection === "SAME"
                         ? "bg-amber-400 text-slate-950 border-amber-300 ring-2 ring-amber-400 shadow-md font-black"
-                        : "bg-slate-900 hover:bg-amber-950/40 border-slate-700/80 text-slate-200"
+                        : "bg-surface hover:bg-amber-950/40 border-line/80 text-slate-200"
                     }`}
                   >
                     Both Have the Same Count
@@ -2060,7 +2060,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     className={`px-4 py-3 rounded-2xl border text-xs sm:text-sm font-mono font-bold transition transform active:scale-95 cursor-pointer ${
                       l3ConservationSelection === "B"
                         ? "bg-cyan-500 text-white border-cyan-300 ring-2 ring-cyan-400 shadow-md"
-                        : "bg-slate-900 hover:bg-cyan-950/40 border-slate-700/80 text-slate-200"
+                        : "bg-surface hover:bg-cyan-950/40 border-line/80 text-slate-200"
                     }`}
                   >
                     Group B Has More
@@ -2072,14 +2072,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* LEVEL 4-6: Subitizing */}
             {currentLevelNumber >= 4 && currentLevelNumber <= 6 && (
               <div className="space-y-4 text-center">
-                <div className="relative w-full h-[200px] bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-center overflow-hidden">
+                <div className="relative w-full h-[200px] bg-canvas rounded-2xl border border-line flex items-center justify-center overflow-hidden">
                   {l4FlashHidden ? (
                     <div className="text-center space-y-2.5 animate-fadeIn">
                       <span className="text-3xl">❓</span>
-                      <p className="text-xs font-mono text-slate-400">Flash Hidden! How many dots were there?</p>
+                      <p className="text-xs font-mono text-muted">Flash Hidden! How many dots were there?</p>
                       <button
                         onClick={() => startSubitizingFlash(currentLevelNumber)}
-                        className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono font-bold text-cyan-300 transition"
+                        className="px-3.5 py-1.5 rounded-xl bg-surface-muted hover:bg-slate-700 border border-line text-xs font-mono font-bold text-cyan-700 dark:text-cyan-300 transition"
                       >
                         ⚡ Peek Flash Again
                       </button>
@@ -2087,7 +2087,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   ) : (
                     <div className="flex items-center justify-center animate-scaleUp">
                       {currentLevelNumber === 4 && (
-                        <div className="grid grid-cols-3 gap-3 p-4 bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl">
+                        <div className="grid grid-cols-3 gap-3 p-4 bg-surface rounded-2xl border border-line shadow-2xl">
                           {Array.from({ length: l4Target }).map((_, i) => (
                             <div key={i} className="w-8 h-8 rounded-full bg-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.9)]" />
                           ))}
@@ -2107,7 +2107,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       )}
 
                       {currentLevelNumber === 6 && l6ConceptualData && (
-                        <div className="flex items-center gap-6 p-4 bg-slate-900 rounded-2xl border border-slate-800">
+                        <div className="flex items-center gap-6 p-4 bg-surface rounded-2xl border border-line">
                           <div className="flex gap-2">
                             {Array.from({ length: l6ConceptualData.targetA }).map((_, i) => (
                               <div key={i} className={`w-8 h-8 rounded-full ${l6ConceptualData.colorPair.colorA} shadow-md`} />
@@ -2131,7 +2131,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     <button
                       key={num}
                       onClick={() => handleSubitizingGuess(num)}
-                      className="w-12 h-12 rounded-2xl bg-slate-900 hover:bg-amber-400 hover:text-slate-950 border border-slate-700 font-mono font-black text-base transition transform active:scale-95 shadow"
+                      className="w-12 h-12 rounded-2xl bg-surface hover:bg-amber-400 hover:text-slate-950 border border-line font-mono font-black text-base transition transform active:scale-95 shadow"
                     >
                       {num}
                     </button>
@@ -2143,7 +2143,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* LEVEL 7: 5-Anchor Ten-Frame */}
             {currentLevelNumber === 7 && (
               <div className="space-y-4">
-                <div className="max-w-md mx-auto bg-slate-950 p-4 rounded-3xl border-2 border-purple-500/40 space-y-2.5 shadow-2xl">
+                <div className="max-w-md mx-auto bg-canvas p-4 rounded-3xl border-2 border-purple-500/40 space-y-2.5 shadow-2xl">
                   {/* Top Row (5 Anchor) */}
                   <div className="grid grid-cols-5 gap-2">
                     {l7SingleFrame.slice(0, 5).map((filled, idx) => (
@@ -2153,7 +2153,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         className={`h-16 rounded-2xl border-2 flex items-center justify-center transition-all ${
                           filled
                             ? "bg-purple-500 border-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.5)] scale-95"
-                            : "bg-slate-900 border-slate-800 hover:border-purple-400"
+                            : "bg-surface border-line hover:border-purple-400"
                         }`}
                       >
                         {filled && <span className="text-2xl">⚡</span>}
@@ -2170,7 +2170,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         className={`h-16 rounded-2xl border-2 flex items-center justify-center transition-all ${
                           filled
                             ? "bg-cyan-500 border-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.5)] scale-95"
-                            : "bg-slate-900 border-slate-800 hover:border-cyan-400"
+                            : "bg-surface border-line hover:border-cyan-400"
                         }`}
                       >
                         {filled && <span className="text-2xl">⚡</span>}
@@ -2180,12 +2180,12 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 </div>
 
                 <div className="flex items-center justify-center gap-4">
-                  <span className="font-mono text-xs text-slate-400">
+                  <span className="font-mono text-xs text-muted">
                     Filled: <strong>{l7SingleFrame.filter(Boolean).length}</strong> / {l7SingleTarget}
                   </span>
                   <button
                     onClick={handleCheckL7Frame}
-                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-mono font-black text-xs shadow-lg transition active:scale-95 flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-ink font-mono font-black text-xs shadow-lg transition active:scale-95 flex items-center gap-2"
                   >
                     <Rocket className="w-4 h-4" />
                     <span>Check Ten-Frame</span>
@@ -2197,7 +2197,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* LEVEL 8: Making 10 */}
             {currentLevelNumber === 8 && (
               <div className="space-y-4">
-                <div className="max-w-md mx-auto bg-slate-950 p-4 rounded-3xl border-2 border-purple-500/40 space-y-2">
+                <div className="max-w-md mx-auto bg-canvas p-4 rounded-3xl border-2 border-purple-500/40 space-y-2">
                   <div className="grid grid-cols-5 gap-2">
                     {Array.from({ length: 10 }).map((_, idx) => {
                       const isLoaded = idx < l8ComplementInitial;
@@ -2207,7 +2207,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                           className={`h-14 rounded-2xl border-2 flex items-center justify-center ${
                             isLoaded
                               ? "bg-purple-500 border-purple-300"
-                              : "bg-slate-900 border-dashed border-slate-700"
+                              : "bg-surface border-dashed border-line"
                           }`}
                         >
                           {isLoaded ? <span className="text-xl">🔋</span> : <span className="text-slate-600 font-mono">?</span>}
@@ -2218,7 +2218,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 </div>
 
                 <div className="text-center space-y-2">
-                  <p className="text-xs text-slate-400 font-mono">
+                  <p className="text-xs text-muted font-mono">
                     Select how many empty spots are needed to make 10:
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-2.5">
@@ -2226,7 +2226,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       <button
                         key={num}
                         onClick={() => handleComplementAnswer(num)}
-                        className="w-12 h-12 rounded-2xl bg-slate-900 hover:bg-purple-400 hover:text-slate-950 border border-slate-700 font-mono font-black text-sm transition transform active:scale-95"
+                        className="w-12 h-12 rounded-2xl bg-surface hover:bg-purple-400 hover:text-slate-950 border border-line font-mono font-black text-sm transition transform active:scale-95"
                       >
                         {num}
                       </button>
@@ -2241,8 +2241,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
                   {/* Frame 1 */}
-                  <div className="bg-slate-950 p-3.5 rounded-2xl border border-purple-500/40 space-y-2">
-                    <span className="font-mono text-xs text-purple-300 font-bold">Frame 1: 10 (Locked Full)</span>
+                  <div className="bg-canvas p-3.5 rounded-2xl border border-purple-500/40 space-y-2">
+                    <span className="font-mono text-xs text-purple-600 dark:text-purple-300 font-bold">Frame 1: 10 (Locked Full)</span>
                     <div className="grid grid-cols-5 gap-2">
                       {Array.from({ length: 10 }).map((_, i) => (
                         <div key={i} className="h-10 rounded-xl bg-purple-500/40 border border-purple-400 flex items-center justify-center text-sm">
@@ -2253,8 +2253,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   </div>
 
                   {/* Frame 2 */}
-                  <div className="bg-slate-950 p-3.5 rounded-2xl border border-cyan-500/40 space-y-2">
-                    <span className="font-mono text-xs text-cyan-300 font-bold">Frame 2: Extra Ones</span>
+                  <div className="bg-canvas p-3.5 rounded-2xl border border-cyan-500/40 space-y-2">
+                    <span className="font-mono text-xs text-cyan-700 dark:text-cyan-300 font-bold">Frame 2: Extra Ones</span>
                     <div className="grid grid-cols-5 gap-2">
                       {l9DoubleFrameB.map((filled, idx) => (
                         <button
@@ -2263,7 +2263,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                           className={`h-10 rounded-xl border flex items-center justify-center transition ${
                             filled
                               ? "bg-cyan-500 border-cyan-300 text-sm shadow-[0_0_10px_rgba(6,182,212,0.4)]"
-                              : "bg-slate-900 border-slate-700"
+                              : "bg-surface border-line"
                           }`}
                         >
                           {filled && "⚡"}
@@ -2274,7 +2274,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 </div>
 
                 <div className="flex items-center justify-center gap-4">
-                  <span className="font-mono text-xs text-slate-400">
+                  <span className="font-mono text-xs text-muted">
                     Total: 10 + {l9DoubleFrameB.filter(Boolean).length} ={" "}
                     <strong>{10 + l9DoubleFrameB.filter(Boolean).length}</strong>
                   </span>
@@ -2291,7 +2291,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* LEVEL 10-11: Skip Counting Frog */}
             {(currentLevelNumber === 10 || currentLevelNumber === 11) && (
               <div className="space-y-4">
-                <div className="flex items-center justify-center gap-3 overflow-x-auto py-6 bg-slate-950 rounded-2xl border border-amber-500/30">
+                <div className="flex items-center justify-center gap-3 overflow-x-auto py-6 bg-canvas rounded-2xl border border-amber-500/30">
                   {l10Track.padValues.map((val, idx) => {
                     const isReached = idx <= l10FrogHopCount;
                     const isFrogHere = idx === l10FrogHopCount;
@@ -2306,14 +2306,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                           <div
                             className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center font-mono font-bold text-sm ${
                               isReached
-                                ? "bg-amber-500/20 border-amber-400 text-amber-300"
-                                : "bg-slate-900 border-slate-800 text-slate-600"
+                                ? "bg-amber-500/20 border-amber-400 text-slate-800 dark:text-amber-300"
+                                : "bg-surface border-line text-slate-600"
                             }`}
                           >
                             🪷
                           </div>
                         )}
-                        <span className="font-mono font-bold text-xs text-white">{val}</span>
+                        <span className="font-mono font-bold text-xs text-ink">{val}</span>
                       </div>
                     );
                   })}
@@ -2335,14 +2335,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* LEVEL 12: Missing Number */}
             {currentLevelNumber === 12 && (
               <div className="space-y-4">
-                <div className="flex items-center justify-center gap-3 py-6 bg-slate-950 rounded-2xl border border-amber-500/30 overflow-x-auto">
+                <div className="flex items-center justify-center gap-3 py-6 bg-canvas rounded-2xl border border-amber-500/30 overflow-x-auto">
                   {l12MasterChallenge.sequence.map((val, idx) => (
                     <div
                       key={idx}
                       className={`w-16 h-16 rounded-2xl border-2 flex flex-col items-center justify-center font-mono font-black text-sm ${
                         val === null
-                          ? "bg-amber-400/20 border-amber-400 text-amber-300 animate-pulse"
-                          : "bg-slate-900 border-slate-700 text-white"
+                          ? "bg-amber-400/20 border-amber-400 text-slate-800 dark:text-amber-300 animate-pulse"
+                          : "bg-surface border-line text-ink"
                       }`}
                     >
                       <span className="text-lg">{val === null ? "❓" : "🪷"}</span>
@@ -2356,7 +2356,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     <button
                       key={opt}
                       onClick={() => handleMysteryPadGuess(opt)}
-                      className="px-6 py-2.5 rounded-2xl bg-slate-900 hover:bg-amber-400 hover:text-slate-950 border border-slate-700 font-mono font-black text-sm transition transform active:scale-95 shadow"
+                      className="px-6 py-2.5 rounded-2xl bg-surface hover:bg-amber-400 hover:text-slate-950 border border-line font-mono font-black text-sm transition transform active:scale-95 shadow"
                     >
                       {opt}
                     </button>
@@ -2369,17 +2369,17 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {currentLevelNumber >= 13 && currentLevelNumber <= 15 && (
               <div className="space-y-6">
                 {/* Visual Level Guidance Badge */}
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-surface/80 border border-line flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="text-left space-y-1">
-                    <span className="text-[10px] font-mono font-bold tracking-wider text-teal-400 uppercase">
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-teal-700 dark:text-teal-400 uppercase">
                       Chamber Mission
                     </span>
-                    <h3 className="text-sm font-bold text-white">
+                    <h3 className="text-sm font-bold text-ink">
                       {currentLevelNumber === 13 && `Build the exact target number: ${l13Target}`}
                       {currentLevelNumber === 14 && `Build the exact target number: ${l14Target}`}
                       {currentLevelNumber === 15 && `Build the exact target number: ${l15Target}`}
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-muted">
                       {currentLevelNumber === 13 && "Create the number using Ten-Rods and Ones Units, then group loose ones into rods."}
                       {currentLevelNumber === 14 && "Create the number using Hundreds, Tens, and Ones, then group extra tens into flats."}
                       {currentLevelNumber === 15 && "Add or subtract blocks in each chamber until the total matches the target."}
@@ -2388,13 +2388,13 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   {(currentLevelNumber === 13 || currentLevelNumber === 14 || currentLevelNumber === 15) && (
                     <div className="px-4 py-2 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border border-teal-500/30 rounded-xl flex items-center gap-3">
                       <div className="text-right">
-                        <div className="text-[9px] font-mono font-bold text-teal-400">TARGET GOAL</div>
-                        <div className="text-xl font-black text-white tracking-tight">{activeTarget}</div>
+                        <div className="text-[9px] font-mono font-bold text-teal-700 dark:text-teal-400">TARGET GOAL</div>
+                        <div className="text-xl font-black text-ink tracking-tight">{activeTarget}</div>
                       </div>
                       <div className="h-8 w-[1px] bg-teal-500/20" />
                       <div>
-                        <div className="text-[9px] font-mono font-bold text-slate-400">CURRENT SUM</div>
-                        <div className={`text-xl font-black tracking-tight ${currentTotalBlocks === activeTarget ? "text-emerald-400 animate-pulse" : "text-slate-200"}`}>
+                        <div className="text-[9px] font-mono font-bold text-muted">CURRENT SUM</div>
+                        <div className={`text-xl font-black tracking-tight ${currentTotalBlocks === activeTarget ? "text-emerald-700 dark:text-emerald-400 animate-pulse" : "text-slate-200"}`}>
                           {currentTotalBlocks}
                         </div>
                       </div>
@@ -2423,25 +2423,25 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     setHoveredChamber(null);
                     setIsDraggingTemplate(null);
                   }}
-                  className={`p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden bg-slate-900/45 backdrop-blur-md ${
+                  className={`p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden bg-surface/45 backdrop-blur-md ${
                     hoveredChamber === "recycle"
                       ? "border-rose-400 bg-rose-500/10 ring-4 ring-rose-500/20 shadow-[0_0_20px_rgba(244,63,94,0.15)]"
                       : isDraggingTemplate === "block-remove"
                         ? "border-rose-500/50 bg-rose-950/10 border-dashed animate-pulse"
-                        : "border-slate-800"
+                        : "border-line"
                   }`}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
-                      <h4 className="font-mono text-xs font-black text-slate-300 tracking-wider flex items-center gap-1.5 uppercase">
+                      <h4 className="font-mono text-xs font-black text-body tracking-wider flex items-center gap-1.5 uppercase">
                         <span className="inline-block animate-bounce">🌌</span> Galaxy Storage Depot
                       </h4>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-muted">
                         Hold & drag blocks into the chambers below, or drag built blocks back here to recycle them!
                       </p>
                     </div>
                     {isDraggingTemplate === "block-remove" && (
-                      <span className="px-2 py-1 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono text-[10px] font-bold animate-pulse shrink-0">
+                      <span className="px-2 py-1 rounded bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 font-mono text-[10px] font-bold animate-pulse shrink-0">
                         🌀 DROP ANY BLOCK HERE TO REMOVE IT
                       </span>
                     )}
@@ -2450,8 +2450,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {/* HUNDREDS FLAT TEMPLATE */}
                     {currentLevelNumber !== 13 ? (
-                      <div className="bg-slate-950/80 rounded-xl border border-dashed border-rose-500/30 p-2.5 flex flex-col items-center justify-center space-y-2 select-none relative group">
-                        <span className="font-mono text-[10px] font-bold text-rose-300">Hundreds Flat</span>
+                      <div className="bg-canvas/80 rounded-xl border border-dashed border-rose-500/30 p-2.5 flex flex-col items-center justify-center space-y-2 select-none relative group">
+                        <span className="font-mono text-[10px] font-bold text-rose-700 dark:text-rose-300">Hundreds Flat</span>
                         <div
                           draggable
                           onDragStart={(e) => {
@@ -2474,15 +2474,15 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">DRAG ME</span>
                       </div>
                     ) : (
-                      <div className="hidden sm:flex bg-slate-950/20 rounded-xl border border-slate-800/40 p-2.5 flex-col items-center justify-center text-center opacity-25">
+                      <div className="hidden sm:flex bg-canvas/20 rounded-xl border border-line/40 p-2.5 flex-col items-center justify-center text-center opacity-25">
                         <span className="text-xs">🔒</span>
                         <span className="text-[9px] font-mono mt-1 text-slate-600">Level 13: 10s & 1s Only</span>
                       </div>
                     )}
 
                     {/* TEN-ROD TEMPLATE */}
-                    <div className="bg-slate-950/80 rounded-xl border border-dashed border-amber-500/30 p-2.5 flex flex-col items-center justify-center space-y-2 select-none relative group">
-                      <span className="font-mono text-[10px] font-bold text-amber-300">Ten-Rod</span>
+                    <div className="bg-canvas/80 rounded-xl border border-dashed border-amber-500/30 p-2.5 flex flex-col items-center justify-center space-y-2 select-none relative group">
+                      <span className="font-mono text-[10px] font-bold text-slate-800 dark:text-amber-300">Ten-Rod</span>
                       <div
                         draggable
                         onDragStart={(e) => {
@@ -2506,8 +2506,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     </div>
 
                     {/* ONES UNIT TEMPLATE */}
-                    <div className="bg-slate-950/80 rounded-xl border border-dashed border-cyan-500/30 p-2.5 flex flex-col items-center justify-center space-y-2 select-none relative group">
-                      <span className="font-mono text-[10px] font-bold text-cyan-300">Ones Unit</span>
+                    <div className="bg-canvas/80 rounded-xl border border-dashed border-cyan-500/30 p-2.5 flex flex-col items-center justify-center space-y-2 select-none relative group">
+                      <span className="font-mono text-[10px] font-bold text-cyan-700 dark:text-cyan-300">Ones Unit</span>
                       <div
                         draggable
                         onDragStart={(e) => {
@@ -2530,15 +2530,15 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     <div 
                       className={`rounded-xl border p-2.5 flex flex-col items-center justify-center space-y-1.5 transition-all duration-300 text-center ${
                         hoveredChamber === "recycle"
-                          ? "bg-rose-500/20 border-rose-400 border-solid text-rose-300 animate-pulse scale-105 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+                          ? "bg-rose-500/20 border-rose-400 border-solid text-rose-700 dark:text-rose-300 animate-pulse scale-105 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
                           : isDraggingTemplate === "block-remove"
-                            ? "bg-rose-950/20 border-rose-500/40 border-dashed text-rose-400 animate-bounce"
-                            : "bg-slate-950/40 border-slate-800/60 text-slate-500"
+                            ? "bg-rose-950/20 border-rose-500/40 border-dashed text-rose-700 dark:text-rose-400 animate-bounce"
+                            : "bg-canvas/40 border-line/60 text-slate-500"
                       }`}
                     >
                       <span className="text-xl">{hoveredChamber === "recycle" ? "🌀" : "🗑️"}</span>
                       <span className="font-mono text-[10px] font-bold block">Recycle Bin</span>
-                      <span className="text-[9px] text-slate-400 block max-w-[120px] leading-tight">
+                      <span className="text-[9px] text-muted block max-w-[120px] leading-tight">
                         {isDraggingTemplate === "block-remove" ? "Drop block here!" : "Drag blocks here to remove"}
                       </span>
                     </div>
@@ -2565,7 +2565,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         }
                         setHoveredChamber(null);
                       }}
-                      className={`bg-slate-950 p-4 rounded-2xl border shadow-inner flex flex-col justify-between space-y-3 transition-all duration-250 ${
+                      className={`bg-canvas p-4 rounded-2xl border shadow-inner flex flex-col justify-between space-y-3 transition-all duration-250 ${
                         hoveredChamber === "hundreds"
                           ? "chamber-snap-hundreds scale-[1.03] ring-4 ring-rose-400/20"
                           : isDraggingTemplate === "hundreds"
@@ -2574,17 +2574,17 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs font-bold text-rose-300 flex items-center gap-1.5">
+                        <span className="font-mono text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
                           Hundreds Flats (x100)
                         </span>
-                        <span className="px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/25 font-mono text-xs font-bold text-rose-300">
+                        <span className="px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/25 font-mono text-xs font-bold text-rose-700 dark:text-rose-300">
                           Qty: {l13Hundreds}
                         </span>
                       </div>
 
                       {/* Hundreds Visual Block Area */}
-                      <div className="h-44 bg-slate-900/60 rounded-xl border border-slate-800 flex items-center justify-center p-3 relative overflow-hidden group">
+                      <div className="h-44 bg-surface/60 rounded-xl border border-line flex items-center justify-center p-3 relative overflow-hidden group">
                         {l13Hundreds > 0 ? (
                           <div className="flex flex-wrap justify-center items-center gap-2 max-h-full overflow-y-auto w-full custom-scrollbar">
                             {Array.from({ length: l13Hundreds }).map((_, idx) => (
@@ -2631,14 +2631,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                           <button
                             onClick={handleSubHundred}
                             disabled={l13Hundreds <= 0}
-                            className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-90 text-rose-400 font-black border border-slate-800 hover:border-rose-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="w-10 h-10 rounded-xl bg-surface hover:bg-surface-muted active:scale-90 text-rose-700 dark:text-rose-400 font-black border border-line hover:border-rose-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             -100
                           </button>
                           <button
                             onClick={handleAddHundred}
                             disabled={l13Hundreds >= 9}
-                            className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-90 text-rose-400 font-black border border-slate-800 hover:border-rose-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="w-10 h-10 rounded-xl bg-surface hover:bg-surface-muted active:scale-90 text-rose-700 dark:text-rose-400 font-black border border-line hover:border-rose-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             +100
                           </button>
@@ -2664,7 +2664,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       }
                       setHoveredChamber(null);
                     }}
-                    className={`bg-slate-950 p-4 rounded-2xl border shadow-inner flex flex-col justify-between space-y-3 transition-all duration-250 ${
+                    className={`bg-canvas p-4 rounded-2xl border shadow-inner flex flex-col justify-between space-y-3 transition-all duration-250 ${
                       hoveredChamber === "tens"
                         ? "chamber-snap-tens scale-[1.03] ring-4 ring-amber-400/20"
                         : isDraggingTemplate === "tens"
@@ -2673,17 +2673,17 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                      <span className="font-mono text-xs font-bold text-slate-800 dark:text-amber-300 flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
                         Ten-Rods (x10)
                       </span>
-                      <span className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/25 font-mono text-xs font-bold text-amber-300">
+                      <span className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/25 font-mono text-xs font-bold text-slate-800 dark:text-amber-300">
                         Qty: {l13Tens}
                       </span>
                     </div>
 
                     {/* Tens Visual Block Area */}
-                    <div className="h-44 bg-slate-900/60 rounded-xl border border-slate-800 flex items-center justify-center p-3 relative overflow-hidden group">
+                    <div className="h-44 bg-surface/60 rounded-xl border border-line flex items-center justify-center p-3 relative overflow-hidden group">
                       {l13Tens > 0 ? (
                         <div className="flex flex-wrap justify-center items-center gap-1.5 max-h-full overflow-y-auto w-full custom-scrollbar">
                           {Array.from({ length: l13Tens }).map((_, idx) => (
@@ -2730,14 +2730,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         <button
                           onClick={handleSubTen}
                           disabled={l13Tens <= 0}
-                          className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-90 text-amber-400 font-black border border-slate-800 hover:border-amber-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="w-10 h-10 rounded-xl bg-surface hover:bg-surface-muted active:scale-90 text-slate-800 dark:text-amber-400 font-black border border-line hover:border-amber-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           -10
                         </button>
                         <button
                           onClick={handleAddTen}
                           disabled={l13Tens >= 19}
-                          className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-90 text-amber-400 font-black border border-slate-800 hover:border-amber-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="w-10 h-10 rounded-xl bg-surface hover:bg-surface-muted active:scale-90 text-slate-800 dark:text-amber-400 font-black border border-line hover:border-amber-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           +10
                         </button>
@@ -2762,7 +2762,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       }
                       setHoveredChamber(null);
                     }}
-                    className={`bg-slate-950 p-4 rounded-2xl border shadow-inner flex flex-col justify-between space-y-3 transition-all duration-250 ${
+                    className={`bg-canvas p-4 rounded-2xl border shadow-inner flex flex-col justify-between space-y-3 transition-all duration-250 ${
                       hoveredChamber === "ones"
                         ? "chamber-snap-ones scale-[1.03] ring-4 ring-cyan-400/20"
                         : isDraggingTemplate === "ones"
@@ -2771,17 +2771,17 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                      <span className="font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300 flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse" />
                         Ones Units (x1)
                       </span>
-                      <span className="px-2 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/25 font-mono text-xs font-bold text-cyan-300">
+                      <span className="px-2 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/25 font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300">
                         Qty: {l13Ones}
                       </span>
                     </div>
 
                     {/* Ones Visual Block Area */}
-                    <div className="h-44 bg-slate-900/60 rounded-xl border border-slate-800 flex items-center justify-center p-3 relative overflow-hidden group">
+                    <div className="h-44 bg-surface/60 rounded-xl border border-line flex items-center justify-center p-3 relative overflow-hidden group">
                       {l13Ones > 0 ? (
                         <div className="flex flex-wrap justify-center items-center gap-1.5 max-h-full overflow-y-auto w-full custom-scrollbar">
                           {Array.from({ length: l13Ones }).map((_, idx) => (
@@ -2823,14 +2823,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         <button
                           onClick={handleSubOne}
                           disabled={l13Ones <= 0}
-                          className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-90 text-cyan-400 font-black border border-slate-800 hover:border-cyan-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="w-10 h-10 rounded-xl bg-surface hover:bg-surface-muted active:scale-90 text-cyan-700 dark:text-cyan-400 font-black border border-line hover:border-cyan-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           -1
                         </button>
                         <button
                           onClick={handleAddOne}
                           disabled={l13Ones >= 19}
-                          className="w-10 h-10 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-90 text-cyan-400 font-black border border-slate-800 hover:border-cyan-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="w-10 h-10 rounded-xl bg-surface hover:bg-surface-muted active:scale-90 text-cyan-700 dark:text-cyan-400 font-black border border-line hover:border-cyan-500/30 flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           +1
                         </button>
@@ -2840,12 +2840,12 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 </div>
 
                 {/* Info Board */}
-                <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 font-mono text-xs text-center text-slate-400 flex flex-wrap items-center justify-center gap-2">
+                <div className="p-3 bg-canvas rounded-2xl border border-line font-mono text-xs text-center text-muted flex flex-wrap items-center justify-center gap-2">
                   <span>🚀 Galaxy Foundry Total:</span>
-                  <span className="text-white font-bold text-sm">
+                  <span className="text-ink font-bold text-sm">
                     {l13Hundreds} Hundreds + {l13Tens} Tens + {l13Ones} Ones =
                   </span>
-                  <strong className="text-emerald-400 text-base font-black px-2 py-0.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                  <strong className="text-emerald-700 dark:text-emerald-400 text-base font-black px-2 py-0.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
                     {currentTotalBlocks}
                   </strong>
                 </div>
@@ -2859,7 +2859,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       className={`px-4 py-2.5 rounded-2xl border text-xs font-mono font-bold transition flex items-center gap-1.5 ${
                         l13Ones >= 10
                           ? "bg-amber-400 text-slate-950 border-amber-300 shadow shadow-amber-400/20 active:scale-95 animate-pulse"
-                          : "bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed"
+                          : "bg-surface text-slate-600 border-line cursor-not-allowed"
                       }`}
                     >
                       ⚡ Fuse 10 Ones ➔ 1 Ten-Rod
@@ -2873,7 +2873,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       className={`px-4 py-2.5 rounded-2xl border text-xs font-mono font-bold transition flex items-center gap-1.5 ${
                         l13Tens >= 10
                           ? "bg-rose-400 text-slate-950 border-rose-300 shadow shadow-rose-400/20 active:scale-95 animate-pulse"
-                          : "bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed"
+                          : "bg-surface text-slate-600 border-line cursor-not-allowed"
                       }`}
                     >
                       🌌 Fuse 10 Tens ➔ 1 Hundred-Flat
@@ -2930,14 +2930,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       {/* SELECT LEVEL POPOVER MODAL */}
       {showLevelPicker && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-3">
+          <div className="bg-surface border border-line rounded-3xl p-5 max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-line gap-3">
               <div>
-                <h3 className="font-mono font-black text-lg text-white flex items-center gap-2">
-                  <Target className="w-5 h-5 text-indigo-400 shrink-0" />
+                <h3 className="font-mono font-black text-lg text-ink flex items-center gap-2">
+                  <Target className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
                   <span>Select Practice Level</span>
                 </h3>
-                <p className="text-xs text-slate-400">Choose any of the 15 Socratic counting progression levels</p>
+                <p className="text-xs text-muted">Choose any of the 15 Socratic counting progression levels</p>
               </div>
               
               <div className="flex items-center gap-2 shrink-0">
@@ -2948,8 +2948,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   }}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-[11px] font-bold border transition ${
                     teacherPreviewMode
-                      ? "bg-indigo-500/20 text-indigo-300 border-indigo-400/50 shadow-[0_0_15px_rgba(129,140,248,0.2)]"
-                      : "bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200"
+                      ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-indigo-400/50 shadow-[0_0_15px_rgba(129,140,248,0.2)]"
+                      : "bg-surface-muted text-muted border-line hover:text-slate-200"
                   }`}
                   title="Unlock all levels to inspect and preview their Socratic questions"
                 >
@@ -2958,7 +2958,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 
                 <button
                   onClick={() => setShowLevelPicker(false)}
-                  className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition cursor-pointer"
+                  className="p-1.5 rounded-xl bg-surface-muted text-muted hover:text-ink transition cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -2986,22 +2986,22 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       isCurrent
                         ? "bg-amber-500/15 border-amber-400 ring-1 ring-amber-400/50"
                         : isDone
-                        ? "bg-slate-800/80 border-slate-700 hover:border-emerald-500/50 cursor-pointer"
+                        ? "bg-surface-muted/80 border-line hover:border-emerald-500/50 cursor-pointer"
                         : isUnlocked
-                        ? "bg-slate-800/50 border-slate-700/80 hover:border-slate-500 cursor-pointer"
-                        : "bg-slate-950/40 border-slate-800/50 opacity-50 cursor-not-allowed"
+                        ? "bg-surface-muted/50 border-line/80 hover:border-slate-500 cursor-pointer"
+                        : "bg-canvas/40 border-line/50 opacity-50 cursor-not-allowed"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-surface-muted border border-line/80 flex items-center justify-center shrink-0">
                         <LevelLucideIcon levelNumber={lvl.levelNumber} className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-black font-mono text-white">
+                          <span className="text-xs font-black font-mono text-ink">
                             L{lvl.levelNumber}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-mono truncate">
+                          <span className="text-[10px] text-muted font-mono truncate">
                             {lvl.category}
                           </span>
                         </div>
@@ -3011,11 +3011,11 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
 
                     <div className="shrink-0 text-right">
                       {isDone ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                       ) : isCurrent ? (
-                        <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-400/15 px-2 py-0.5 rounded-full border border-amber-400/30">Active</span>
+                        <span className="text-[10px] font-mono font-bold text-slate-800 dark:text-amber-400 bg-amber-400/15 px-2 py-0.5 rounded-full border border-amber-400/30">Active</span>
                       ) : isUnlocked ? (
-                        <span className="text-[10px] font-mono text-slate-400">Play</span>
+                        <span className="text-[10px] font-mono text-muted">Play</span>
                       ) : (
                         <Lock className="w-3.5 h-3.5 text-slate-600" />
                       )}
@@ -3025,21 +3025,21 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
               })}
             </div>
 
-            <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+            <div className="pt-3 border-t border-line flex items-center justify-between">
               <button
                 onClick={() => {
                   setShowLevelPicker(false);
                   setViewMode("map");
                 }}
-                className="text-xs font-mono font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 cursor-pointer"
+                className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 flex items-center gap-1.5 cursor-pointer"
               >
-                <Map className="w-4 h-4 text-indigo-400 shrink-0" />
+                <Map className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                 <span>View Full Journey Map</span>
               </button>
 
               <button
                 onClick={() => setShowLevelPicker(false)}
-                className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold font-mono cursor-pointer"
+                className="px-4 py-1.5 rounded-xl bg-surface-muted hover:bg-slate-700 text-slate-200 text-xs font-bold font-mono cursor-pointer"
               >
                 Close
               </button>
@@ -3051,19 +3051,19 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       {/* COUNTING & LEARNING PLUGIN SETTINGS MODAL */}
       {showPluginSettingsModal && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fadeIn">
-          <div className="bg-slate-900 border-2 border-slate-700 rounded-3xl max-w-4xl w-full p-4 sm:p-6 max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl relative">
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800 sticky top-0 bg-slate-900/95 z-20 backdrop-blur-md">
+          <div className="bg-surface border-2 border-line rounded-3xl max-w-4xl w-full p-4 sm:p-6 max-h-[92vh] overflow-y-auto custom-scrollbar shadow-2xl relative">
+            <div className="flex items-center justify-between pb-3 mb-4 border-b border-line sticky top-0 bg-surface/95 z-20 backdrop-blur-md">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
-                  <Sliders className="w-4 h-4 text-amber-400" />
+                  <Sliders className="w-4 h-4 text-slate-800 dark:text-amber-400" />
                 </div>
-                <h3 className="text-sm sm:text-base font-black text-white font-mono">
+                <h3 className="text-sm sm:text-base font-black text-ink font-mono">
                   Counting Plugin & Feature Settings
                 </h3>
               </div>
               <button
                 onClick={() => setShowPluginSettingsModal(false)}
-                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                className="p-1.5 rounded-xl bg-surface-muted text-muted hover:text-ink cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>

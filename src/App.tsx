@@ -336,34 +336,33 @@ export default function App() {
     ],
   };
 
-  if (activeTab === "game") {
-    return (
-      <PluginHost
-        activityRef="counting/quest"
-        params={{ level: activeLevelNumber }}
-        level={activeLevelNumber}
-        snapshot={userProgress}
-        onExit={() => setActiveTab("home")}
-        onAwardXp={(earnedXp) =>
-          setUserProgress((prev) => ({ ...prev, xp: prev.xp + earnedXp }))
-        }
-        onComplete={(result) => {
-          setUserProgress((prev) => ({
-            ...prev,
-            problemsSolved: prev.problemsSolved + 1,
-            dailySolved: prev.dailySolved + 1,
-          }));
-          setCompletedGameLevels((prev) => ({
-            ...prev,
-            [result.levelNumber]: result.stars,
-          }));
-        }}
-      />
-    );
-  }
+  const countingHost = (
+    <PluginHost
+      activityRef="counting/quest"
+      params={{ level: activeLevelNumber }}
+      level={activeLevelNumber}
+      snapshot={userProgress}
+      onExit={() => setActiveTab("home")}
+      onAwardXp={(earnedXp) =>
+        setUserProgress((prev) => ({ ...prev, xp: prev.xp + earnedXp }))
+      }
+      onComplete={(result) => {
+        setUserProgress((prev) => ({
+          ...prev,
+          problemsSolved: prev.problemsSolved + 1,
+          dailySolved: prev.dailySolved + 1,
+        }));
+        setCompletedGameLevels((prev) => ({
+          ...prev,
+          [result.levelNumber]: result.stars,
+        }));
+      }}
+    />
+  );
 
   return (
     <MainLayout
+      contained={activeTab !== "game"}
       sidebar={
         <SidebarNav
           activeTab={activeTab}
@@ -378,6 +377,10 @@ export default function App() {
       }
     >
       <>
+        {/* TAB 1: THE COUNTING SKILL — inside the shell, so the sidebar stays
+            reachable mid-lesson. contained={false} lets it use the full width. */}
+        {activeTab === "game" && countingHost}
+
         {/* TAB 0: CREATIVE LEARNING PATHWAY HOME HUB */}
           {activeTab === "home" && (
             <Home
