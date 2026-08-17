@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { ChevronDown, Package, Power, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, EyeOff, Package, Power, RotateCcw } from "lucide-react";
 import { PluginManagerAPI, useLearningPlugins, type LearningPlugin } from "../../lib/pluginStore";
-import { PLUGINS } from "../../plugins/registry";
+import { PLUGINS, hiddenReason, type HiddenReason } from "../../plugins/registry";
+import { setViewer, useViewer, type Viewer } from "../../plugins/viewer";
 import type { SettingField, SkillPlugin } from "../../plugins/types";
 import { themeSystem } from "../../lib/themeSystem";
 import { UIBadge, UISectionHeader, UIStatGrid, UIStatTile } from "../ui";
@@ -104,141 +105,216 @@ const SettingControl: React.FC<{
   );
 };
 
-const PluginCard: React.FC<{
+const HIDDEN_COPY: Record<Exclude<HiddenReason, null>, string> = {
+  draft: "Draft — visible to developers only.",
+  "beta-not-opted-in": "Beta — turn on beta skills below to see it.",
+  "outside-age-range": "Outside this learner's age range.",
+  "disabled-here": "Switched off on this device.",
+};
+
+const PluginRow: React.FC<{
   skill: SkillPlugin;
   stored: LearningPlugin | undefined;
-  expanded: boolean;
-  onToggleExpand: () => void;
-}> = ({ skill, stored, expanded, onToggleExpand }) => {
+  viewer: Viewer;
+  onOpen: () => void;
+}> = ({ skill, stored, viewer, onOpen }) => {
   const { manifest } = skill;
   const isEnabled = stored?.isEnabled ?? true;
   const features = stored?.features ?? skill.features;
   const settings = { ...skill.settings, ...(stored?.settings ?? {}) };
   const activeCount = features.filter((f) => f.isEnabled).length;
+  const hidden = hiddenReason(skill, viewer);
+  const activityCount = Object.keys(skill.activities).length;
+  const activityLabel = `${activityCount} ${activityCount === 1 ? "activity" : "activities"}`;
 
   return (
-    <div className={themeSystem.card("default", "overflow-hidden")}>
-      <button
-        onClick={onToggleExpand}
-        className="w-full flex items-center gap-3 p-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
-        aria-expanded={expanded}
-      >
-        <span className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-500/15 border-2 border-indigo-200 dark:border-indigo-500/40 flex items-center justify-center shrink-0">
-          <Package className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-        </span>
+    <button
+      onClick={onOpen}
+      className={themeSystem.card(
+        "interactive",
+        "w-full flex items-center gap-3 p-4 text-left",
+      )}
+    >
+      <span className="w-10 h-10 rounded-2xl bg-indigo-50 dark:bg-indigo-500/15 border-2 border-indigo-200 dark:border-indigo-500/40 flex items-center justify-center shrink-0">
+        <Package className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+      </span>
 
-        <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono font-black text-slate-900 dark:text-white">
-              {manifest.name}
-            </span>
-            <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
-              v{manifest.version}
-            </span>
-            <UIBadge variant={STATUS_TONE[manifest.status] ?? "neutral"}>{manifest.status}</UIBadge>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2 flex-wrap">
+          <span className="font-mono font-black text-slate-900 dark:text-white">
+            {manifest.name}
           </span>
-          <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {skill.lessons.length} lessons · {Object.keys(skill.activities).length} activities ·
-            ages {manifest.audience.ages[0]}–{manifest.audience.ages[1]} ·{" "}
-            {manifest.audience.category}
+          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+            v{manifest.version}
           </span>
+          <UIBadge variant={STATUS_TONE[manifest.status] ?? "neutral"}>{manifest.status}</UIBadge>
+          {hidden && <UIBadge variant="neutral">not shown</UIBadge>}
         </span>
+        <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          {skill.lessons.length} lessons · {activityLabel} · ages {manifest.audience.ages[0]}–
+          {manifest.audience.ages[1]} · {manifest.audience.category}
+        </span>
+      </span>
 
-        <span className="text-[11px] font-mono font-black text-slate-500 dark:text-slate-400 shrink-0">
-          {activeCount}/{features.length}
-        </span>
-        <ChevronDown
-          className={`w-4 h-4 shrink-0 text-slate-400 transition ${expanded ? "rotate-180" : ""}`}
-        />
+      <span className="text-[11px] font-mono font-black text-slate-500 dark:text-slate-400 shrink-0">
+        {activeCount}/{features.length}
+      </span>
+      <ChevronRight className="w-4 h-4 shrink-0 text-slate-400" />
+    </button>
+  );
+};
+
+/** Everything about one skill: what it is, whether it reaches the learner, and how it behaves. */
+const PluginDetail: React.FC<{
+  skill: SkillPlugin;
+  stored: LearningPlugin | undefined;
+  viewer: Viewer;
+  onBack: () => void;
+}> = ({ skill, stored, viewer, onBack }) => {
+  const { manifest } = skill;
+  const isEnabled = stored?.isEnabled ?? true;
+  const features = stored?.features ?? skill.features;
+  const settings = { ...skill.settings, ...(stored?.settings ?? {}) };
+  const hidden = hiddenReason(skill, viewer);
+
+  return (
+    <div className={themeSystem.spacing.section}>
+      <button onClick={onBack} className={themeSystem.button("ghost", "sm")}>
+        <ChevronLeft />
+        All plugins
       </button>
 
-      {expanded && (
-        <div className="border-t-2 border-slate-200 dark:border-slate-800 p-4 space-y-5">
-          <p className="text-sm text-slate-600 dark:text-slate-300">{manifest.description}</p>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => {
-                playSound("pop");
-                PluginManagerAPI.togglePlugin(manifest.id);
-              }}
-              className={themeSystem.button(isEnabled ? "secondary" : "primary", "sm")}
-            >
-              <Power />
-              {isEnabled ? "Disable skill" : "Enable skill"}
-            </button>
-            <button
-              onClick={() => {
-                playSound("pop");
-                PluginManagerAPI.resetPluginToDefaults(manifest.id);
-              }}
-              className={themeSystem.button("ghost", "sm")}
-            >
-              <RotateCcw />
-              Reset
-            </button>
-          </div>
-
-          {/* Features — every one of these is checked in code. */}
-          <div>
-            <div className={themeSystem.sectionHeader.subtitle}>Features</div>
-            <div className="mt-2 divide-y-2 divide-slate-100 dark:divide-slate-800">
-              {features.map((feat) => (
-                <div key={feat.id} className="flex items-center justify-between gap-4 py-3">
-                  <div className="min-w-0">
-                    <div className="text-sm font-bold text-slate-900 dark:text-white">
-                      {feat.name}
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">
-                      {feat.description}
-                    </div>
-                  </div>
-                  <button
-                    role="switch"
-                    aria-checked={feat.isEnabled}
-                    aria-label={feat.name}
-                    disabled={!isEnabled}
-                    onClick={() => {
-                      playSound("pop");
-                      PluginManagerAPI.toggleFeature(manifest.id, feat.id);
-                    }}
-                    className={`w-11 h-6 rounded-full border-2 transition shrink-0 disabled:opacity-40 ${
-                      feat.isEnabled
-                        ? "bg-indigo-600 border-indigo-700"
-                        : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600"
-                    }`}
-                  >
-                    <span
-                      className={`block w-4 h-4 rounded-full bg-white transition-transform ${
-                        feat.isEnabled ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
-              ))}
+      <div className={themeSystem.card("default", "p-4 sm:p-5 space-y-5")}>
+        <div className="flex items-start gap-3">
+          <span className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/15 border-2 border-indigo-200 dark:border-indigo-500/40 flex items-center justify-center shrink-0">
+            <Package className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          </span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="font-mono font-black text-lg text-slate-900 dark:text-white">
+                {manifest.name}
+              </h2>
+              <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                v{manifest.version}
+              </span>
+              <UIBadge variant={STATUS_TONE[manifest.status] ?? "neutral"}>
+                {manifest.status}
+              </UIBadge>
             </div>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+              {manifest.description}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">
+              by {manifest.author} · ages {manifest.audience.ages[0]}–{manifest.audience.ages[1]} ·{" "}
+              {manifest.audience.category}
+            </p>
           </div>
+        </div>
 
-          {/* Settings — rendered from the manifest's schema, so a new skill needs
-              no code here. */}
-          {skill.settingsSchema.length > 0 && (
-            <div>
-              <div className={themeSystem.sectionHeader.subtitle}>Settings</div>
-              <div className="mt-2 divide-y-2 divide-slate-100 dark:divide-slate-800">
-                {skill.settingsSchema.map((field) => (
-                  <SettingControl
-                    key={field.key}
-                    field={field}
-                    value={settings[field.key]}
-                    disabled={!isEnabled}
-                    onChange={(v) => PluginManagerAPI.updatePluginSetting(manifest.id, field.key, v)}
-                  />
-                ))}
+        {hidden && (
+          <div className={themeSystem.flash("warning")}>
+            <EyeOff className="w-4 h-4 shrink-0 mt-0.5" />
+            <p className="text-sm">{HIDDEN_COPY[hidden]}</p>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              playSound("pop");
+              PluginManagerAPI.togglePlugin(manifest.id);
+            }}
+            className={themeSystem.button(isEnabled ? "secondary" : "primary", "sm")}
+          >
+            <Power />
+            {isEnabled ? "Disable skill" : "Enable skill"}
+          </button>
+          <button
+            onClick={() => {
+              playSound("pop");
+              PluginManagerAPI.resetPluginToDefaults(manifest.id);
+            }}
+            className={themeSystem.button("ghost", "sm")}
+          >
+            <RotateCcw />
+            Reset to defaults
+          </button>
+        </div>
+      </div>
+
+      <div className={themeSystem.card("default", "p-4 sm:p-5")}>
+        <div className={themeSystem.sectionHeader.subtitle}>Features</div>
+        <div className="mt-2 divide-y-2 divide-slate-100 dark:divide-slate-800">
+          {features.map((feat) => (
+            <div key={feat.id} className="flex items-center justify-between gap-4 py-3">
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-slate-900 dark:text-white">{feat.name}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">{feat.description}</div>
               </div>
+              <button
+                role="switch"
+                aria-checked={feat.isEnabled}
+                aria-label={feat.name}
+                disabled={!isEnabled}
+                onClick={() => {
+                  playSound("pop");
+                  PluginManagerAPI.toggleFeature(manifest.id, feat.id);
+                }}
+                className={`w-11 h-6 rounded-full border-2 transition shrink-0 disabled:opacity-40 ${
+                  feat.isEnabled
+                    ? "bg-indigo-600 border-indigo-700"
+                    : "bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600"
+                }`}
+              >
+                <span
+                  className={`block w-4 h-4 rounded-full bg-white transition-transform ${
+                    feat.isEnabled ? "translate-x-5" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
             </div>
-          )}
+          ))}
+        </div>
+      </div>
+
+      {skill.settingsSchema.length > 0 && (
+        <div className={themeSystem.card("default", "p-4 sm:p-5")}>
+          <div className={themeSystem.sectionHeader.subtitle}>Settings</div>
+          <div className="mt-2 divide-y-2 divide-slate-100 dark:divide-slate-800">
+            {skill.settingsSchema.map((field) => (
+              <SettingControl
+                key={field.key}
+                field={field}
+                value={settings[field.key]}
+                disabled={!isEnabled}
+                onChange={(v) => PluginManagerAPI.updatePluginSetting(manifest.id, field.key, v)}
+              />
+            ))}
+          </div>
         </div>
       )}
+
+      <div className={themeSystem.card("default", "p-4 sm:p-5")}>
+        <div className={themeSystem.sectionHeader.subtitle}>Lessons it contributes</div>
+        <ol className="mt-2 divide-y-2 divide-slate-100 dark:divide-slate-800">
+          {skill.lessons.map((lesson) => (
+            <li key={lesson.id} className="flex items-center gap-3 py-2.5">
+              <span className="text-lg shrink-0">{lesson.icon}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold text-slate-900 dark:text-white truncate">
+                  {lesson.title}
+                </span>
+                <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
+                  {lesson.concept}
+                </span>
+              </span>
+              <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
+                {lesson.activity}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
     </div>
   );
 };
@@ -252,7 +328,8 @@ const PluginCard: React.FC<{
  */
 export const PluginManagerPage: React.FC = () => {
   const stored = useLearningPlugins();
-  const [expandedId, setExpandedId] = useState<string | null>(PLUGINS[0]?.manifest.id ?? null);
+  const viewer = useViewer();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const storedById = useMemo(
     () => new Map(stored.map((p) => [p.id, p])),
@@ -263,11 +340,26 @@ export const PluginManagerPage: React.FC = () => {
     const features = PLUGINS.flatMap((p) => storedById.get(p.manifest.id)?.features ?? p.features);
     return {
       plugins: PLUGINS.length,
-      enabled: PLUGINS.filter((p) => storedById.get(p.manifest.id)?.isEnabled ?? true).length,
+      visible: PLUGINS.filter((p) => hiddenReason(p, viewer) === null).length,
       lessons: PLUGINS.reduce((n, p) => n + p.lessons.length, 0),
       activeFeatures: `${features.filter((f) => f.isEnabled).length}/${features.length}`,
     };
-  }, [storedById]);
+  }, [storedById, viewer]);
+
+  const selected = PLUGINS.find((p) => p.manifest.id === selectedId);
+  if (selected) {
+    return (
+      <PluginDetail
+        skill={selected}
+        stored={storedById.get(selected.manifest.id)}
+        viewer={viewer}
+        onBack={() => {
+          playSound("pop");
+          setSelectedId(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className={themeSystem.spacing.section}>
@@ -281,24 +373,61 @@ export const PluginManagerPage: React.FC = () => {
         <UIStatTile icon={<Package />} value={String(totals.plugins)} label="Installed" />
         <UIStatTile
           icon={<Power />}
-          value={String(totals.enabled)}
-          label="Enabled"
+          value={String(totals.visible)}
+          label="Visible to learner"
           tone="success"
         />
         <UIStatTile icon={<span>📚</span>} value={String(totals.lessons)} label="Lessons" />
         <UIStatTile icon={<span>🎛️</span>} value={totals.activeFeatures} label="Features on" />
       </UIStatGrid>
 
+      {/* Who the gate is being evaluated against. No accounts yet, so this is
+          per-device — see plugins/viewer.ts. */}
+      <div className={themeSystem.card("default", "p-4 flex flex-wrap items-center gap-4")}>
+        <span className="text-sm font-bold text-slate-900 dark:text-white">Viewing as</span>
+
+        <label className="flex items-center gap-2 text-sm">
+          <span className="text-slate-600 dark:text-slate-300">Age</span>
+          <input
+            type="number"
+            min={3}
+            max={12}
+            value={viewer.age}
+            onChange={(e) => setViewer({ age: Number(e.target.value) })}
+            className="w-16 px-2 py-1 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-mono font-bold"
+          />
+        </label>
+
+        <button
+          role="switch"
+          aria-checked={viewer.betaOptIn}
+          onClick={() => setViewer({ betaOptIn: !viewer.betaOptIn })}
+          className={themeSystem.button(viewer.betaOptIn ? "primary" : "secondary", "sm")}
+        >
+          Beta skills {viewer.betaOptIn ? "on" : "off"}
+        </button>
+
+        <button
+          role="switch"
+          aria-checked={viewer.isDeveloper}
+          onClick={() => setViewer({ isDeveloper: !viewer.isDeveloper })}
+          className={themeSystem.button(viewer.isDeveloper ? "primary" : "secondary", "sm")}
+        >
+          Developer {viewer.isDeveloper ? "on" : "off"}
+        </button>
+      </div>
+
       <div className="space-y-3">
         {PLUGINS.map((skill) => (
-          <PluginCard
+          <PluginRow
             key={skill.manifest.id}
             skill={skill}
             stored={storedById.get(skill.manifest.id)}
-            expanded={expandedId === skill.manifest.id}
-            onToggleExpand={() =>
-              setExpandedId(expandedId === skill.manifest.id ? null : skill.manifest.id)
-            }
+            viewer={viewer}
+            onOpen={() => {
+              playSound("pop");
+              setSelectedId(skill.manifest.id);
+            }}
           />
         ))}
       </div>

@@ -1,6 +1,7 @@
 import { PluginManagerAPI, type LearningPlugin } from "../lib/pluginStore";
 import { plugin as counting } from "./counting";
 import type { AnyActivityDefinition, Lesson, SkillPlugin } from "./types";
+import type { Viewer } from "./viewer";
 
 /**
  * Every skill in the build. Adding one is a single import and a single entry —
@@ -62,22 +63,55 @@ export const resolveLesson = (ref: string): Lesson | undefined => {
   return getPlugin(pluginId)?.lessons.find((l) => l.id === lessonId);
 };
 
+/** Why a skill is not reaching the learner. `null` means it is. */
+export type HiddenReason =
+  | "draft"
+  | "beta-not-opted-in"
+  | "outside-age-range"
+  | "disabled-here"
+  | null;
+
 /**
- * A skill is visible when it is published AND enabled for this install.
- * `draft` and `beta` stay out of the learner-facing UI while still shipping in
- * the bundle, so deploying and launching are separate decisions.
+ * The one gate. The sidebar, dashboard and course all resolve visibility here,
+ * so a skill cannot be hidden in one place and showing in another.
+ *
+ *   draft      → developers only
+ *   beta       → viewers who opted in
+ *   published  → anyone in its audience
+ *
+ * On top of status, a parent's per-install choice can always switch a skill off.
  */
-export const isVisible = (p: SkillPlugin): boolean => {
-  if (p.manifest.status !== "published") return false;
-  // A plugin the store has never seen is enabled by default: its manifest is the
-  // source of truth until someone changes it in Plugin Lab. Asking the store about
-  // an unknown id returns `false`, which would silently hide a freshly registered
-  // skill — and take its lessons out of the course with it.
+export function hiddenReason(p: SkillPlugin, viewer: Viewer): HiddenReason {
+  if (p.manifest.status === "draft") {
+    return viewer.isDeveloper ? null : "draft";
+  }
+  if (p.manifest.status === "beta" && !viewer.betaOptIn && !viewer.isDeveloper) {
+    return "beta-not-opted-in";
+  }
+
+  const [minAge, maxAge] = p.manifest.audience.ages;
+  if (viewer.age < minAge || viewer.age > maxAge) return "outside-age-range";
+
+  return isEnabledHere(p) ? null : "disabled-here";
+}
+
+export const visibleTo = (p: SkillPlugin, viewer: Viewer): boolean =>
+  hiddenReason(p, viewer) === null;
+
+/**
+ * A plugin the store has never seen is enabled by default: its manifest is the
+ * source of truth until someone changes it in the plugin manager. Asking the
+ * store about an unknown id returns `false`, which would silently hide a freshly
+ * registered skill — and take its lessons out of the course with it.
+ */
+export function isEnabledHere(p: SkillPlugin): boolean {
   const known = PluginManagerAPI.getPlugin(p.manifest.id) !== undefined;
   return known ? PluginManagerAPI.isPluginEnabled(p.manifest.id) : true;
-};
+}
 
-export const visiblePlugins = (): SkillPlugin[] => PLUGINS.filter(isVisible);
+export const visiblePlugins = (viewer: Viewer): SkillPlugin[] =>
+  PLUGINS.filter((p) => visibleTo(p, viewer));
 
 /** All lessons from all visible skills, in registry order. */
-export const allLessons = (): Lesson[] => visiblePlugins().flatMap((p) => p.lessons);
+export const allLessons = (viewer: Viewer): Lesson[] =>
+  visiblePlugins(viewer).flatMap((p) => p.lessons);

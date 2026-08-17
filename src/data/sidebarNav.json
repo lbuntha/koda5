@@ -7,9 +7,30 @@
     {
       "id": "main",
       "items": [
-        { "id": "home", "label": "Dashboard", "icon": "home", "badge": "Pathway" },
-        { "id": "game", "label": "Learn", "icon": "game", "badge": "15 Levels" },
-        { "id": "settings", "label": "Settings", "icon": "settings", "badge": "Plugins" }
+        {
+          "id": "home",
+          "label": "Dashboard",
+          "icon": "home",
+          "badge": "Pathway"
+        },
+        {
+          "id": "game",
+          "label": "Learn",
+          "icon": "game",
+          "badge": "15 Levels"
+        },
+        {
+          "id": "plugins",
+          "label": "Plugins",
+          "icon": "brain",
+          "badge": "Skills"
+        },
+        {
+          "id": "settings",
+          "label": "Settings",
+          "icon": "settings",
+          "badge": "Preferences"
+        }
       ]
     }
   ],

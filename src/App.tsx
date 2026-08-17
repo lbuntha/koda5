@@ -42,6 +42,7 @@ import { Home } from "./components/Home";
 import { SidebarNav } from "./components/SidebarNav";
 import { MainLayout } from "./components/layout/MainLayout";
 import { PluginHost } from "./plugins/host/PluginHost";
+import { PluginManagerPage } from "./components/plugins/PluginManagerPage";
 import { SettingsPage } from "./components/SettingsPage";
 import { WhiteboardModal } from "./components/WhiteboardModal";
 import { SkillMap } from "./components/SkillMap";
@@ -54,7 +55,7 @@ import { generateLocalSocraticResponse } from "./utils/socraticEngine";
 
 export default function App() {
   const [skillNodes, setSkillNodes] = useState<SkillNode[]>(INITIAL_SKILL_NODES);
-  const [activeTab, setActiveTab] = useState<"home" | "game" | "settings">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "game" | "plugins" | "settings">("home");
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [kidThemeMode, setKidThemeMode] = useState<"magical" | "cyber" | "candy" | "retro">("magical");
   const [selectedAvatar, setSelectedAvatar] = useState<string>("dino");
@@ -391,6 +392,9 @@ export default function App() {
               }}
             />
           )}
+
+          {/* TAB: PLUGIN MANAGER — its own destination, not buried in Settings */}
+          {activeTab === "plugins" && <PluginManagerPage />}
 
           {/* TAB 2: CLUBHOUSE SETTINGS PAGE FOR KIDS */}
           {activeTab === "settings" && (

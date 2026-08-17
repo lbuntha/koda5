@@ -1,4 +1,6 @@
-import { getPlugin, isVisible } from "../plugins/registry";
+import { getPlugin, visibleTo } from "../plugins/registry";
+import { getViewer } from "../plugins/viewer";
+import type { Viewer } from "../plugins/viewer";
 import type { Lesson } from "../plugins/types";
 import courseJson from "./course.json";
 
@@ -39,10 +41,10 @@ const config = courseJson.units as CourseUnitConfig[];
  * not visible, so disabling a skill removes its lessons from the course rather
  * than leaving a broken entry behind.
  */
-function resolve(ref: string, levelNumber: number): ResolvedLesson | undefined {
+function resolve(ref: string, levelNumber: number, viewer: Viewer): ResolvedLesson | undefined {
   const [pluginId, lessonId] = ref.split("/");
   const owner = getPlugin(pluginId);
-  if (!owner || !isVisible(owner)) return undefined;
+  if (!owner || !visibleTo(owner, viewer)) return undefined;
 
   const lesson = owner.lessons.find((l) => l.id === lessonId);
   if (!lesson) return undefined;
@@ -54,26 +56,29 @@ function resolve(ref: string, levelNumber: number): ResolvedLesson | undefined {
  * The course as the dashboard should render it: units in order, each holding
  * only lessons whose plugin is present and visible. Empty units are dropped.
  */
-export function getCourseUnits(): CourseUnit[] {
+export function getCourseUnits(viewer: Viewer = getViewer()): CourseUnit[] {
   let level = 0;
   return config
     .map((unit) => ({
       ...unit,
       lessons: unit.lessons
-        .map((ref) => resolve(ref, ++level))
+        .map((ref) => resolve(ref, ++level, viewer))
         .filter((l): l is ResolvedLesson => l !== undefined),
     }))
     .filter((unit) => unit.lessons.length > 0);
 }
 
 /** Every lesson in course order, flattened. */
-export function getCourseLessons(): ResolvedLesson[] {
-  return getCourseUnits().flatMap((u) => u.lessons);
+export function getCourseLessons(viewer?: Viewer): ResolvedLesson[] {
+  return getCourseUnits(viewer).flatMap((u) => u.lessons);
 }
 
 /** The lesson a given level number refers to. */
-export function getLessonByLevel(levelNumber: number): ResolvedLesson | undefined {
-  return getCourseLessons().find((l) => l.levelNumber === levelNumber);
+export function getLessonByLevel(
+  levelNumber: number,
+  viewer?: Viewer,
+): ResolvedLesson | undefined {
+  return getCourseLessons(viewer).find((l) => l.levelNumber === levelNumber);
 }
 
 export const totalLessonCount = (): number => getCourseLessons().length;

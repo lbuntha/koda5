@@ -26,7 +26,6 @@ import {
 import { useTheme } from "../context/ThemeContext";
 import { playSound } from "../utils/audio";
 import { useGlobalActionLogs, useLearningPlugins, PluginManagerAPI } from "../lib/pluginStore";
-import { PluginManagerPage } from "./plugins/PluginManagerPage";
 
 interface SettingsPageProps {
   soundEnabled: boolean;
@@ -185,7 +184,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
       {/* VIEW 1: PLUGINS & FEATURE MANAGEMENT */}
       {activeSection === "plugins" && (
-        <PluginManagerPage />
+        <div className="text-sm text-slate-600 dark:text-slate-400">
+          Skills and their settings now live under <strong>Plugins</strong> in the sidebar.
+        </div>
       )}
 
       {/* VIEW 2: CLUBHOUSE PROFILE & GAMEPLAY */}

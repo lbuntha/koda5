@@ -16,8 +16,10 @@ import {
   resolveSidebarIcon,
 } from "./ui";
 import sidebarNav from "../data/sidebarNav.json";
+import { getCourseLessons } from "../curriculum";
+import { useViewer } from "../plugins/viewer";
 
-type TabId = "home" | "game" | "settings";
+type TabId = "home" | "game" | "plugins" | "settings";
 
 const config = sidebarNav as SidebarConfig;
 
@@ -99,6 +101,21 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   userProgress,
   onOpenLiveVoice,
 }) => {
+  const viewer = useViewer();
+
+  // The learner-facing nav reflects what the gate actually lets through: the
+  // badge counts real lessons, and an entry with nothing behind it is dropped
+  // rather than leading to an empty page.
+  const lessonCount = getCourseLessons(viewer).length;
+  const sections = config.sections.map((section) => ({
+    ...section,
+    items: section.items
+      .map((item) =>
+        item.id === "game" ? { ...item, badge: `${lessonCount} Levels` } : item,
+      )
+      .filter((item) => item.id !== "game" || lessonCount > 0),
+  }));
+
   const BrandIcon = resolveSidebarIcon(config.brand.icon);
   const logo = config.brand.logoUrl;
 
@@ -151,7 +168,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       footer={config.profile && <ProfileMenu profile={config.profile} />}
     >
       <UISidebarNav
-        sections={config.sections}
+        sections={sections}
         activeId={activeTab}
         onSelect={(id) => {
           playSound("pop");
