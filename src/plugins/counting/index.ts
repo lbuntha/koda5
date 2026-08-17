@@ -17,7 +17,8 @@ export const plugin: SkillPlugin = {
   features: features as PluginFeature[],
   settings: settings as Record<string, unknown>,
   settingsSchema: settingsSchema as SkillPlugin["settingsSchema"],
-  lessons: lessonsJson.lessons as Lesson[],
+  // JSON widens tuples to number[], so assert through unknown.
+  lessons: lessonsJson.lessons as unknown as Lesson[],
 
   activities: {
     quest: {

@@ -18,7 +18,17 @@
       "xpReward": 50,
       "difficulty": "Easy",
       "icon": "⭐",
-      "pedagogyTip": "The last number named represents the whole group (cardinality). Keep your finger taps in sync with the numbers!"
+      "pedagogyTip": "The last number named represents the whole group (cardinality). Keep your finger taps in sync with the numbers!",
+      "standards": [
+        "CCSS.K.CC.B.4a",
+        "CCSS.K.CC.B.4b",
+        "CCSS.K.CC.B.5"
+      ],
+      "trajectoryLevel": "corresponder",
+      "ageBand": [
+        4,
+        6
+      ]
     },
     {
       "id": "count-scattered-objects",
@@ -53,7 +63,15 @@
       "xpReward": 50,
       "difficulty": "Easy",
       "icon": "✨",
-      "pedagogyTip": "Scanning in an orderly way (like top to bottom) helps count scattered items accurately."
+      "pedagogyTip": "Scanning in an orderly way (like top to bottom) helps count scattered items accurately.",
+      "standards": [
+        "CCSS.K.CC.B.5"
+      ],
+      "trajectoryLevel": "counter",
+      "ageBand": [
+        5,
+        6
+      ]
     },
     {
       "id": "comparing-two-groups",
@@ -87,7 +105,15 @@
       "xpReward": 50,
       "difficulty": "Easy",
       "icon": "⚖️",
-      "pedagogyTip": "Spreading items out might make a group look bigger, but the actual count stays exactly the same!"
+      "pedagogyTip": "Spreading items out might make a group look bigger, but the actual count stays exactly the same!",
+      "standards": [
+        "CCSS.K.CC.C.6"
+      ],
+      "trajectoryLevel": "comparer",
+      "ageBand": [
+        5,
+        6
+      ]
     },
     {
       "id": "quick-dice-patterns",
@@ -108,7 +134,13 @@
       "xpReward": 50,
       "difficulty": "Medium",
       "icon": "🎲",
-      "pedagogyTip": "Recognizing dot patterns right away (subitizing) builds strong mental number pictures."
+      "pedagogyTip": "Recognizing dot patterns right away (subitizing) builds strong mental number pictures.",
+      "standards": [],
+      "trajectoryLevel": "perceptual-subitizer",
+      "ageBand": [
+        4,
+        6
+      ]
     },
     {
       "id": "quick-dot-groups",
@@ -133,7 +165,13 @@
       "xpReward": 50,
       "difficulty": "Medium",
       "icon": "⚡",
-      "pedagogyTip": "Seeing dot groups at a glance helps you think of numbers as solid quantities."
+      "pedagogyTip": "Seeing dot groups at a glance helps you think of numbers as solid quantities.",
+      "standards": [],
+      "trajectoryLevel": "conceptual-subitizer",
+      "ageBand": [
+        5,
+        6
+      ]
     },
     {
       "id": "two-color-groups",
@@ -154,7 +192,15 @@
       "xpReward": 50,
       "difficulty": "Medium",
       "icon": "🔮",
-      "pedagogyTip": "Seeing numbers as two parts (like 5 is 3 and 2) makes mental addition fast and easy."
+      "pedagogyTip": "Seeing numbers as two parts (like 5 is 3 and 2) makes mental addition fast and easy.",
+      "standards": [
+        "CCSS.K.OA.A.3"
+      ],
+      "trajectoryLevel": "part-whole-decomposer",
+      "ageBand": [
+        5,
+        6
+      ]
     },
     {
       "id": "ten-frame-5-and-more",
@@ -174,7 +220,16 @@
       "xpReward": 50,
       "difficulty": "Challenging",
       "icon": "🛸",
-      "pedagogyTip": "Seeing numbers using 5 (like 8 is 5 + 3) makes mental math simple."
+      "pedagogyTip": "Seeing numbers using 5 (like 8 is 5 + 3) makes mental math simple.",
+      "standards": [
+        "CCSS.K.CC.B.4",
+        "CCSS.K.OA.A.3"
+      ],
+      "trajectoryLevel": "five-benchmark",
+      "ageBand": [
+        5,
+        6
+      ]
     },
     {
       "id": "making-10",
@@ -194,7 +249,15 @@
       "xpReward": 50,
       "difficulty": "Challenging",
       "icon": "🔋",
-      "pedagogyTip": "Pairs that make 10 (like 7 + 3 and 6 + 4) are key building blocks for all math!"
+      "pedagogyTip": "Pairs that make 10 (like 7 + 3 and 6 + 4) are key building blocks for all math!",
+      "standards": [
+        "CCSS.K.OA.A.4"
+      ],
+      "trajectoryLevel": "make-ten",
+      "ageBand": [
+        5,
+        6
+      ]
     },
     {
       "id": "teen-numbers",
@@ -214,7 +277,15 @@
       "xpReward": 50,
       "difficulty": "Challenging",
       "icon": "🛰️",
-      "pedagogyTip": "Every teen number is simply 'one ten and some ones'. Double ten-frames show this clearly."
+      "pedagogyTip": "Every teen number is simply 'one ten and some ones'. Double ten-frames show this clearly.",
+      "standards": [
+        "CCSS.K.NBT.A.1"
+      ],
+      "trajectoryLevel": "teen-composer",
+      "ageBand": [
+        5,
+        6
+      ]
     },
     {
       "id": "skip-counting-by-2s-and-5s",
@@ -244,7 +315,16 @@
       "xpReward": 50,
       "difficulty": "Advanced",
       "icon": "🐸",
-      "pedagogyTip": "Skip counting creates equal steps in your mind and prepares you for multiplication."
+      "pedagogyTip": "Skip counting creates equal steps in your mind and prepares you for multiplication.",
+      "standards": [
+        "CCSS.2.NBT.A.2",
+        "CCSS.1.OA.C.5"
+      ],
+      "trajectoryLevel": "skip-counter",
+      "ageBand": [
+        6,
+        8
+      ]
     },
     {
       "id": "count-by-10s-up-to-100",
@@ -267,7 +347,16 @@
       "xpReward": 50,
       "difficulty": "Advanced",
       "icon": "🌊",
-      "pedagogyTip": "Counting by 10s (10, 20, 30... 100) helps you navigate place value with ease."
+      "pedagogyTip": "Counting by 10s (10, 20, 30... 100) helps you navigate place value with ease.",
+      "standards": [
+        "CCSS.K.CC.A.1",
+        "CCSS.1.NBT.A.1"
+      ],
+      "trajectoryLevel": "skip-counter",
+      "ageBand": [
+        5,
+        7
+      ]
     },
     {
       "id": "find-the-missing-number",
@@ -305,7 +394,15 @@
       "xpReward": 50,
       "difficulty": "Advanced",
       "icon": "🔍",
-      "pedagogyTip": "Finding missing numbers in a line helps you understand how all numbers connect."
+      "pedagogyTip": "Finding missing numbers in a line helps you understand how all numbers connect.",
+      "standards": [
+        "CCSS.1.OA.C.5"
+      ],
+      "trajectoryLevel": "pattern-continuer",
+      "ageBand": [
+        6,
+        7
+      ]
     },
     {
       "id": "make-a-ten",
@@ -321,7 +418,15 @@
       "xpReward": 50,
       "difficulty": "Master",
       "icon": "💎",
-      "pedagogyTip": "10 loose ones can be grouped together and treated as 1 single 'Ten'."
+      "pedagogyTip": "10 loose ones can be grouped together and treated as 1 single 'Ten'.",
+      "standards": [
+        "CCSS.1.NBT.B.2a"
+      ],
+      "trajectoryLevel": "unitiser-ten",
+      "ageBand": [
+        6,
+        7
+      ]
     },
     {
       "id": "make-a-hundred",
@@ -337,7 +442,15 @@
       "xpReward": 50,
       "difficulty": "Master",
       "icon": "🌌",
-      "pedagogyTip": "Expanded form (100 + 30 + 5 = 135) connects physical blocks directly to written numbers."
+      "pedagogyTip": "Expanded form (100 + 30 + 5 = 135) connects physical blocks directly to written numbers.",
+      "standards": [
+        "CCSS.2.NBT.A.1a"
+      ],
+      "trajectoryLevel": "unitiser-hundred",
+      "ageBand": [
+        7,
+        8
+      ]
     },
     {
       "id": "build-numbers-with-hundreds-tens-ones",
@@ -353,7 +466,16 @@
       "xpReward": 50,
       "difficulty": "Master",
       "icon": "👑",
-      "pedagogyTip": "Breaking a Ten into 10 Ones is the physical secret behind subtraction regrouping."
+      "pedagogyTip": "Breaking a Ten into 10 Ones is the physical secret behind subtraction regrouping.",
+      "standards": [
+        "CCSS.2.NBT.A.1",
+        "CCSS.2.NBT.A.3"
+      ],
+      "trajectoryLevel": "place-value-builder",
+      "ageBand": [
+        7,
+        8
+      ]
     }
   ]
 }

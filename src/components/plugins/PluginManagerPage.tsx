@@ -320,8 +320,15 @@ const PluginDetail: React.FC<{
                     {lesson.concept}
                   </span>
                 </span>
-                <span className="hidden sm:block text-[11px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
-                  {lesson.activity}
+                <span className="hidden sm:flex items-center gap-2 shrink-0">
+                  {lesson.ageBand && (
+                    <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                      ages {lesson.ageBand[0]}–{lesson.ageBand[1]}
+                    </span>
+                  )}
+                  <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500">
+                    {lesson.standards?.[0] ?? "—"}
+                  </span>
                 </span>
                 <Play className="w-4 h-4 shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition" />
               </button>
@@ -357,6 +364,9 @@ const LessonPreview: React.FC<{ lesson: Lesson; onClose: () => void }> = ({
     { term: "Questions", value: String(q.questionsPerRound ?? 5) },
     { term: "XP", value: `+${lesson.xpReward}` },
     ...(range ? [{ term: "Items", value: `${range[0]}–${range[1]}` }] : []),
+    ...(lesson.ageBand ? [{ term: "Ages", value: `${lesson.ageBand[0]}–${lesson.ageBand[1]}` }] : []),
+    ...(lesson.trajectoryLevel ? [{ term: "Trajectory", value: lesson.trajectoryLevel }] : []),
+    ...(lesson.standards?.length ? [{ term: "Standard", value: lesson.standards.join(", ") }] : []),
   ];
 
   return (

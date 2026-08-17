@@ -127,6 +127,25 @@ export interface Lesson {
   difficulty?: string;
   /** One-line teaching note surfaced on the dashboard. */
   pedagogyTip?: string;
+
+  /**
+   * Curriculum standards this lesson addresses, e.g. "CCSS.K.CC.B.4a".
+   * Empty is legitimate — subitizing is a research construct with no CCSS code.
+   */
+  standards?: string[];
+
+  /**
+   * Position on the Clements & Sarama counting learning trajectory. CCSS states
+   * endpoints; the trajectory is what orders the steps between them.
+   */
+  trajectoryLevel?: string;
+
+  /**
+   * Age band the standard is written for. This is what gives `difficulty` a
+   * meaning: a lesson is hard because it sits above the learner, not because
+   * someone labelled it "Master".
+   */
+  ageBand?: [number, number];
 }
 
 /* -------------------------------------------------------------------------- */
