@@ -10,7 +10,8 @@
       },
       "xpReward": 50,
       "difficulty": "Easy",
-      "icon": "⭐"
+      "icon": "⭐",
+      "pedagogyTip": "The last number named represents the whole group (cardinality). Keep your finger taps in sync with the numbers!"
     },
     {
       "id": "count-scattered-objects",
@@ -22,7 +23,8 @@
       },
       "xpReward": 50,
       "difficulty": "Easy",
-      "icon": "✨"
+      "icon": "✨",
+      "pedagogyTip": "Scanning in an orderly way (like top to bottom) helps count scattered items accurately."
     },
     {
       "id": "comparing-two-groups",
@@ -34,7 +36,8 @@
       },
       "xpReward": 50,
       "difficulty": "Easy",
-      "icon": "⚖️"
+      "icon": "⚖️",
+      "pedagogyTip": "Spreading items out might make a group look bigger, but the actual count stays exactly the same!"
     },
     {
       "id": "quick-dice-patterns",
@@ -46,7 +49,8 @@
       },
       "xpReward": 50,
       "difficulty": "Medium",
-      "icon": "🎲"
+      "icon": "🎲",
+      "pedagogyTip": "Recognizing dot patterns right away (subitizing) builds strong mental number pictures."
     },
     {
       "id": "quick-dot-groups",
@@ -58,7 +62,8 @@
       },
       "xpReward": 50,
       "difficulty": "Medium",
-      "icon": "⚡"
+      "icon": "⚡",
+      "pedagogyTip": "Seeing dot groups at a glance helps you think of numbers as solid quantities."
     },
     {
       "id": "two-color-groups",
@@ -70,7 +75,8 @@
       },
       "xpReward": 50,
       "difficulty": "Medium",
-      "icon": "🔮"
+      "icon": "🔮",
+      "pedagogyTip": "Seeing numbers as two parts (like 5 is 3 and 2) makes mental addition fast and easy."
     },
     {
       "id": "ten-frame-5-and-more",
@@ -82,7 +88,8 @@
       },
       "xpReward": 50,
       "difficulty": "Challenging",
-      "icon": "🛸"
+      "icon": "🛸",
+      "pedagogyTip": "Seeing numbers using 5 (like 8 is 5 + 3) makes mental math simple."
     },
     {
       "id": "making-10",
@@ -94,7 +101,8 @@
       },
       "xpReward": 50,
       "difficulty": "Challenging",
-      "icon": "🔋"
+      "icon": "🔋",
+      "pedagogyTip": "Pairs that make 10 (like 7 + 3 and 6 + 4) are key building blocks for all math!"
     },
     {
       "id": "teen-numbers",
@@ -106,7 +114,8 @@
       },
       "xpReward": 50,
       "difficulty": "Challenging",
-      "icon": "🛰️"
+      "icon": "🛰️",
+      "pedagogyTip": "Every teen number is simply 'one ten and some ones'. Double ten-frames show this clearly."
     },
     {
       "id": "skip-counting-by-2s-and-5s",
@@ -118,7 +127,8 @@
       },
       "xpReward": 50,
       "difficulty": "Advanced",
-      "icon": "🐸"
+      "icon": "🐸",
+      "pedagogyTip": "Skip counting creates equal steps in your mind and prepares you for multiplication."
     },
     {
       "id": "count-by-10s-up-to-100",
@@ -130,7 +140,8 @@
       },
       "xpReward": 50,
       "difficulty": "Advanced",
-      "icon": "🌊"
+      "icon": "🌊",
+      "pedagogyTip": "Counting by 10s (10, 20, 30... 100) helps you navigate place value with ease."
     },
     {
       "id": "find-the-missing-number",
@@ -142,7 +153,8 @@
       },
       "xpReward": 50,
       "difficulty": "Advanced",
-      "icon": "🔍"
+      "icon": "🔍",
+      "pedagogyTip": "Finding missing numbers in a line helps you understand how all numbers connect."
     },
     {
       "id": "make-a-ten",
@@ -154,7 +166,8 @@
       },
       "xpReward": 50,
       "difficulty": "Master",
-      "icon": "💎"
+      "icon": "💎",
+      "pedagogyTip": "10 loose ones can be grouped together and treated as 1 single 'Ten'."
     },
     {
       "id": "make-a-hundred",
@@ -166,7 +179,8 @@
       },
       "xpReward": 50,
       "difficulty": "Master",
-      "icon": "🌌"
+      "icon": "🌌",
+      "pedagogyTip": "Expanded form (100 + 30 + 5 = 135) connects physical blocks directly to written numbers."
     },
     {
       "id": "build-numbers-with-hundreds-tens-ones",
@@ -178,7 +192,8 @@
       },
       "xpReward": 50,
       "difficulty": "Master",
-      "icon": "👑"
+      "icon": "👑",
+      "pedagogyTip": "Breaking a Ten into 10 Ones is the physical secret behind subtraction regrouping."
     }
   ]
 }

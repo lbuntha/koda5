@@ -35,8 +35,15 @@ export const resolveLesson = (ref: string): Lesson | undefined => {
  * `draft` and `beta` stay out of the learner-facing UI while still shipping in
  * the bundle, so deploying and launching are separate decisions.
  */
-export const isVisible = (p: SkillPlugin): boolean =>
-  p.manifest.status === "published" && PluginManagerAPI.isPluginEnabled(p.manifest.id) !== false;
+export const isVisible = (p: SkillPlugin): boolean => {
+  if (p.manifest.status !== "published") return false;
+  // A plugin the store has never seen is enabled by default: its manifest is the
+  // source of truth until someone changes it in Plugin Lab. Asking the store about
+  // an unknown id returns `false`, which would silently hide a freshly registered
+  // skill — and take its lessons out of the course with it.
+  const known = PluginManagerAPI.getPlugin(p.manifest.id) !== undefined;
+  return known ? PluginManagerAPI.isPluginEnabled(p.manifest.id) : true;
+};
 
 export const visiblePlugins = (): SkillPlugin[] => PLUGINS.filter(isVisible);
 

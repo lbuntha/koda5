@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Activity, ArrowRight, Compass, Flame, Lightbulb, Star, Target, Zap } from "lucide-react";
 import { UserProgress } from "../types";
-import { FLOWING_LEVELS } from "../plugins/counting/internal/data/countingAssets";
+import { getCourseUnits, getLessonByLevel, totalLessonCount } from "../curriculum";
 import { playSound } from "../utils/audio";
 import { themeSystem } from "../lib/themeSystem";
 import {
@@ -31,56 +31,32 @@ export const Home: React.FC<HomeProps> = ({
 }) => {
   const [selectedSection, setSelectedSection] = useState<number>(1);
 
-  // Group levels into Duolingo-style "Sections" / Units
-  const sections = [
-    {
-      unitNumber: 1,
-      title: "Unit 1: Subitizing & Dot Matrix",
-      description: "Master instant sight counting, 1-to-1 correspondence & 5-anchor arrays",
-      color: "from-indigo-600 to-indigo-700",
-      accentBg: "bg-indigo-600",
-      accentBorder: "border-indigo-600",
-      icon: "🌱",
-      levels: FLOWING_LEVELS.slice(0, 4), // Levels 1 to 4
-    },
-    {
-      unitNumber: 2,
-      title: "Unit 2: Ten-Frames & Place Value",
-      description: "Build mental anchors of 5 and 10 with interactive frames & grouped rods",
-      color: "from-indigo-600 to-indigo-700",
-      accentBg: "bg-indigo-600",
-      accentBorder: "border-indigo-600",
-      icon: "⚡",
-      levels: FLOWING_LEVELS.slice(4, 8), // Levels 5 to 8
-    },
-    {
-      unitNumber: 3,
-      title: "Unit 3: Quantity Comparison & Number Line",
-      description: "Compare sets, estimate spatial magnitudes, and explore sequences",
-      color: "from-indigo-600 to-indigo-700",
-      accentBg: "bg-indigo-600",
-      accentBorder: "border-indigo-600",
-      icon: "🔮",
-      levels: FLOWING_LEVELS.slice(8, 12), // Levels 9 to 12
-    },
-    {
-      unitNumber: 4,
-      title: "Unit 4: 100-Chart & Skip Counting",
-      description: "Pattern recognition in 2s, 5s, and 10s up to 100 with master speed drills",
-      color: "from-indigo-600 to-indigo-700",
-      accentBg: "bg-indigo-600",
-      accentBorder: "border-indigo-600",
-      icon: "👑",
-      levels: FLOWING_LEVELS.slice(12, 15), // Levels 13 to 15
-    },
-  ];
+  // Units come from the course, which resolves each "pluginId/lessonId"
+  // reference through the registry. Adding a skill needs no edit here.
+  const sections = getCourseUnits();
 
   // Calculate current active level details
+  const sectionsList = sections;
   const currentActiveLevel =
-    FLOWING_LEVELS.find((l) => l.levelNumber === activeLevelNumber) || FLOWING_LEVELS[0];
+    getLessonByLevel(activeLevelNumber) ?? sectionsList[0]?.lessons[0];
 
   const totalMasteredCount = Object.keys(completedLevels).length;
   const totalStarsCount = Object.values(completedLevels).reduce((a: number, b: number) => a + (Number(b) || 0), 0);
+
+  // Every skill can be disabled from Plugin Lab, which empties the course. Say so
+  // rather than rendering a dashboard with nothing behind it.
+  if (!currentActiveLevel) {
+    return (
+      <div className="w-full flex-1 min-h-[50vh] flex items-center justify-center text-center">
+        <div className="max-w-sm">
+          <p className="font-mono font-black text-slate-900 dark:text-white">No skills enabled</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+            Turn a skill back on in Settings to see the learning path.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`w-full ${themeSystem.spacing.section} animate-fadeIn pb-6`}>
@@ -101,7 +77,7 @@ export const Home: React.FC<HomeProps> = ({
         />
         <UIStatTile
           icon={<Star className="fill-current" />}
-          value={`${totalMasteredCount} / 15`}
+          value={`${totalMasteredCount} / ${totalLessonCount()}`}
           label="Skills Mastered"
         />
         <UIStatTile
@@ -122,7 +98,7 @@ export const Home: React.FC<HomeProps> = ({
         note={
           <>
             <strong className={themeSystem.featureCard.noteStrong}>
-              {currentActiveLevel.skillConcept}
+              {currentActiveLevel.concept}
             </strong>{" "}
             — {currentActiveLevel.pedagogyTip}
           </>
@@ -169,12 +145,12 @@ export const Home: React.FC<HomeProps> = ({
                 icon={sec.icon}
                 title={sec.title}
                 description={sec.description}
-                badge={`${sec.levels.length} Stepping Stones`}
+                badge={`${sec.lessons.length} Stepping Stones`}
               />
 
               {/* Stepping Stone Nodes */}
               <UIPathGrid>
-                {sec.levels.map((lvl) => {
+                {sec.lessons.map((lvl) => {
                   const stars = completedLevels[lvl.levelNumber] || 0;
                   const isCompleted = stars > 0;
                   const isCurrent = lvl.levelNumber === activeLevelNumber;
@@ -196,7 +172,7 @@ export const Home: React.FC<HomeProps> = ({
                       stars={stars}
                       startLabel="Start"
                       title={`L${lvl.levelNumber}: ${lvl.title}`}
-                      subtitle={lvl.skillConcept}
+                      subtitle={lvl.concept}
                       onClick={() => {
                         playSound("pop");
                         onStartLearning(lvl.levelNumber);

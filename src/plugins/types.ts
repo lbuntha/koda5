@@ -124,7 +124,9 @@ export interface Lesson {
   params?: Record<string, unknown>;
   xpReward: number;
   icon?: string;
-  difficulty?: "Easy" | "Medium" | "Hard";
+  difficulty?: string;
+  /** One-line teaching note surfaced on the dashboard. */
+  pedagogyTip?: string;
 }
 
 /* -------------------------------------------------------------------------- */
