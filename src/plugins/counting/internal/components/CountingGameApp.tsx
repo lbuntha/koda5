@@ -46,6 +46,7 @@ import {
 import { useTheme } from "../../../../context/ThemeContext";
 import type { CountingQuestionParamsByLevel } from "../data/questionParams";
 import type { KodaSDK } from "../../../types";
+import { themeSystem } from "../../../../lib/themeSystem";
 import {
   FLOWING_LEVELS,
   FlowingLevelConfig,
@@ -485,11 +486,14 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
     colorPair: typeof DUAL_COLOR_PAIRS[0];
   } | null>(null);
   const [l4FlashHidden, setL4FlashHidden] = useState<boolean>(false);
+  /** True until the child has started the flash for this question. */
+  const [l4AwaitingStart, setL4AwaitingStart] = useState<boolean>(true);
   const [l5IrregularPoints, setL5IrregularPoints] = useState<{ x: number; y: number }[]>([]);
 
   const startSubitizingFlash = useCallback((lvlNum = currentLevelNumber) => {
     triggerSound("pop");
     setQuizFeedback(null);
+    setL4AwaitingStart(false);
     setL4FlashHidden(false);
 
     const flashDuration =
@@ -506,7 +510,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       const count = rangeOr(q.countRange, 2, 6);
       setL4Target(count);
       setL6ConceptualData(null);
-      startSubitizingFlash(lvlNum);
+      setL4AwaitingStart(true);
     } else if (lvlNum === 5) {
       const count = rangeOr(q.countRange, 3, 7);
       setL4Target(count);
@@ -516,7 +520,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         y: rangeOr(q.jitterRange, 15, 85),
       }));
       setL5IrregularPoints(points);
-      startSubitizingFlash(lvlNum);
+      setL4AwaitingStart(true);
     } else if (lvlNum === 6) {
       const targetA = rangeOr(q.partRange, 2, 4);
       const targetB = rangeOr(q.partRange, 2, 4);
@@ -524,7 +528,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       const colorPair = sample(DUAL_COLOR_PAIRS);
       setL4Target(total);
       setL6ConceptualData({ targetA, targetB, total, colorPair });
-      startSubitizingFlash(lvlNum);
+      setL4AwaitingStart(true);
     }
   }, [currentLevelNumber, startSubitizingFlash, questionParams]);
 
@@ -2091,15 +2095,32 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {currentLevelNumber >= 4 && currentLevelNumber <= 6 && (
               <div className="space-y-4 text-center">
                 <div className="relative w-full h-[200px] bg-canvas rounded-2xl border border-line flex items-center justify-center overflow-hidden">
-                  {l4FlashHidden ? (
-                    <div className="text-center space-y-2.5 animate-fadeIn">
-                      <span className="text-3xl">❓</span>
-                      <p className="text-xs font-mono text-muted">Flash Hidden! How many dots were there?</p>
+                  {l4AwaitingStart ? (
+                    /* The child starts the flash, so their attention is on the
+                       screen when the dots appear. */
+                    <div className="text-center space-y-3">
+                      <p className="text-base font-bold text-slate-700 dark:text-slate-200">
+                        Ready? Watch closely!
+                      </p>
                       <button
                         onClick={() => startSubitizingFlash(currentLevelNumber)}
-                        className="px-3.5 py-1.5 rounded-xl bg-surface-muted hover:bg-slate-700 border border-line text-xs font-mono font-bold text-cyan-700 dark:text-cyan-300 transition"
+                        className={themeSystem.button("primary", "lg")}
+                        autoFocus
                       >
-                        ⚡ Peek Flash Again
+                        Show me
+                      </button>
+                    </div>
+                  ) : l4FlashHidden ? (
+                    <div className="text-center space-y-2.5">
+                      <span className="text-3xl">❓</span>
+                      <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                        How many dots did you see?
+                      </p>
+                      <button
+                        onClick={() => startSubitizingFlash(currentLevelNumber)}
+                        className={themeSystem.button("secondary", "sm")}
+                      >
+                        Show me again
                       </button>
                     </div>
                   ) : (
