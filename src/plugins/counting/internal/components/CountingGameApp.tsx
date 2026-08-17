@@ -1080,7 +1080,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       triggerSound("clink");
       setL13Ones((o) => o - 10);
       setL13Tens((t) => t + 1);
-      speakAudio("10 Ones fused into 1 Ten-Rod!");
+      speakAudio("10 Ones fused into 1 Ten!");
     }
   };
 
@@ -1089,7 +1089,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       triggerSound("clink");
       setL13Tens((t) => t - 10);
       setL13Hundreds((h) => h + 1);
-      speakAudio("10 Tens fused into 1 Hundred-Flat!");
+      speakAudio("10 Tens fused into 1 Hundred!");
     }
   };
 
@@ -1108,7 +1108,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         setQuizFeedback({
           status: "incorrect",
           title: "A few more ones",
-          message: `Great total! But you have ${l13Ones} Ones. Can you group 10 of them into a Ten-Rod? Click "Fuse 10 Ones" below!`,
+          message: `Great total! But you have ${l13Ones} Ones. Can you group 10 of them into a Ten? Click "Make a Ten" below!`,
         });
       } else {
         handleQuestionSuccess(`All ones grouped beautifully! Built ${l13Target} with ${l13Tens} Tens and ${l13Ones} Ones.`);
@@ -1126,7 +1126,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         setQuizFeedback({
           status: "incorrect",
           title: "A few more tens",
-          message: `Great total! But you have ${l13Tens} Tens. Can you group 10 of them into a Hundred-Flat? Click "Fuse 10 Tens" below!`,
+          message: `Great total! But you have ${l13Tens} Tens. Can you group 10 of them into a Hundred? Click "Fuse 10 Tens" below!`,
         });
       } else {
         handleQuestionSuccess(`All tens grouped beautifully! Built ${l14Target} with ${l13Hundreds} Hundreds, ${l13Tens} Tens, and ${l13Ones} Ones.`);
@@ -1144,7 +1144,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         setQuizFeedback({
           status: "incorrect",
           title: "Group your ones",
-          message: `Excellent sum! But you have ${l13Ones} Ones. Click "Fuse 10 Ones" to put them in standard place value form.`,
+          message: `Excellent sum! But you have ${l13Ones} Ones. Click "Make a Ten" to put them in standard place value form.`,
         });
       } else if (l13Tens >= 10) {
         triggerSound("error");
@@ -1192,7 +1192,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       } else if (l13Ones >= 10) {
         return `You made ${l13Target}! Now put 10 ones together to make a ten.`;
       } else {
-        return `You made ${l13Target}! Press Check Blocks.`;
+        return `You made ${l13Target}! Press Check.`;
       }
     }
     if (currentLevelNumber === 14) {
@@ -1202,9 +1202,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       } else if (diff < 0) {
         return `Make ${l14Target}. You have ${currentTotalBlocks}. Take away ${Math.abs(diff)}!`;
       } else if (l13Tens >= 10) {
-        return `You reached ${l14Target}! Now fuse 10 Ten-Rods into a Hundred-Flat to bundle your numbers. Click "Fuse 10 Tens" below!`;
+        return `You reached ${l14Target}! Now fuse 10 Tens into a Hundred to bundle your numbers. Click "Fuse 10 Tens" below!`;
       } else {
-        return `Excellent! You built ${l14Target} in the most bundled way. Click "Check Blocks" to complete this step!`;
+        return `Excellent! You built ${l14Target} in the most bundled way. Click "Check" to complete this step!`;
       }
     }
     if (currentLevelNumber === 15) {
@@ -1214,11 +1214,11 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       } else if (diff < 0) {
         return `Build ${l15Target}: You have ${currentTotalBlocks} blocks. Remove ${Math.abs(diff)} using the (-) buttons!`;
       } else if (l13Ones >= 10) {
-        return `You reached ${l15Target}! Fuse 10 Ones into a Ten-Rod to bundle your numbers. Click "Fuse 10 Ones" below!`;
+        return `You reached ${l15Target}! Make a Ten into a Ten to bundle your numbers. Click "Make a Ten" below!`;
       } else if (l13Tens >= 10) {
-        return `You reached ${l15Target}! Fuse 10 Ten-Rods into a Hundred-Flat to bundle your numbers. Click "Fuse 10 Tens" below!`;
+        return `You reached ${l15Target}! Fuse 10 Tens into a Hundred to bundle your numbers. Click "Fuse 10 Tens" below!`;
       } else {
-        return `Congratulations! You built exactly ${l15Target} in standard bundled form. Click "Check Blocks" to finish!`;
+        return `Congratulations! You built exactly ${l15Target} in standard bundled form. Click "Check" to finish!`;
       }
     }
     return activeLevelConfig.targetObjective;
@@ -2411,12 +2411,12 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                 <div className="p-4 rounded-2xl bg-surface/80 border border-line flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="text-left space-y-1">
                     <span className="text-[10px] font-mono font-bold tracking-wider text-teal-700 dark:text-teal-400 uppercase">
-                      Chamber Mission
+                      Your job
                     </span>
                     <h3 className="text-sm font-bold text-ink">
-                      {currentLevelNumber === 13 && `Build the exact target number: ${l13Target}`}
-                      {currentLevelNumber === 14 && `Build the exact target number: ${l14Target}`}
-                      {currentLevelNumber === 15 && `Build the exact target number: ${l15Target}`}
+                      {currentLevelNumber === 13 && `Make this number: ${l13Target}`}
+                      {currentLevelNumber === 14 && `Make this number: ${l14Target}`}
+                      {currentLevelNumber === 15 && `Make this number: ${l15Target}`}
                     </h3>
                     <p className="text-xs text-muted">
                       {currentLevelNumber === 13 && "Make the number. Put 10 ones together to make a ten."}
@@ -2427,12 +2427,12 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   {(currentLevelNumber === 13 || currentLevelNumber === 14 || currentLevelNumber === 15) && (
                     <div className="px-4 py-2 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border border-teal-500/30 rounded-xl flex items-center gap-3">
                       <div className="text-right">
-                        <div className="text-[9px] font-mono font-bold text-teal-700 dark:text-teal-400">TARGET GOAL</div>
+                        <div className="text-[9px] font-mono font-bold text-teal-700 dark:text-teal-400">MAKE</div>
                         <div className="text-xl font-black text-ink tracking-tight">{activeTarget}</div>
                       </div>
                       <div className="h-8 w-[1px] bg-teal-500/20" />
                       <div>
-                        <div className="text-[9px] font-mono font-bold text-muted">CURRENT SUM</div>
+                        <div className="text-[9px] font-mono font-bold text-muted">YOU HAVE</div>
                         <div className={`text-xl font-black tracking-tight ${currentTotalBlocks === activeTarget ? "text-emerald-700 dark:text-emerald-400 animate-pulse" : "text-slate-200"}`}>
                           {currentTotalBlocks}
                         </div>
@@ -2441,7 +2441,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   )}
                 </div>
 
-                {/* GALAXY STORAGE DEPOT (DRAG & DROP PALETTE) */}
+                {/* YOUR BLOCKS (DRAG & DROP PALETTE) */}
                 <div 
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -2473,10 +2473,10 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <div>
                       <h4 className="font-mono text-xs font-black text-body tracking-wider flex items-center gap-1.5 uppercase">
-                        <span className="inline-block animate-bounce">🌌</span> Galaxy Storage Depot
+                        <span className="inline-block animate-bounce">🌌</span> Your blocks
                       </h4>
                       <p className="text-[11px] text-muted">
-                        Hold & drag blocks into the chambers below, or drag built blocks back here to recycle them!
+                        Drag blocks down to build your number. Drag them back to take them away.
                       </p>
                     </div>
                     {isDraggingTemplate === "block-remove" && (
@@ -2510,18 +2510,18 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                             <div key={c} className="aspect-square border-[0.1px] border-rose-700/20" />
                           ))}
                         </div>
-                        <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">DRAG ME</span>
+                        <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">DRAG</span>
                       </div>
                     ) : (
                       <div className="hidden sm:flex bg-canvas/20 rounded-xl border border-line/40 p-2.5 flex-col items-center justify-center text-center opacity-25">
                         <span className="text-xs">🔒</span>
-                        <span className="text-[9px] font-mono mt-1 text-slate-600">Level 13: 10s & 1s Only</span>
+                        <span className="text-[9px] font-mono mt-1 text-slate-600">Tens and ones only</span>
                       </div>
                     )}
 
                     {/* TEN-ROD TEMPLATE */}
                     <div className="bg-canvas/80 rounded-xl border border-dashed border-amber-500/30 p-2.5 flex flex-col items-center justify-center space-y-2 select-none relative group">
-                      <span className="font-mono text-[10px] font-bold text-slate-800 dark:text-amber-300">Ten-Rod</span>
+                      <span className="font-mono text-[10px] font-bold text-slate-800 dark:text-amber-300">Ten</span>
                       <div
                         draggable
                         onDragStart={(e) => {
@@ -2541,12 +2541,12 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                           <div key={s} className="flex-1 border-b border-amber-700/20 last:border-b-0" />
                         ))}
                       </div>
-                      <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">DRAG ME</span>
+                      <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">DRAG</span>
                     </div>
 
                     {/* ONES UNIT TEMPLATE */}
                     <div className="bg-canvas/80 rounded-xl border border-dashed border-cyan-500/30 p-2.5 flex flex-col items-center justify-center space-y-2 select-none relative group">
-                      <span className="font-mono text-[10px] font-bold text-cyan-700 dark:text-cyan-300">Ones Unit</span>
+                      <span className="font-mono text-[10px] font-bold text-cyan-700 dark:text-cyan-300">One</span>
                       <div
                         draggable
                         onDragStart={(e) => {
@@ -2562,7 +2562,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         className="block-draggable w-5 h-5 rounded bg-gradient-to-br from-cyan-400 to-cyan-500 border border-cyan-300 shadow"
                         title="Click & Drag Me!"
                       />
-                      <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">DRAG ME</span>
+                      <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">DRAG</span>
                     </div>
 
                     {/* RECYCLE ZONE / VORTEX */}
@@ -2576,9 +2576,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       }`}
                     >
                       <span className="text-xl">{hoveredChamber === "recycle" ? "🌀" : "🗑️"}</span>
-                      <span className="font-mono text-[10px] font-bold block">Recycle Bin</span>
+                      <span className="font-mono text-[10px] font-bold block">Put Back</span>
                       <span className="text-[9px] text-muted block max-w-[120px] leading-tight">
-                        {isDraggingTemplate === "block-remove" ? "Drop block here!" : "Drag blocks here to remove"}
+                        {isDraggingTemplate === "block-remove" ? "Drop block here!" : "Drag here to take away"}
                       </span>
                     </div>
                   </div>
@@ -2618,7 +2618,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                           Hundreds Flats (x100)
                         </span>
                         <span className="px-2 py-0.5 rounded-lg bg-rose-500/10 border border-rose-500/25 font-mono text-xs font-bold text-rose-700 dark:text-rose-300">
-                          Qty: {l13Hundreds}
+                          How many: {l13Hundreds}
                         </span>
                       </div>
 
@@ -2645,7 +2645,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                                     ? "block-snap-pull"
                                     : ""
                                 }`} 
-                                title="Hold and drag back to Depot to recycle"
+                                title="Drag back up to take this away"
+                        aria-label="Drag back up to take this away"
                               >
                                 {Array.from({ length: 100 }).map((_, c) => (
                                   <div key={c} className="aspect-square border-[0.2px] border-rose-800/30 relative">
@@ -2714,10 +2715,10 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs font-bold text-slate-800 dark:text-amber-300 flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                        Ten-Rods (x10)
+                        Tens (x10)
                       </span>
                       <span className="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/25 font-mono text-xs font-bold text-slate-800 dark:text-amber-300">
-                        Qty: {l13Tens}
+                        How many: {l13Tens}
                       </span>
                     </div>
 
@@ -2744,7 +2745,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                                   ? "block-snap-pull"
                                   : ""
                               }`} 
-                              title="Hold and drag back to Depot to recycle"
+                              title="Drag back up to take this away"
+                        aria-label="Drag back up to take this away"
                             >
                               {Array.from({ length: 10 }).map((_, s) => (
                                 <div key={s} className="flex-1 border-b border-amber-800/30 last:border-b-0 relative">
@@ -2812,10 +2814,10 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300 flex items-center gap-1.5">
                         <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse" />
-                        Ones Units (x1)
+                        Ones (x1)
                       </span>
                       <span className="px-2 py-0.5 rounded-lg bg-cyan-500/10 border border-cyan-500/25 font-mono text-xs font-bold text-cyan-700 dark:text-cyan-300">
-                        Qty: {l13Ones}
+                        How many: {l13Ones}
                       </span>
                     </div>
 
@@ -2842,7 +2844,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                                   ? "block-snap-pull"
                                   : ""
                               }`} 
-                              title="Hold and drag back to Depot to recycle"
+                              title="Drag back up to take this away"
+                        aria-label="Drag back up to take this away"
                             >
                               <div className="absolute top-0 left-0 right-0 h-[40%] bg-white/20 rounded-t pointer-events-none" />
                               <div className="absolute inset-[1.5px] rounded-[1px] bg-cyan-500/10 border border-cyan-400/20 pointer-events-none" />
@@ -2901,7 +2904,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                           : "bg-surface text-slate-600 border-line cursor-not-allowed"
                       }`}
                     >
-                      ⚡ Fuse 10 Ones ➔ 1 Ten-Rod
+                      ⚡ Make a Ten ➔ 1 Ten
                     </button>
                   )}
                   
@@ -2915,7 +2918,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                           : "bg-surface text-slate-600 border-line cursor-not-allowed"
                       }`}
                     >
-                      🌌 Fuse 10 Tens ➔ 1 Hundred-Flat
+                      🌌 Fuse 10 Tens ➔ 1 Hundred
                     </button>
                   )}
 
@@ -2923,7 +2926,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     onClick={handleCheckBase10}
                     className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-mono font-black text-xs shadow-md shadow-emerald-400/10 transition active:scale-95 hover:brightness-110"
                   >
-                    Check Blocks
+                    Check
                   </button>
                 </div>
               </div>
