@@ -8,7 +8,10 @@
   "iconName": "Sparkles",
   "status": "published",
   "audience": {
-    "ages": [5, 7],
+    "ages": [
+      5,
+      7
+    ],
     "category": "number-sense"
   },
   "features": [
@@ -50,7 +53,49 @@
   ],
   "settings": {
     "speechRate": 1.0,
-    "popScaleFactor": 1.2,
-    "showItemCountBadges": true
-  }
+    "hapticIntensity": "crisp",
+    "popScaleFactor": 1.2
+  },
+  "settingsSchema": [
+    {
+      "key": "speechRate",
+      "label": "Speech rate",
+      "help": "How fast the counter is spoken.",
+      "type": "number",
+      "min": 0.5,
+      "max": 2.0,
+      "step": 0.1,
+      "unit": "x"
+    },
+    {
+      "key": "hapticIntensity",
+      "label": "Haptic intensity",
+      "help": "Strength of the vibration on each tap.",
+      "type": "choice",
+      "options": [
+        {
+          "value": "subtle",
+          "label": "Subtle"
+        },
+        {
+          "value": "crisp",
+          "label": "Crisp"
+        },
+        {
+          "value": "strong",
+          "label": "Strong"
+        }
+      ]
+    },
+    {
+      "key": "popScaleFactor",
+      "label": "Tap pop scale",
+      "help": "How much an item grows when touched.",
+      "type": "number",
+      "min": 1.0,
+      "max": 1.6,
+      "step": 0.1,
+      "unit": "x"
+    }
+  ]
 }

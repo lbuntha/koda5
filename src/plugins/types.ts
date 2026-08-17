@@ -159,6 +159,30 @@ export interface Audience {
   category: LearningCategory;
 }
 
+/**
+ * How a setting should be presented. Declared in the manifest so the plugin
+ * manager can render controls for any skill without per-plugin code.
+ */
+export type SettingField =
+  | {
+      key: string;
+      label: string;
+      help?: string;
+      type: "number";
+      min: number;
+      max: number;
+      step: number;
+      unit?: string;
+    }
+  | {
+      key: string;
+      label: string;
+      help?: string;
+      type: "choice";
+      options: { value: string; label: string }[];
+    }
+  | { key: string; label: string; help?: string; type: "boolean" };
+
 /** Release state. Lets a skill ship in the bundle while staying invisible to learners. */
 export type ReleaseStatus = "draft" | "beta" | "published";
 
@@ -186,6 +210,8 @@ export interface SkillPlugin {
   manifest: PluginManifest;
   features: PluginFeature[];
   settings: Record<string, unknown>;
+  /** Describes how to render each setting. Empty means the plugin has none. */
+  settingsSchema: SettingField[];
   activities: Record<string, AnyActivityDefinition>;
   lessons: Lesson[];
 }

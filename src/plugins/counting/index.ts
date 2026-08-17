@@ -10,12 +10,13 @@ import { CountingQuest } from "./activities/CountingQuest";
  * Metadata and curriculum are JSON so they can be edited, exported and (later)
  * served without a rebuild. Only the activity components are code.
  */
-const { features, settings, ...manifestFields } = manifestJson;
+const { features, settings, settingsSchema, ...manifestFields } = manifestJson;
 
 export const plugin: SkillPlugin = {
   manifest: manifestFields as PluginManifest,
   features: features as PluginFeature[],
   settings: settings as Record<string, unknown>,
+  settingsSchema: settingsSchema as SkillPlugin["settingsSchema"],
   lessons: lessonsJson.lessons as Lesson[],
 
   activities: {

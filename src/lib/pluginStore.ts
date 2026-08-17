@@ -80,34 +80,31 @@ const STORAGE_KEY_LOGS = "koda_plugin_logs_v2";
 function loadStoredPlugins(): LearningPlugin[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_PLUGINS);
-    if (!raw) return DEFAULT_PLUGINS;
+    if (!raw) return [...DEFAULT_PLUGINS];
+
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_PLUGINS;
+    if (!Array.isArray(parsed)) return [...DEFAULT_PLUGINS];
 
-    // Merge with DEFAULT_PLUGINS in case new plugins/features were added in newer versions
-    return DEFAULT_PLUGINS.map((def) => {
-      const found = parsed.find((p: any) => p.id === def.id);
-      if (!found) return def;
+    // Start from what was persisted. Plugins are supplied by the registry now,
+    // so a stored entry with no matching built-in is normal — not stale. This
+    // used to map over DEFAULT_PLUGINS, which silently dropped every saved
+    // choice once that array was emptied.
+    const byId = new Map<string, LearningPlugin>();
+    for (const p of parsed) {
+      if (p && typeof p.id === "string" && Array.isArray(p.features)) {
+        byId.set(p.id, p as LearningPlugin);
+      }
+    }
 
-      const mergedFeatures = def.features.map((defFeat) => {
-        const savedFeat = found.features?.find((f: any) => f.id === defFeat.id);
-        return savedFeat ? { ...defFeat, isEnabled: savedFeat.isEnabled } : defFeat;
-      });
+    // Built-ins fill in anything never persisted.
+    for (const def of DEFAULT_PLUGINS) {
+      if (!byId.has(def.id)) byId.set(def.id, def);
+    }
 
-      return {
-        ...def,
-        isEnabled: typeof found.isEnabled === "boolean" ? found.isEnabled : def.isEnabled,
-        settings: { ...def.settings, ...found.settings },
-        stats: {
-          totalEvents: found.stats?.totalEvents ?? def.stats?.totalEvents ?? 0,
-          lastActive: found.stats?.lastActive ?? def.stats?.lastActive ?? new Date().toISOString(),
-        },
-        features: mergedFeatures,
-      };
-    });
+    return [...byId.values()];
   } catch (err) {
     console.warn("Failed to load stored plugins:", err);
-    return DEFAULT_PLUGINS;
+    return [...DEFAULT_PLUGINS];
   }
 }
 

@@ -38,7 +38,12 @@ export const CountingQuest: React.FC<ActivityProps<CountingQuestParams>> = ({
     return byLevel;
   }, []);
 
+  // popScaleFactor drives the tap-pop keyframes via a CSS variable, so the
+  // setting in Plugin Lab changes the animation with no component logic.
+  const popScale = koda.config.get("popScaleFactor", 1.2);
+
   return (
+    <div style={{ "--pop-scale": String(popScale) } as React.CSSProperties} className="contents">
     <CountingGameApp
       initialLevel={startLevel}
       questionParams={questionParams}
@@ -58,5 +63,6 @@ export const CountingQuest: React.FC<ActivityProps<CountingQuestParams>> = ({
         void koda.ai.tutor(helpPrompt, { topic: "counting", level: startLevel });
       }}
     />
+    </div>
   );
 };

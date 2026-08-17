@@ -26,7 +26,7 @@ import {
 import { useTheme } from "../context/ThemeContext";
 import { playSound } from "../utils/audio";
 import { useGlobalActionLogs, useLearningPlugins, PluginManagerAPI } from "../lib/pluginStore";
-import { PluginSettingsPanel } from "./PluginSettingsPanel";
+import { PluginManagerPage } from "./plugins/PluginManagerPage";
 
 interface SettingsPageProps {
   soundEnabled: boolean;
@@ -185,7 +185,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
       {/* VIEW 1: PLUGINS & FEATURE MANAGEMENT */}
       {activeSection === "plugins" && (
-        <PluginSettingsPanel />
+        <PluginManagerPage />
       )}
 
       {/* VIEW 2: CLUBHOUSE PROFILE & GAMEPLAY */}

@@ -61,7 +61,7 @@ import { LiveVoiceCoachModal } from "../../../../components/LiveVoiceCoachModal"
 import { PracticeFeedbackBanner } from "../../../../components/PracticeFeedbackBanner";
 import { PracticeStepHeader } from "../../../../components/PracticeStepHeader";
 import { PracticeRoundCompleteModal } from "../../../../components/PracticeRoundCompleteModal";
-import { PluginSettingsPanel } from "../../../../components/PluginSettingsPanel";
+import { PluginManagerPage } from "../../../../components/plugins/PluginManagerPage";
 import { playSound, speakWebSpeech } from "../../../../utils/audio";
 import { triggerHaptic, triggerTapPopHaptic } from "../../../../utils/haptics";
 
@@ -3060,7 +3060,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
               </button>
             </div>
 
-            <PluginSettingsPanel compactMode onClose={() => setShowPluginSettingsModal(false)} />
+            <PluginManagerPage />
           </div>
         </div>
       )}
