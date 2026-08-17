@@ -10,6 +10,9 @@
  * fallback, so a lesson that declares nothing behaves exactly as before.
  */
 export interface CountingQuestionParams {
+  /** Questions in one round before the completion summary. */
+  questionsPerRound?: number;
+
   /** How many countable items to show. */
   countRange?: [number, number];
 

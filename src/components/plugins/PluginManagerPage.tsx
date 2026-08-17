@@ -345,23 +345,52 @@ const LessonPreview: React.FC<{ lesson: Lesson; onClose: () => void }> = ({
 }) => {
   const [awarded, setAwarded] = useState(0);
 
+  const q = (lesson.params?.question ?? {}) as Record<string, unknown>;
+  const level = (lesson.params?.level as number) ?? 1;
+  const range = q.countRange as [number, number] | undefined;
+
+  const meta = [
+    { term: "Level", value: String(level) },
+    { term: "Activity", value: lesson.activity },
+    { term: "Concept", value: lesson.concept },
+    { term: "Difficulty", value: lesson.difficulty ?? "—" },
+    { term: "Questions", value: String(q.questionsPerRound ?? 5) },
+    { term: "XP", value: `+${lesson.xpReward}` },
+    ...(range ? [{ term: "Items", value: `${range[0]}–${range[1]}` }] : []),
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-canvas">
-      <div className="flex items-center gap-3 px-4 py-2.5 border-b-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <UIBadge variant="warning">Preview</UIBadge>
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
-            {lesson.title}
+      <div className="border-b-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div className="flex items-center gap-3 px-4 pt-2.5">
+          <UIBadge variant="warning">Preview</UIBadge>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
+              {lesson.icon} {lesson.title}
+            </div>
+            <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate">
+              progress is not saved
+              {awarded > 0 && ` · ${awarded} XP discarded`}
+            </div>
           </div>
-          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate">
-            {lesson.activity} · progress is not saved
-            {awarded > 0 && ` · ${awarded} XP discarded`}
-          </div>
+          <button onClick={onClose} className={themeSystem.button("secondary", "sm")}>
+            <X />
+            Close
+          </button>
         </div>
-        <button onClick={onClose} className={themeSystem.button("secondary", "sm")}>
-          <X />
-          Close
-        </button>
+
+        {/* What this lesson actually is, so a reviewer can check the numbers
+            without opening lessons.json. */}
+        <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 px-4 py-2 text-[11px] font-mono">
+          {meta.map(({ term, value }) => (
+            <div key={term} className="flex items-center gap-1.5">
+              <dt className="text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                {term}
+              </dt>
+              <dd className="font-black text-slate-700 dark:text-slate-200">{value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto">

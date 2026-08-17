@@ -11,7 +11,8 @@
           "countRange": [
             3,
             7
-          ]
+          ],
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -45,7 +46,8 @@
               18
             ],
             "minDistance": 16
-          }
+          },
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -78,7 +80,8 @@
           "diffRange": [
             1,
             2
-          ]
+          ],
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -98,7 +101,8 @@
             2,
             6
           ],
-          "flashMs": 1200
+          "flashMs": 1200,
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -122,7 +126,8 @@
           "jitterRange": [
             15,
             85
-          ]
+          ],
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -142,7 +147,8 @@
             2,
             4
           ],
-          "flashMs": 1000
+          "flashMs": 1000,
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -161,7 +167,8 @@
           "targetRange": [
             5,
             9
-          ]
+          ],
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -180,7 +187,8 @@
           "initialRange": [
             2,
             8
-          ]
+          ],
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -199,7 +207,8 @@
           "teenRange": [
             11,
             19
-          ]
+          ],
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -228,7 +237,8 @@
               3,
               5
             ]
-          }
+          },
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -250,7 +260,8 @@
           "hopRange": [
             4,
             6
-          ]
+          ],
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -287,7 +298,8 @@
           "distractorJitter": [
             -4,
             4
-          ]
+          ],
+          "questionsPerRound": 5
         }
       },
       "xpReward": 50,
@@ -301,7 +313,10 @@
       "concept": "Grouping: 10 Ones Become 1 Ten",
       "activity": "counting/quest",
       "params": {
-        "level": 13
+        "level": 13,
+        "question": {
+          "questionsPerRound": 5
+        }
       },
       "xpReward": 50,
       "difficulty": "Master",
@@ -314,7 +329,10 @@
       "concept": "Place Value: Hundreds, Tens, and Ones",
       "activity": "counting/quest",
       "params": {
-        "level": 14
+        "level": 14,
+        "question": {
+          "questionsPerRound": 5
+        }
       },
       "xpReward": 50,
       "difficulty": "Master",
@@ -327,7 +345,10 @@
       "concept": "Building Numbers up to 100 and Beyond",
       "activity": "counting/quest",
       "params": {
-        "level": 15
+        "level": 15,
+        "question": {
+          "questionsPerRound": 5
+        }
       },
       "xpReward": 50,
       "difficulty": "Master",

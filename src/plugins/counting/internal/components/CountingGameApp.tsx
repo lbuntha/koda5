@@ -193,7 +193,9 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   const [difficultyFilter, setDifficultyFilter] = useState<"All" | DifficultyRating>("All");
 
   // Quiz Session State (5 questions per level session)
-  const TOTAL_QUESTIONS_PER_ROUND = 5;
+  // Declared per lesson in lessons.json; 5 is the historical default.
+  const TOTAL_QUESTIONS_PER_ROUND =
+    questionParams[currentLevelNumber]?.questionsPerRound ?? 5;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(1);
   const [streakCount, setStreakCount] = useState<number>(3);
   const [showTip, setShowTip] = useState<boolean>(false);
@@ -712,10 +714,17 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
     }
   }, [randomizeQuestion, onLevelChange]);
 
-  // On mount
+  // On mount. Must seed the level we actually opened at — this was hardcoded to
+  // 1, so entering any other level (from a lesson link or the plugin preview)
+  // generated level 1's state and left that level's own play area empty.
   useEffect(() => {
-    randomizeQuestion(1);
-    koda?.log("START_LEVEL", "Welcome to Counting Quest! Practice Level 1 fully initialized.", 1, 1);
+    randomizeQuestion(initialLevel);
+    koda?.log(
+      "START_LEVEL",
+      `Counting Quest initialised at level ${initialLevel}.`,
+      initialLevel,
+      1,
+    );
   }, []);
 
   // ------------------------------------------------------------
