@@ -1339,7 +1339,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       ? "bg-surface/80 border-emerald-500/40 hover:border-emerald-400 cursor-pointer"
                       : isUnlocked
                       ? "bg-surface/50 border-line hover:border-slate-500 cursor-pointer"
-                      : "bg-canvas/40 border-line opacity-45 cursor-not-allowed"
+                      : "bg-surface-muted/60 border-line cursor-not-allowed"
                   }`}
                 >
                   <div className="space-y-2.5">
@@ -1411,16 +1411,20 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   // Each kid theme is a tint over the canvas. Light gets a pale wash, dark the
   // deep original — the gradient stops used to be dark-only, so in light mode
   // the whole arena stayed near-black.
+  // Light mode is plain white: a tinted wash behind the play area competed with
+  // the countable items, which are the only thing that should draw the eye. The
+  // kid themes still tint the dark ground, where the contrast is gentle.
   const getThemeBgClass = () => {
     const tint: Record<string, string> = {
-      magical: "from-teal-50 dark:from-teal-950/40",
-      cyber: "from-indigo-50 dark:from-indigo-950/40",
-      candy: "from-pink-50 dark:from-pink-950/40",
-      retro: "from-amber-50 dark:from-amber-950/40",
+      magical: "dark:from-teal-950/40",
+      cyber: "dark:from-indigo-950/40",
+      candy: "dark:from-pink-950/40",
+      retro: "dark:from-amber-950/40",
     };
     const from = tint[kidThemeMode];
-    if (!from) return "bg-canvas";
-    return `bg-canvas bg-gradient-to-b ${from} via-canvas to-canvas`;
+    const base = "bg-white dark:bg-canvas";
+    if (!from) return base;
+    return `${base} dark:bg-gradient-to-b ${from} dark:via-canvas dark:to-canvas`;
   };
 
   const progressPercent = (currentQuestionIndex / TOTAL_QUESTIONS_PER_ROUND) * 100;
@@ -2074,7 +2078,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     className={`px-4 py-3 rounded-2xl border text-xs sm:text-sm font-mono font-bold transition transform active:scale-95 cursor-pointer ${
                       l3ConservationSelection === "A"
                         ? "bg-purple-500 text-white border-purple-300 ring-2 ring-purple-400 shadow-md"
-                        : "bg-surface hover:bg-purple-950/40 border-line/80 text-slate-200"
+                        : "bg-surface hover:bg-purple-950/40 border-line/80 text-body"
                     }`}
                   >
                     Left has more
@@ -2085,7 +2089,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     className={`px-4 py-3 rounded-2xl border text-xs sm:text-sm font-mono font-bold transition transform active:scale-95 cursor-pointer ${
                       l3ConservationSelection === "SAME"
                         ? "bg-amber-400 text-slate-950 border-amber-300 ring-2 ring-amber-400 shadow-md font-black"
-                        : "bg-surface hover:bg-amber-950/40 border-line/80 text-slate-200"
+                        : "bg-surface hover:bg-amber-950/40 border-line/80 text-body"
                     }`}
                   >
                     Same!
@@ -2096,7 +2100,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     className={`px-4 py-3 rounded-2xl border text-xs sm:text-sm font-mono font-bold transition transform active:scale-95 cursor-pointer ${
                       l3ConservationSelection === "B"
                         ? "bg-cyan-500 text-white border-cyan-300 ring-2 ring-cyan-400 shadow-md"
-                        : "bg-surface hover:bg-cyan-950/40 border-line/80 text-slate-200"
+                        : "bg-surface hover:bg-cyan-950/40 border-line/80 text-body"
                     }`}
                   >
                     Right has more
@@ -2113,7 +2117,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                     /* The child starts the flash, so their attention is on the
                        screen when the dots appear. */
                     <div className="text-center space-y-3">
-                      <p className="text-base font-bold text-slate-700 dark:text-slate-200">
+                      <p className="text-base font-bold text-slate-700 dark:text-body">
                         Ready? Watch closely!
                       </p>
                       <button
@@ -2127,7 +2131,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   ) : l4FlashHidden ? (
                     <div className="text-center space-y-2.5">
                       <span className="text-3xl">❓</span>
-                      <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                      <p className="text-sm font-bold text-slate-700 dark:text-body">
                         How many dots did you see?
                       </p>
                       <button
@@ -2455,7 +2459,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       <div className="h-8 w-[1px] bg-teal-500/20" />
                       <div>
                         <div className="text-[9px] font-mono font-bold text-muted">YOU HAVE</div>
-                        <div className={`text-xl font-black tracking-tight ${currentTotalBlocks === activeTarget ? "text-emerald-700 dark:text-emerald-400 animate-pulse" : "text-slate-200"}`}>
+                        <div className={`text-xl font-black tracking-tight ${currentTotalBlocks === activeTarget ? "text-emerald-700 dark:text-emerald-400 animate-pulse" : "text-body"}`}>
                           {currentTotalBlocks}
                         </div>
                       </div>
@@ -3017,7 +3021,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-[11px] font-bold border transition ${
                     teacherPreviewMode
                       ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-indigo-400/50 shadow-[0_0_15px_rgba(129,140,248,0.2)]"
-                      : "bg-surface-muted text-muted border-line hover:text-slate-200"
+                      : "bg-surface-muted text-muted border-line hover:text-body"
                   }`}
                   title="Unlock all levels to inspect and preview their Socratic questions"
               aria-label="Unlock all levels to inspect and preview their Socratic questions"
@@ -3058,7 +3062,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                         ? "bg-surface-muted/80 border-line hover:border-emerald-500/50 cursor-pointer"
                         : isUnlocked
                         ? "bg-surface-muted/50 border-line/80 hover:border-slate-500 cursor-pointer"
-                        : "bg-canvas/40 border-line/50 opacity-50 cursor-not-allowed"
+                        : "bg-surface-muted/60 border-line cursor-not-allowed"
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -3074,7 +3078,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                             {lvl.category}
                           </span>
                         </div>
-                        <h4 className="text-xs font-bold text-slate-200 truncate">{lvl.title}</h4>
+                        <h4 className="text-xs font-bold text-ink truncate">{lvl.title}</h4>
                       </div>
                     </div>
 
@@ -3086,7 +3090,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
                       ) : isUnlocked ? (
                         <span className="text-[10px] font-mono text-muted">Play</span>
                       ) : (
-                        <Lock className="w-3.5 h-3.5 text-slate-600" />
+                        <Lock className="w-3.5 h-3.5 text-muted" />
                       )}
                     </div>
                   </button>
@@ -3108,7 +3112,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
 
               <button
                 onClick={() => setShowLevelPicker(false)}
-                className="px-4 py-1.5 rounded-xl bg-surface-muted hover:bg-slate-700 text-slate-200 text-xs font-bold font-mono cursor-pointer"
+                className="px-4 py-2.5 min-h-[40px] rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-900 dark:text-white text-xs font-black font-mono cursor-pointer"
               >
                 Close
               </button>
