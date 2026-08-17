@@ -44,6 +44,7 @@ import {
   Sliders,
 } from "lucide-react";
 import { useTheme } from "../../../../context/ThemeContext";
+import type { CountingQuestionParamsByLevel } from "../data/questionParams";
 import {
   FLOWING_LEVELS,
   FlowingLevelConfig,
@@ -112,10 +113,18 @@ interface CountingGameAppProps {
   soundEnabled?: boolean;
   setSoundEnabled?: (enabled: boolean) => void;
   kidThemeMode?: "magical" | "cyber" | "candy" | "retro";
+  /** Per-level question parameters, supplied by the plugin from lessons.json. */
+  questionParams?: CountingQuestionParamsByLevel;
 }
 
 function sample<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/** Pick a value from a [min, max] tuple, falling back to the original literal. */
+function rangeOr(range: [number, number] | undefined, min: number, max: number): number {
+  const [lo, hi] = range ?? [min, max];
+  return randomInt(lo, hi);
 }
 
 function randomInt(min: number, max: number): number {
@@ -155,6 +164,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   soundEnabled: propsSoundEnabled,
   setSoundEnabled: propsSetSoundEnabled,
   kidThemeMode = "magical",
+  questionParams = {},
 }) => {
   const { theme, toggleTheme } = useTheme();
   // Navigation & View Modes
@@ -363,6 +373,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   const [l3ConservationSelection, setL3ConservationSelection] = useState<string | null>(null);
 
   const randomizeOrbitLevel = useCallback((lvlNum = currentLevelNumber) => {
+    const q = questionParams[lvlNum] ?? {};
     const randomAsset = sample(PREDEFINED_ASSETS);
     setL1ActiveAsset(randomAsset);
     setL1TappedList([]);
@@ -372,21 +383,21 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
     setQuizFeedback(null);
 
     if (lvlNum === 1) {
-      const count = randomInt(3, 7);
+      const count = rangeOr(q.countRange, 3, 7);
       setL1TargetCount(count);
     } else if (lvlNum === 2) {
-      const count = randomInt(5, 8);
+      const count = rangeOr(q.countRange, 5, 8);
       setL1TargetCount(count);
       const positions: { top: string; left: string; rotate: string }[] = [];
-      const minDistance = 16; // Minimum distance in percentage to avoid tight overlaps
+      const minDistance = q.scatter?.minDistance ?? 16; // % gap that avoids tight overlaps
       for (let i = 0; i < count; i++) {
         let top = 0;
         let left = 0;
         let attempts = 0;
         let ok = false;
         while (!ok && attempts < 100) {
-          top = randomInt(15, 70);
-          left = randomInt(12, 80);
+          top = rangeOr(q.scatter?.top, 15, 70);
+          left = rangeOr(q.scatter?.left, 12, 80);
           ok = true;
           for (const pos of positions) {
             const pTop = parseFloat(pos.top);
@@ -402,22 +413,23 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         positions.push({
           top: `${top}%`,
           left: `${left}%`,
-          rotate: `${randomInt(-18, 18)}deg`,
+          rotate: `${rangeOr(q.scatter?.rotate, -18, 18)}deg`,
         });
       }
       setL2ScatterPositions(positions);
     } else if (lvlNum === 3) {
       // 3 randomized comparison modes: SAME (Conservation), A_MORE, B_MORE
-      const mode = sample(["SAME", "SAME", "A_MORE", "B_MORE"]);
-      let countA = randomInt(3, 8);
+      const mode = sample(q.compareModes ?? ["SAME", "SAME", "A_MORE", "B_MORE"]);
+      let countA = rangeOr(q.countRange, 3, 8);
       let countB = countA;
+      const [dLo, dHi] = q.diffRange ?? [1, 2];
 
       if (mode === "A_MORE") {
-        countA = randomInt(4, 8);
-        countB = countA - randomInt(1, Math.min(2, countA - 2));
+        countA = rangeOr(q.biasedRange, 4, 8);
+        countB = countA - randomInt(dLo, Math.min(dHi, countA - 2));
       } else if (mode === "B_MORE") {
-        countB = randomInt(4, 8);
-        countA = countB - randomInt(1, Math.min(2, countB - 2));
+        countB = rangeOr(q.biasedRange, 4, 8);
+        countA = countB - randomInt(dLo, Math.min(dHi, countB - 2));
       }
 
       const correctAnswer: "A" | "B" | "SAME" =
@@ -451,7 +463,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         tappedB: [],
       });
     }
-  }, [currentLevelNumber]);
+  }, [currentLevelNumber, questionParams]);
 
   // ============================================================
   // LEVEL 4-6 STATE (Flash Subitizing Rush)
@@ -471,39 +483,41 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
     setQuizFeedback(null);
     setL4FlashHidden(false);
 
-    const flashDuration = lvlNum === 4 ? 1200 : lvlNum === 5 ? 900 : 1000;
+    const flashDuration =
+      questionParams[lvlNum]?.flashMs ?? (lvlNum === 4 ? 1200 : lvlNum === 5 ? 900 : 1000);
     setTimeout(() => {
       setL4FlashHidden(true);
     }, flashDuration);
-  }, [currentLevelNumber, triggerSound]);
+  }, [currentLevelNumber, triggerSound, questionParams]);
 
   const randomizeSubitizingLevel = useCallback((lvlNum = currentLevelNumber) => {
+    const q = questionParams[lvlNum] ?? {};
     setQuizFeedback(null);
     if (lvlNum === 4) {
-      const count = randomInt(2, 6);
+      const count = rangeOr(q.countRange, 2, 6);
       setL4Target(count);
       setL6ConceptualData(null);
       startSubitizingFlash(lvlNum);
     } else if (lvlNum === 5) {
-      const count = randomInt(3, 7);
+      const count = rangeOr(q.countRange, 3, 7);
       setL4Target(count);
       setL6ConceptualData(null);
       const points = Array.from({ length: count }).map(() => ({
-        x: randomInt(15, 85),
-        y: randomInt(15, 85),
+        x: rangeOr(q.jitterRange, 15, 85),
+        y: rangeOr(q.jitterRange, 15, 85),
       }));
       setL5IrregularPoints(points);
       startSubitizingFlash(lvlNum);
     } else if (lvlNum === 6) {
-      const targetA = randomInt(2, 4);
-      const targetB = randomInt(2, 4);
+      const targetA = rangeOr(q.partRange, 2, 4);
+      const targetB = rangeOr(q.partRange, 2, 4);
       const total = targetA + targetB;
       const colorPair = sample(DUAL_COLOR_PAIRS);
       setL4Target(total);
       setL6ConceptualData({ targetA, targetB, total, colorPair });
       startSubitizingFlash(lvlNum);
     }
-  }, [currentLevelNumber, startSubitizingFlash]);
+  }, [currentLevelNumber, startSubitizingFlash, questionParams]);
 
   // ============================================================
   // LEVEL 7-9 STATE (Ten-Frame Rocket Lab)
@@ -517,22 +531,23 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   const [l9DoubleFrameB, setL9DoubleFrameB] = useState<boolean[]>(Array(10).fill(false));
 
   const randomizeTenFrameLevel = useCallback((lvlNum = currentLevelNumber) => {
+    const q = questionParams[lvlNum] ?? {};
     setQuizFeedback(null);
     setL8ComplementGuess(null);
 
     if (lvlNum === 7) {
-      const target = randomInt(5, 9);
+      const target = rangeOr(q.targetRange, 5, 9);
       setL7SingleTarget(target);
       setL7SingleFrame(Array(10).fill(false));
     } else if (lvlNum === 8) {
-      const initialLoaded = randomInt(2, 8);
+      const initialLoaded = rangeOr(q.initialRange, 2, 8);
       setL8ComplementInitial(initialLoaded);
     } else if (lvlNum === 9) {
-      const teen = randomInt(11, 19);
+      const teen = rangeOr(q.teenRange, 11, 19);
       setL9TeenTarget(teen);
       setL9DoubleFrameB(Array(10).fill(false));
     }
-  }, [currentLevelNumber]);
+  }, [currentLevelNumber, questionParams]);
 
   // ============================================================
   // LEVEL 10-12 STATE (Froggy Skip Jump Line)
@@ -569,30 +584,39 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   const [l12Guess, setL12Guess] = useState<number | null>(null);
 
   const randomizeFroggyLevel = useCallback((lvlNum = currentLevelNumber) => {
+    const q = questionParams[lvlNum] ?? {};
     setL10FrogHopCount(0);
     setL12Guess(null);
     setQuizFeedback(null);
     const theme = sample(RIVER_THEMES);
 
     if (lvlNum === 10) {
-      const step = sample([2, 5]);
-      const maxHops = step === 2 ? randomInt(4, 6) : randomInt(3, 5);
+      const step = sample(q.steps ?? [2, 5]);
+      const perStep = q.hopRangeByStep?.[String(step)];
+      const maxHops = perStep
+        ? randomInt(perStep[0], perStep[1])
+        : step === 2
+          ? randomInt(4, 6)
+          : randomInt(3, 5);
       const padValues = Array.from({ length: maxHops + 1 }).map((_, i) => i * step);
       setL10Track({ step, start: 0, maxHops, targetNumber: padValues[maxHops], padValues, theme });
     } else if (lvlNum === 11) {
-      const maxHops = randomInt(4, 6);
-      const padValues = Array.from({ length: maxHops + 1 }).map((_, i) => i * 10);
-      setL10Track({ step: 10, start: 0, maxHops, targetNumber: padValues[maxHops], padValues, theme });
+      const step = (q.steps ?? [10])[0];
+      const maxHops = rangeOr(q.hopRange, 4, 6);
+      const padValues = Array.from({ length: maxHops + 1 }).map((_, i) => i * step);
+      setL10Track({ step, start: 0, maxHops, targetNumber: padValues[maxHops], padValues, theme });
     } else if (lvlNum === 12) {
       const isReverse = Math.random() > 0.5;
-      const step = sample([2, 5, 10]);
-      const length = 5;
-      const start = isReverse ? randomInt(25, 45) : randomInt(5, 20);
+      const step = sample(q.steps ?? [2, 5, 10]);
+      const length = q.seqLength ?? 5;
+      const start = isReverse
+        ? rangeOr(q.reverseStartRange, 25, 45)
+        : rangeOr(q.startRange, 5, 20);
 
       const rawSeq = Array.from({ length }).map((_, i) =>
         isReverse ? start - i * step : start + i * step
       );
-      const missingIndex = randomInt(1, 3);
+      const missingIndex = rangeOr(q.missingIndexRange, 1, 3);
       const correctAnswer = rawSeq[missingIndex];
 
       const sequence: (number | null)[] = [...rawSeq];
@@ -603,7 +627,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       distractors.add(correctAnswer - step);
       distractors.add(correctAnswer + (isReverse ? -1 : 1));
       while (distractors.size < 3) {
-        distractors.add(correctAnswer + randomInt(-4, 4));
+        distractors.add(correctAnswer + rangeOr(q.distractorJitter, -4, 4));
       }
       distractors.delete(correctAnswer);
 
@@ -620,7 +644,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
           : `Pattern steps forward by +${step} each jump`,
       });
     }
-  }, [currentLevelNumber]);
+  }, [currentLevelNumber, questionParams]);
 
   // ============================================================
   // LEVEL 13-15 STATE (Base-10 Galaxy Foundry)

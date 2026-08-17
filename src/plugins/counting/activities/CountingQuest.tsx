@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { CountingGameApp } from "../internal/components/CountingGameApp";
+import type { CountingQuestionParamsByLevel } from "../internal/data/questionParams";
 import type { ActivityProps } from "../../types";
+import lessonsJson from "../lessons.json";
 
 export interface CountingQuestParams {
   level: number;
@@ -22,9 +24,24 @@ export const CountingQuest: React.FC<ActivityProps<CountingQuestParams>> = ({
 }) => {
   const startLevel = params?.level ?? level ?? 1;
 
+  // The game has its own level picker, so it needs every lesson's parameters,
+  // not just the one it was opened at. Built from lessons.json — the values that
+  // used to be literals inside randomize*Level.
+  const questionParams = useMemo<CountingQuestionParamsByLevel>(() => {
+    const byLevel: CountingQuestionParamsByLevel = {};
+    for (const lesson of lessonsJson.lessons) {
+      const p = lesson.params as { level?: number; question?: unknown } | undefined;
+      if (p?.level && p.question) {
+        byLevel[p.level] = p.question as CountingQuestionParamsByLevel[number];
+      }
+    }
+    return byLevel;
+  }, []);
+
   return (
     <CountingGameApp
       initialLevel={startLevel}
+      questionParams={questionParams}
       onBackToHome={koda.ui.exit}
       onBackToStore={koda.ui.exit}
       onOpenSpecsBook={koda.ui.exit}
