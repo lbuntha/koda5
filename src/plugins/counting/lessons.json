@@ -10,7 +10,7 @@
         "question": {
           "countRange": [
             3,
-            7
+            6
           ],
           "questionsPerRound": 5
         }

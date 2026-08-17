@@ -124,6 +124,14 @@ interface CountingGameAppProps {
   koda?: KodaSDK;
 }
 
+/** "Rockets" -> "rocket". Asset names are plural, but the prompts say "each". */
+function singular(name: string): string {
+  const n = name.toLowerCase();
+  if (n.endsWith("ies")) return `${n.slice(0, -3)}y`;
+  if (n.endsWith("es") && /(ch|sh|s|x|z)es$/.test(n)) return n.slice(0, -2);
+  return n.endsWith("s") ? n.slice(0, -1) : n;
+}
+
 function sample<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -1169,8 +1177,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   }, [difficultyFilter]);
 
   const currentQuestionText = useMemo(() => {
-    if (currentLevelNumber === 1) return `Touch each ${l1ActiveAsset.name.toLowerCase()}. Count as you go!`;
-    if (currentLevelNumber === 2) return `Touch every ${l1ActiveAsset.name.toLowerCase()}. Do not miss any!`;
+    if (currentLevelNumber === 1) return `Touch each ${singular(l1ActiveAsset.name)}. Count as you go!`;
+    if (currentLevelNumber === 2) return `Touch every ${singular(l1ActiveAsset.name)}. Do not miss any!`;
     if (currentLevelNumber === 3) {
       return l3ConservationData.countA === l3ConservationData.countB
         ? `Count both groups. Do they have the same?`
@@ -1581,12 +1589,18 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
 
           {/* Collapsible Socratic Math Tip Banner */}
           {showTip && (
-            <div className="p-3.5 sm:p-4 bg-indigo-950/40 rounded-2xl text-xs sm:text-[13px] text-indigo-200 leading-relaxed space-y-1.5 animate-fadeIn">
-              <div className="leading-snug">
-                <span className="font-bold text-ink mr-1.5">💡 Pedagogical Concept:</span>
-                <span className="font-bold text-slate-800 dark:text-amber-300">{activeLevelConfig.skillConcept}</span>
+            /* Was indigo-950 with indigo-200 text — dark-only, so on a light
+               ground it rendered grey-on-grey. It also spoke to teachers
+               ("Pedagogical Concept", "cardinality"), not to the child asking
+               for help. */
+            <div className="p-3.5 sm:p-4 bg-indigo-50 dark:bg-indigo-950/40 border-2 border-indigo-200 dark:border-indigo-800 rounded-2xl space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <Lightbulb className="w-4 h-4 shrink-0 text-indigo-600 dark:text-indigo-300" />
+                <span className="text-sm font-black text-slate-900 dark:text-white">Here is a tip</span>
               </div>
-              <p className="text-indigo-200/90">{activeLevelConfig.pedagogyTip}</p>
+              <p className="text-sm font-bold text-slate-700 dark:text-indigo-100">
+                {activeLevelConfig.kidTip ?? activeLevelConfig.pedagogyTip}
+              </p>
             </div>
           )}
 
@@ -1597,7 +1611,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             {/* LEVEL 1: Linear 1-to-1 Counting */}
             {currentLevelNumber === 1 && (
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center justify-center gap-3.5 p-6 bg-canvas/60 rounded-2xl min-h-[160px]">
+                <div className="flex flex-nowrap items-center justify-center gap-3.5 p-6 bg-canvas/60 rounded-2xl min-h-[160px]">
                   {Array.from({ length: l1TargetCount }).map((_, idx) => {
                     const isTapped = l1TappedList.includes(idx);
                     const tagNumber = isTapped ? l1TappedList.indexOf(idx) + 1 : null;
@@ -2166,7 +2180,15 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
 
                 {/* Keypad */}
                 <div className="flex flex-wrap items-center justify-center gap-2.5">
-                  {[2, 3, 4, 5, 6, 7, 8].map((num) => (
+                  {(() => {
+                    // Five choices centred on the answer, clamped to the range
+                    // this level actually generates.
+                    const q = questionParams[currentLevelNumber] ?? {};
+                    const [lo, hi] = q.countRange ?? [2, 8];
+                    const span = Math.max(0, Math.min(l4Target - 2, hi - 4));
+                    const start = Math.max(lo, Math.min(span, l4Target - 2));
+                    return Array.from({ length: 5 }, (_, i) => start + i).filter((n) => n >= lo && n <= hi + 1);
+                  })().map((num) => (
                     <button
                       key={num}
                       onClick={() => handleSubitizingGuess(num)}

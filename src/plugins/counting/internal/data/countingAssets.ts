@@ -66,6 +66,8 @@ export interface FlowingLevelConfig {
   targetObjective: string;
   stepByStep: string[];
   pedagogyTip: string;
+  /** The tip a child reads when they ask for help. Plain words, one sentence. */
+  kidTip?: string;
   audioPrompt: string;
 }
 
@@ -88,6 +90,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "The last number tells you how many there are in all.",
     ],
     pedagogyTip: "The last number named represents the whole group (cardinality). Keep your finger taps in sync with the numbers!",
+    kidTip: "Say one number for each one you touch.",
     audioPrompt: "Level 1: Count in a row! Touch each item in order to find the total.",
   },
   {
@@ -108,6 +111,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Make sure every item is counted without skipping any.",
     ],
     pedagogyTip: "Scanning in an orderly way (like top to bottom) helps count scattered items accurately.",
+    kidTip: "Go in order so you do not miss any.",
     audioPrompt: "Level 2: Count scattered objects! Tap each one once until all are counted.",
   },
   {
@@ -128,6 +132,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Confirm that both groups have the exact same count.",
     ],
     pedagogyTip: "Spreading items out might make a group look bigger, but the actual count stays exactly the same!",
+    kidTip: "Spreading things out does not make more!",
     audioPrompt: "Level 3: Compare both groups! Do they have the same number of items?",
   },
   {
@@ -148,6 +153,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Tap the matching number on the keypad.",
     ],
     pedagogyTip: "Recognizing dot patterns right away (subitizing) builds strong mental number pictures.",
+    kidTip: "Try to see the pattern without counting.",
     audioPrompt: "Level 4: Quick Dice Flash! Look at the dots and tap the number right away.",
   },
   {
@@ -168,6 +174,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Tap your answer on the number pad.",
     ],
     pedagogyTip: "Seeing dot groups at a glance helps you think of numbers as solid quantities.",
+    kidTip: "Look for small groups inside the big group.",
     audioPrompt: "Level 5: Quick Dot Groups! Look quickly and tap the count.",
   },
   {
@@ -188,6 +195,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Add both parts together in your head to find the total.",
     ],
     pedagogyTip: "Seeing numbers as two parts (like 5 is 3 and 2) makes mental addition fast and easy.",
+    kidTip: "Count one colour, then keep going with the other.",
     audioPrompt: "Level 6: Combine Two Colors! Add both color groups in your head and tap the total.",
   },
   {
@@ -209,6 +217,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Tap Launch when your ten-frame is complete.",
     ],
     pedagogyTip: "Seeing numbers using 5 (like 8 is 5 + 3) makes mental math simple.",
+    kidTip: "Fill the top row to 5 first. That makes it easy!",
     audioPrompt: "Level 7: Ten-Frame! Fill 5 on top first, then add the rest on the bottom.",
   },
   {
@@ -229,6 +238,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Select the missing number that makes 10 with the dots.",
     ],
     pedagogyTip: "Pairs that make 10 (like 7 + 3 and 6 + 4) are key building blocks for all math!",
+    kidTip: "Count the empty boxes. That is how many more.",
     audioPrompt: "Level 8: Making 10! Find how many more dots are needed to reach 10.",
   },
   {
@@ -249,6 +259,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "See that 10 and ones make the teen number (10 + 4 = 14).",
     ],
     pedagogyTip: "Every teen number is simply 'one ten and some ones'. Double ten-frames show this clearly.",
+    kidTip: "One full frame is 10. Then count the extra ones.",
     audioPrompt: "Level 9: Teen Numbers! Combine one full ten with extra ones.",
   },
   {
@@ -269,6 +280,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Chant the numbers aloud as you hop all the way to the goal.",
     ],
     pedagogyTip: "Skip counting creates equal steps in your mind and prepares you for multiplication.",
+    kidTip: "Say the numbers out loud as you hop.",
     audioPrompt: "Level 10: Skip Counting! Hop forward by equal steps of 2 or 5.",
   },
   {
@@ -289,6 +301,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Hop all the way across the path to the target.",
     ],
     pedagogyTip: "Counting by 10s (10, 20, 30... 100) helps you navigate place value with ease.",
+    kidTip: "Every hop adds 10. Listen to the pattern!",
     audioPrompt: "Level 11: Count by 10s! Take leaps of 10 to move across the path.",
   },
   {
@@ -309,6 +322,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Choose the correct missing number to complete the line.",
     ],
     pedagogyTip: "Finding missing numbers in a line helps you understand how all numbers connect.",
+    kidTip: "Look at how much it grows each hop.",
     audioPrompt: "Level 12: Missing Number! Look at the pattern and pick the missing step.",
   },
   {
@@ -329,6 +343,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Group 10 ones into 1 solid Ten-Rod.",
     ],
     pedagogyTip: "10 loose ones can be grouped together and treated as 1 single 'Ten'.",
+    kidTip: "10 ones make 1 ten. Put them together!",
     audioPrompt: "Level 13: Make a Ten! Gather 10 single blocks and group them into 1 Ten-Rod.",
   },
   {
@@ -349,6 +364,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "See that the total amount stays the same when grouped.",
     ],
     pedagogyTip: "Expanded form (100 + 30 + 5 = 135) connects physical blocks directly to written numbers.",
+    kidTip: "10 tens make 1 hundred. Put them together!",
     audioPrompt: "Level 14: Make a Hundred! Group 10 Ten-Rods into 100-Flats.",
   },
   {
@@ -369,6 +385,7 @@ export const FLOWING_LEVELS: FlowingLevelConfig[] = [
       "Tap Check Number to test your build.",
     ],
     pedagogyTip: "Breaking a Ten into 10 Ones is the physical secret behind subtraction regrouping.",
+    kidTip: "Use big blocks first, then the small ones.",
     audioPrompt: "Level 15: Place Value Master! Build the target number using hundreds, tens, and ones.",
   },
 ];
