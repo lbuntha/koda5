@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, EyeOff, Package, Power, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, EyeOff, Package, Play, Power, RotateCcw, X } from "lucide-react";
 import { PluginManagerAPI, useLearningPlugins, type LearningPlugin } from "../../lib/pluginStore";
 import { PLUGINS, hiddenReason, type HiddenReason } from "../../plugins/registry";
 import { setViewer, useViewer, type Viewer } from "../../plugins/viewer";
-import type { SettingField, SkillPlugin } from "../../plugins/types";
+import type { Lesson, SettingField, SkillPlugin } from "../../plugins/types";
 import { themeSystem } from "../../lib/themeSystem";
 import { UIBadge, UISectionHeader, UIStatGrid, UIStatTile } from "../ui";
 import { playSound } from "../../utils/audio";
+import { PluginHost } from "../../plugins/host/PluginHost";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "neutral"> = {
   published: "success",
@@ -170,7 +171,8 @@ const PluginDetail: React.FC<{
   stored: LearningPlugin | undefined;
   viewer: Viewer;
   onBack: () => void;
-}> = ({ skill, stored, viewer, onBack }) => {
+  onPreview: (lesson: Lesson) => void;
+}> = ({ skill, stored, viewer, onBack, onPreview }) => {
   const { manifest } = skill;
   const isEnabled = stored?.isEnabled ?? true;
   const features = stored?.features ?? skill.features;
@@ -296,27 +298,96 @@ const PluginDetail: React.FC<{
 
       <div className={themeSystem.card("default", "p-4 sm:p-5")}>
         <div className={themeSystem.sectionHeader.subtitle}>Lessons it contributes</div>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          Open one to try it. Nothing you do in a preview counts towards progress.
+        </p>
         <ol className="mt-2 divide-y-2 divide-slate-100 dark:divide-slate-800">
           {skill.lessons.map((lesson) => (
-            <li key={lesson.id} className="flex items-center gap-3 py-2.5">
-              <span className="text-lg shrink-0">{lesson.icon}</span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-bold text-slate-900 dark:text-white truncate">
-                  {lesson.title}
+            <li key={lesson.id}>
+              <button
+                onClick={() => {
+                  playSound("pop");
+                  onPreview(lesson);
+                }}
+                className="w-full flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-xl text-left hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group"
+              >
+                <span className="text-lg shrink-0">{lesson.icon}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-bold text-slate-900 dark:text-white truncate">
+                    {lesson.title}
+                  </span>
+                  <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
+                    {lesson.concept}
+                  </span>
                 </span>
-                <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
-                  {lesson.concept}
+                <span className="hidden sm:block text-[11px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
+                  {lesson.activity}
                 </span>
-              </span>
-              <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
-                {lesson.activity}
-              </span>
+                <Play className="w-4 h-4 shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition" />
+              </button>
             </li>
           ))}
         </ol>
       </div>
     </div>
   );
+};
+
+/**
+ * Runs one lesson exactly as a learner would see it, but sealed off from their
+ * record: XP and completions are swallowed rather than written. That is the
+ * point of a preview — you can play a lesson to check it without inflating a
+ * child's progress, and you can preview a skill that is switched off.
+ */
+const LessonPreview: React.FC<{ lesson: Lesson; onClose: () => void }> = ({
+  lesson,
+  onClose,
+}) => {
+  const [awarded, setAwarded] = useState(0);
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-canvas">
+      <div className="flex items-center gap-3 px-4 py-2.5 border-b-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <UIBadge variant="warning">Preview</UIBadge>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
+            {lesson.title}
+          </div>
+          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate">
+            {lesson.activity} · progress is not saved
+            {awarded > 0 && ` · ${awarded} XP discarded`}
+          </div>
+        </div>
+        <button onClick={onClose} className={themeSystem.button("secondary", "sm")}>
+          <X />
+          Close
+        </button>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-auto">
+        <PluginHost
+          activityRef={lesson.activity}
+          params={lesson.params}
+          level={(lesson.params?.level as number) ?? 1}
+          snapshot={PREVIEW_SNAPSHOT}
+          onExit={onClose}
+          // Swallowed on purpose — a preview must not touch the learner's record.
+          onAwardXp={(xp) => setAwarded((n) => n + xp)}
+          onComplete={() => {}}
+        />
+      </div>
+    </div>
+  );
+};
+
+/** Stand-in learner for previews, so a skill reading progress still renders. */
+const PREVIEW_SNAPSHOT = {
+  xp: 0,
+  level: 1,
+  streakDays: 0,
+  problemsSolved: 0,
+  dailyGoal: 5,
+  dailySolved: 0,
 };
 
 /**
@@ -330,6 +401,7 @@ export const PluginManagerPage: React.FC = () => {
   const stored = useLearningPlugins();
   const viewer = useViewer();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<Lesson | null>(null);
 
   const storedById = useMemo(
     () => new Map(stored.map((p) => [p.id, p])),
@@ -349,15 +421,19 @@ export const PluginManagerPage: React.FC = () => {
   const selected = PLUGINS.find((p) => p.manifest.id === selectedId);
   if (selected) {
     return (
-      <PluginDetail
-        skill={selected}
-        stored={storedById.get(selected.manifest.id)}
-        viewer={viewer}
-        onBack={() => {
-          playSound("pop");
-          setSelectedId(null);
-        }}
-      />
+      <>
+        <PluginDetail
+          skill={selected}
+          stored={storedById.get(selected.manifest.id)}
+          viewer={viewer}
+          onBack={() => {
+            playSound("pop");
+            setSelectedId(null);
+          }}
+          onPreview={setPreview}
+        />
+        {preview && <LessonPreview lesson={preview} onClose={() => setPreview(null)} />}
+      </>
     );
   }
 
