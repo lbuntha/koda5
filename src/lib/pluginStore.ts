@@ -55,92 +55,18 @@ export interface PluginActionLog {
   details: string;
 }
 
+/**
+ * Legacy built-ins.
+ *
+ * "counting-mastery" used to live here, duplicating the counting plugin's own
+ * manifest.json and disagreeing with it about how many features exist. Skills
+ * now register themselves from src/plugins/registry.ts, so the manifest is the
+ * single source of truth.
+ *
+ * What remains are UI fragments rather than skills — they should become
+ * `features` of the plugin they belong to.
+ */
 const DEFAULT_PLUGINS: LearningPlugin[] = [
-  {
-    id: "counting-mastery",
-    name: "Counting Mastery Engine",
-    version: "2.4.0",
-    description: "Core interactive counting, one-to-one correspondence & quantity visualization engine.",
-    category: "core",
-    author: "Koda Math Lab",
-    isEnabled: true,
-    iconName: "Sparkles",
-    stats: { totalEvents: 142, lastActive: new Date().toISOString() },
-    settings: {
-      speechRate: 1.0,
-      popScaleFactor: 1.2,
-      hapticIntensity: "crisp",
-      autoReadQuestions: false,
-      showItemCountBadges: true,
-      tenFrameAccentColor: "emerald",
-      confettiParticles: 40,
-    },
-    features: [
-      {
-        id: "tactile_pop",
-        name: "Tactile Object Bounce & Pop FX",
-        description: "Plays animated elastic bounce and pop scaling when interacting with countable items.",
-        isEnabled: true,
-        tag: "Visual & Haptic",
-      },
-      {
-        id: "haptic_feedback",
-        name: "Haptic Vibration Feedback (Navigator.vibrate)",
-        description: "Sends crisp tactile vibration pulses synchronized with the manipulative tap-pop-anim sequence.",
-        isEnabled: true,
-        tag: "Haptic",
-      },
-      {
-        id: "audio_speech",
-        name: "Audio Speech Counter (TTS)",
-        description: "Speaks cardinal number words ('one, two, three...') aloud upon touching objects.",
-        isEnabled: true,
-        tag: "Audio",
-      },
-      {
-        id: "counting_badges",
-        name: "1-to-1 Correspondence Badges",
-        description: "Displays numbered index badges on touched objects to prevent double-counting.",
-        isEnabled: true,
-        tag: "Cognitive",
-      },
-      {
-        id: "spatial_randomizer",
-        name: "Spatial Arrangement Randomizer",
-        description: "Randomizes object geometries across clusters, circles, lines, columns, and scattered fields.",
-        isEnabled: true,
-        tag: "Pedagogy",
-      },
-      {
-        id: "magnetic_snapping",
-        name: "Ten-Frame Magnetic Chamber Snapping",
-        description: "Snaps energy fuel cells smoothly into place with tactile grid highlight glow.",
-        isEnabled: true,
-        tag: "Manipulative",
-      },
-      {
-        id: "socratic_hints",
-        name: "Socratic Hint & Guidance Tips",
-        description: "Provides scaffolded hints and conceptual breakdowns on demand.",
-        isEnabled: true,
-        tag: "Pedagogy",
-      },
-      {
-        id: "gamification_multipliers",
-        name: "XP Multipliers & Victory Confetti",
-        description: "Awards bonus XP, streak flames, and celebratory particle bursts upon level completion.",
-        isEnabled: true,
-        tag: "Rewards",
-      },
-      {
-        id: "sound_chimes",
-        name: "Sound FX & Interactive Chimes",
-        description: "Plays pleasant audio feedback tones for popping, tapping, and validating answers.",
-        isEnabled: true,
-        tag: "Audio",
-      },
-    ],
-  },
   {
     id: "step-header-tagger",
     name: "Contextual Step Header",
@@ -361,18 +287,9 @@ function saveStoredPlugins(plugins: LearningPlugin[]) {
 
 let globalPlugins: LearningPlugin[] = loadStoredPlugins();
 
-let globalActionLogs: PluginActionLog[] = [
-  {
-    id: "init-log-0",
-    timestamp: new Date().toISOString(),
-    pluginId: "counting-mastery",
-    actionType: "START_LEVEL",
-    level: 1,
-    step: 1,
-    status: "info",
-    details: "Counting Mastery v2.4.0 active with 8 granular feature modules.",
-  },
-];
+// Starts empty. The seed entry referenced a plugin id that no longer exists and
+// claimed a feature count that was never true; real activity arrives via log().
+let globalActionLogs: PluginActionLog[] = [];
 
 // List of active subscribers for reactive updates
 const pluginSubscribers = new Set<() => void>();
@@ -388,6 +305,39 @@ const notifyLogs = () => logSubscribers.forEach((sub) => sub());
  * Main programmatic Global Plugin API
  */
 export const PluginManagerAPI = {
+  /**
+   * Register a plugin declared by the registry.
+   *
+   * The plugin's own manifest is the source of truth for its shape — name,
+   * version, features, settings defaults. Persisted state (whether it or its
+   * features are switched off) wins over the manifest, so a parent's choice
+   * survives a redeploy while new features still appear.
+   *
+   * Idempotent: registering the same id twice re-merges rather than duplicating.
+   */
+  registerPlugin: (incoming: LearningPlugin): void => {
+    const existing = globalPlugins.find((p) => p.id === incoming.id);
+
+    if (!existing) {
+      globalPlugins = [...globalPlugins, incoming];
+    } else {
+      globalPlugins = globalPlugins.map((p) =>
+        p.id !== incoming.id
+          ? p
+          : {
+              ...incoming,
+              isEnabled: p.isEnabled,
+              settings: { ...incoming.settings, ...p.settings },
+              features: incoming.features.map((f) => {
+                const saved = p.features.find((sf) => sf.id === f.id);
+                return saved ? { ...f, isEnabled: saved.isEnabled } : f;
+              }),
+            },
+      );
+    }
+    notifyPlugins();
+  },
+
   // Get list of all installed plugins
   getPlugins: (): LearningPlugin[] => [...globalPlugins],
 

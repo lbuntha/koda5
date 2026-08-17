@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "../../../../context/ThemeContext";
 import type { CountingQuestionParamsByLevel } from "../data/questionParams";
+import type { KodaSDK } from "../../../types";
 import {
   FLOWING_LEVELS,
   FlowingLevelConfig,
@@ -63,7 +64,6 @@ import { PracticeRoundCompleteModal } from "../../../../components/PracticeRound
 import { PluginSettingsPanel } from "../../../../components/PluginSettingsPanel";
 import { playSound, speakWebSpeech } from "../../../../utils/audio";
 import { triggerHaptic, triggerTapPopHaptic } from "../../../../utils/haptics";
-import { PluginManagerAPI } from "../../../../lib/pluginStore";
 
 const LevelLucideIcon: React.FC<{ levelNumber: number; className?: string }> = ({ levelNumber, className = "w-5 h-5" }) => {
   switch (levelNumber) {
@@ -115,6 +115,12 @@ interface CountingGameAppProps {
   kidThemeMode?: "magical" | "cyber" | "candy" | "retro";
   /** Per-level question parameters, supplied by the plugin from lessons.json. */
   questionParams?: CountingQuestionParamsByLevel;
+  /**
+   * The plugin SDK. Optional so the component still renders standalone, but the
+   * host always supplies it — routing feature checks and logs through `koda`
+   * means the plugin id can never be passed by hand, and never be wrong.
+   */
+  koda?: KodaSDK;
 }
 
 function sample<T>(arr: T[]): T {
@@ -165,6 +171,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   setSoundEnabled: propsSetSoundEnabled,
   kidThemeMode = "magical",
   questionParams = {},
+  koda,
 }) => {
   const { theme, toggleTheme } = useTheme();
   // Navigation & View Modes
@@ -303,11 +310,11 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   // Audio & Haptic trigger helpers
   const triggerSound = useCallback(
     (type: "pop" | "clink" | "success" | "hint" | "levelup" | "error") => {
-      if (soundEnabled && PluginManagerAPI.isFeatureEnabled("counting-mastery", "sound_chimes")) {
+      if (soundEnabled && (koda?.config.isEnabled("sound_chimes", true) ?? true)) {
         playSound(type);
       }
       // Provide synchronized haptic tactile feedback via Navigator.vibrate
-      if (PluginManagerAPI.isFeatureEnabled("counting-mastery", "haptic_feedback", true)) {
+      if (koda?.config.isEnabled("haptic_feedback", true) ?? true) {
         if (type === "pop") {
           triggerTapPopHaptic();
         } else {
@@ -315,13 +322,13 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         }
       }
     },
-    [soundEnabled]
+    [soundEnabled, koda]
   );
 
   const speakAudio = useCallback(
     (text: string) => {
-      if (soundEnabled && PluginManagerAPI.isFeatureEnabled("counting-mastery", "audio_speech")) {
-        const rate = PluginManagerAPI.getPluginSetting("counting-mastery", "speechRate", 1.0);
+      if (soundEnabled && (koda?.config.isEnabled("audio_speech", true) ?? true)) {
+        const rate = koda?.config.get("speechRate", 1.0) ?? 1.0;
         speakWebSpeech(text, rate);
       }
     },
@@ -708,7 +715,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
   // On mount
   useEffect(() => {
     randomizeQuestion(1);
-    PluginManagerAPI.logAction("counting-mastery", "START_LEVEL", 1, 1, "success", "Welcome to Counting Quest! Practice Level 1 fully initialized.");
+    koda?.log("START_LEVEL", "Welcome to Counting Quest! Practice Level 1 fully initialized.", 1, 1);
   }, []);
 
   // ------------------------------------------------------------
@@ -726,8 +733,8 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       xpEarned: xpReward,
     });
 
-    PluginManagerAPI.logAction("counting-mastery", "CHECK_ANSWER", currentLevelNumber, currentQuestionIndex, "success", `Correct answer submitted: ${successMsg}`);
-    PluginManagerAPI.logAction("counting-mastery", "EARN_XP", currentLevelNumber, currentQuestionIndex, "success", `Gained +${xpReward} XP reward!`);
+    koda?.log("CHECK_ANSWER", `Correct answer submitted: ${successMsg}`, currentLevelNumber, currentQuestionIndex);
+    koda?.log("EARN_XP", `Gained +${xpReward} XP reward!`, currentLevelNumber, currentQuestionIndex);
   };
 
   const handleNextQuestionOrComplete = () => {
@@ -738,7 +745,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
       const nextStep = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextStep);
       randomizeQuestion(currentLevelNumber);
-      PluginManagerAPI.logAction("step-header-tagger", "NEXT_QUESTION", currentLevelNumber, nextStep, "info", `Advancing to Step ${nextStep} task.`);
+      koda?.log("NEXT_QUESTION", `Advancing to Step ${nextStep} task.`, currentLevelNumber, nextStep);
     } else {
       // Completed full 5-question round!
       triggerSound("levelup");
@@ -761,7 +768,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
         xp: xpWon,
       });
 
-      PluginManagerAPI.logAction("counting-mastery", "NEXT_QUESTION", currentLevelNumber, currentQuestionIndex, "success", `Level ${currentLevelNumber} completed fully with 3 Stars and +${xpWon} XP!`);
+      koda?.log("NEXT_QUESTION", `Level ${currentLevelNumber} completed fully with 3 Stars and +${xpWon} XP!`, currentLevelNumber, currentQuestionIndex);
     }
   };
 
@@ -1516,7 +1523,7 @@ export const CountingGameApp: React.FC<CountingGameAppProps> = ({
             <button
               onClick={() => {
                 triggerSound("pop");
-                PluginManagerAPI.logAction("counting-mastery", "EXIT_GAME", currentLevelNumber, currentQuestionIndex, "info", "User exited Learn quiz arena.");
+                koda?.log("EXIT_GAME", "User exited Learn quiz arena.", currentLevelNumber, currentQuestionIndex);
                 onBackToHome();
               }}
               className="p-1 sm:p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition shrink-0 flex items-center justify-center cursor-pointer border border-rose-500/20"

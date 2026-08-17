@@ -63,7 +63,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const { theme, toggleTheme } = useTheme();
   const [activeSection, setActiveSection] = useState<"plugins" | "profile">(initialSection);
   const plugins = useLearningPlugins();
-  const countingPlugin = plugins.find((p) => p.id === "counting-mastery");
+  const countingPlugin = plugins.find((p) => p.id === "counting");
 
   const handleToggleSound = () => {
     playSound("pop");

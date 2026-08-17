@@ -1,4 +1,4 @@
-import { PluginManagerAPI } from "../lib/pluginStore";
+import { PluginManagerAPI, type LearningPlugin } from "../lib/pluginStore";
 import { plugin as counting } from "./counting";
 import type { AnyActivityDefinition, Lesson, SkillPlugin } from "./types";
 
@@ -7,6 +7,38 @@ import type { AnyActivityDefinition, Lesson, SkillPlugin } from "./types";
  * this is the only file outside a plugin folder that a new skill touches.
  */
 export const PLUGINS: SkillPlugin[] = [counting];
+
+/**
+ * Publish every registered plugin into the settings store.
+ *
+ * The manifest is the single source of truth for a plugin's shape; the store
+ * owns only persisted user choices. Before this, counting was declared twice —
+ * once in the registry as "counting" and again in the store's hardcoded
+ * DEFAULT_PLUGINS as "counting-mastery" — and the two disagreed about how many
+ * features exist.
+ *
+ * Runs at import time so Plugin Lab and every feature check see the same list
+ * regardless of which loads first.
+ */
+function publishToStore(): void {
+  for (const p of PLUGINS) {
+    const asLearningPlugin: LearningPlugin = {
+      id: p.manifest.id,
+      name: p.manifest.name,
+      version: p.manifest.version,
+      description: p.manifest.description,
+      category: p.manifest.category,
+      author: p.manifest.author,
+      iconName: p.manifest.iconName,
+      isEnabled: true,
+      features: p.features,
+      settings: p.settings,
+    };
+    PluginManagerAPI.registerPlugin(asLearningPlugin);
+  }
+}
+
+publishToStore();
 
 export const getPlugin = (id: string): SkillPlugin | undefined =>
   PLUGINS.find((p) => p.manifest.id === id);

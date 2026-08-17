@@ -6,6 +6,9 @@
 
 import { PluginManagerAPI } from "../lib/pluginStore";
 
+/** Plugin whose flags currently gate haptics. See the note in triggerHaptic. */
+const HAPTICS_OWNER = "counting";
+
 export type HapticType =
   | "pop"
   | "tap-pop"
@@ -45,10 +48,13 @@ export function triggerHaptic(
     return false;
   }
 
-  // Check if Haptic Feedback plugin feature is enabled in PluginManager
+  // A shared util should not know a plugin id — a skill that wants haptics
+  // gated by its own flag should check `koda.config.isEnabled()` and call this
+  // only when enabled. Kept pointing at the counting plugin for now so existing
+  // behaviour is preserved; it defaults to on when the plugin is absent.
   if (
     typeof PluginManagerAPI !== "undefined" &&
-    !PluginManagerAPI.isFeatureEnabled("counting-mastery", "haptic_feedback", true)
+    !PluginManagerAPI.isFeatureEnabled(HAPTICS_OWNER, "haptic_feedback", true)
   ) {
     return false;
   }
@@ -61,7 +67,7 @@ export function triggerHaptic(
     // Retrieve configured haptic intensity setting if available
     const intensity =
       typeof PluginManagerAPI !== "undefined"
-        ? PluginManagerAPI.getPluginSetting<string>("counting-mastery", "hapticIntensity", "crisp")
+        ? PluginManagerAPI.getPluginSetting<string>(HAPTICS_OWNER, "hapticIntensity", "crisp")
         : "crisp";
 
     // Duration multipliers based on intensity setting

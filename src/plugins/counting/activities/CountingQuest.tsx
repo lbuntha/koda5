@@ -42,6 +42,7 @@ export const CountingQuest: React.FC<ActivityProps<CountingQuestParams>> = ({
     <CountingGameApp
       initialLevel={startLevel}
       questionParams={questionParams}
+      koda={koda}
       onBackToHome={koda.ui.exit}
       onBackToStore={koda.ui.exit}
       onOpenSpecsBook={koda.ui.exit}
