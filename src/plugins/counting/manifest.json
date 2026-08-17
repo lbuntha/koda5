@@ -1,0 +1,56 @@
+{
+  "id": "counting",
+  "name": "Counting Quest",
+  "version": "1.0.0",
+  "description": "One-to-one correspondence, subitizing and quantity comparison.",
+  "category": "core",
+  "author": "Koda Math Lab",
+  "iconName": "Sparkles",
+  "status": "published",
+  "audience": {
+    "ages": [5, 7],
+    "category": "number-sense"
+  },
+  "features": [
+    {
+      "id": "tactile_pop",
+      "name": "Tactile bounce & pop",
+      "description": "Elastic scale animation when a countable item is touched.",
+      "isEnabled": true,
+      "tag": "Visual"
+    },
+    {
+      "id": "haptic_feedback",
+      "name": "Haptic vibration",
+      "description": "Vibration pulse synchronised with the tap animation.",
+      "isEnabled": true,
+      "tag": "Haptic"
+    },
+    {
+      "id": "audio_speech",
+      "name": "Spoken counter",
+      "description": "Speaks 'one, two, three' aloud as items are touched.",
+      "isEnabled": true,
+      "tag": "Audio"
+    },
+    {
+      "id": "counting_badges",
+      "name": "1-to-1 badges",
+      "description": "Numbers each touched item so a child cannot double-count.",
+      "isEnabled": true,
+      "tag": "Cognitive"
+    },
+    {
+      "id": "sound_chimes",
+      "name": "Sound chimes",
+      "description": "Pop and success chimes during a round.",
+      "isEnabled": true,
+      "tag": "Audio"
+    }
+  ],
+  "settings": {
+    "speechRate": 1.0,
+    "popScaleFactor": 1.2,
+    "showItemCountBadges": true
+  }
+}

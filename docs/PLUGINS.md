@@ -1,0 +1,429 @@
+# Koda plugin architecture
+
+A plugin is **one complete skill** — its interactions, its lessons, its settings and its
+telemetry — built and owned by one developer in one folder.
+
+This document is the contract to build against. For the migration sequence that gets us
+there, see [PLUGIN_BUILD_PLAN.md](./PLUGIN_BUILD_PLAN.md).
+
+> **Status: partly built.** The contract, SDK, host, registry and the counting plugin are in
+> the repo and running — counting reaches the learner through `PluginHost`. **Not built:** the
+> shared `kit/`, the activity split, `curriculum/course.ts`, routing, and release gating.
+> Anything describing those is the target, not current behaviour.
+
+---
+
+## 1. What exists today
+
+`src/lib/pluginStore.ts` (657 lines) already provides a real plugin layer:
+
+| Capability | Where |
+| --- | --- |
+| Manifest metadata — id, version, category, author | `LearningPlugin` |
+| Per-feature toggles | `PluginFeature[]`, persisted to `localStorage` |
+| Per-plugin settings bag | `settings`, e.g. `speechRate`, `hapticIntensity` |
+| Telemetry | `PluginManagerAPI.logAction()` |
+| Management UI | `src/components/PluginSettingsPanel.tsx` (913 lines) |
+
+Counting already consumes it, e.g. `CountingGameApp.tsx:300`:
+
+```ts
+PluginManagerAPI.isFeatureEnabled("counting-mastery", "haptic_feedback", true)
+```
+
+### What is missing
+
+1. ~~**No `component` field.**~~ **Fixed.** `SkillPlugin.activities` supplies components and
+   `PluginHost` mounts them; `App.tsx` no longer imports `CountingGameApp`.
+2. **The skill still escapes the shell.** `PluginHost` renders outside `MainLayout`, so
+   counting loses the sidebar and page padding, and hardcodes 6 dark surfaces that ignore the
+   theme. (M5, M7.)
+3. **Cross-plugin logging.** `CountingGameApp.tsx:717` logs against `"step-header-tagger"`
+   from inside counting, because the plugin id is passed by hand at every call site.
+4. **Curriculum is imported by name.** `Home.tsx` imports `FLOWING_LEVELS` directly from
+   `src/counting/data/countingAssets.ts`. A second skill cannot contribute lessons without
+   the dashboard importing it too.
+5. **No routing.** `activeTab` is React state with no URL, so refreshing inside a lesson
+   returns the learner to the dashboard.
+
+---
+
+## 2. Why a plugin does not own levels
+
+The obvious design — each plugin ships its own curriculum — breaks immediately. The counting
+plugin's 15 levels already span five different skills:
+
+| Level | Title | Actually teaches |
+| --- | --- | --- |
+| L1–L2 | Count in a Row / Scattered | counting |
+| L3 | Comparing Two Groups | **comparing** |
+| L4–L5 | Dice Patterns / Dot Groups | counting |
+| L6–L8 | Part-Whole, Ten-Frame, Making 10 | **number bonds** (+ addition) |
+| L9 | Teen Numbers (10 + Ones) | **base ten** |
+| L10–L11 | Skip Counting by 2s, 5s, 10s | **multiplication** precursor |
+| L13–L15 | Make a Ten / Hundred / Build Numbers | **base ten** |
+
+A `number-bonds` plugin would collide with counting L6–L8 on its first day. The overlap is
+not an accident to be tidied up — teaching counting well *requires* touching number bonds.
+
+**So capability and curriculum are separated:**
+
+- A **plugin** owns *activities* — interaction engines. It answers **how** a learner interacts.
+- The **course** owns *order* — which lesson comes when. It answers **what** is taught, when.
+- A **lesson** binds the two: it points at an activity and configures it.
+
+Counting's "Making 10" lesson then *references* `number-bonds/ten-frame` instead of shipping
+a second implementation. Nothing is owned twice, and no boundary has to be argued.
+
+| Unit of… | Lives in | So that… |
+| --- | --- | --- |
+| Ownership | `plugins/<skill>/` | one developer owns one folder, complete |
+| Reuse | `plugin.activities` | counting can *use* a ten-frame without owning it |
+| Sequencing | `curriculum/course.ts` | lesson order changes without touching a skill |
+
+---
+
+## 3. The contract
+
+Defined in [`src/plugins/types.ts`](../src/plugins/types.ts).
+
+```ts
+export interface SkillPlugin {
+  manifest: PluginManifest;
+  features: PluginFeature[];                        // existing pluginStore shape
+  settings: Record<string, unknown>;
+  activities: Record<string, ActivityDefinition>;   // what this skill CAN DO
+  lessons: Lesson[];                                // what this skill TEACHES
+}
+
+export interface ActivityDefinition<P> {
+  id: string;                 // "touch-orbit" → referenced as "counting/touch-orbit"
+  name: string;
+  defaultParams: P;
+  component: React.ComponentType<ActivityProps<P>>;
+}
+
+export interface ActivityProps<P> {
+  params: P;                  // lesson config, merged over defaultParams
+  level: number;
+  koda: KodaSDK;              // the global API, pre-bound to this plugin
+  onComplete(result: SkillResult): void;
+}
+
+export interface Lesson {
+  id: string;
+  title: string;
+  concept: string;            // what mastery is tracked against
+  activity: string;           // "number-bonds/ten-frame" — MAY be another plugin's
+  params?: Record<string, unknown>;
+  xpReward: number;
+}
+```
+
+A plugin declares what it teaches, but **not where its lessons sit in the global order**.
+That belongs to the course, so two skills can never fight over a lesson.
+
+---
+
+## 4. The global API
+
+Everything the host offers arrives as one injected object. Koda already provides all of it —
+it is just imported directly today, which is what couples skills to the app.
+
+```ts
+export interface KodaSDK {
+  readonly pluginId: string;
+
+  sound:   { play(type: SoundType): void };
+  haptics: { tap(): void; success(): void };
+  speech:  { say(text: string, opts?: { rate?: number }): Promise<void>; stop(): void };
+
+  // XP is a HOST api. A skill reports what was earned; it never owns the
+  // running total, because that total is shared across all skills.
+  progress: {
+    awardXp(amount: number): Promise<void>;
+    complete(result: SkillResult): Promise<void>;
+    snapshot(): Promise<LearnerSnapshot>;   // a copy, never live state
+  };
+
+  ai: {
+    tutor(message: string, ctx?: object): Promise<string>;
+    generateProblem(spec: object): Promise<unknown>;
+    analyzeDrawing(png: string): Promise<string>;
+  };
+
+  config: {                                  // pre-bound to THIS plugin's id
+    get<T>(key: string, fallback: T): T;
+    isEnabled(featureId: string): boolean;
+  };
+
+  log(action: PluginAction, detail: string): void;
+  ui: { readonly theme: "light" | "dark"; exit(): void };
+}
+```
+
+### Backed by what already exists
+
+| Global call | Implementation |
+| --- | --- |
+| `koda.sound.play()` | `src/utils/audio.ts` → `playSound()` |
+| `koda.haptics.tap()` | `src/utils/haptics.ts` → `triggerTapPopHaptic()` |
+| `koda.speech.say()` | `POST /api/tutor/speech`, falls back to `speakWebSpeech()` |
+| `koda.progress.awardXp()` | `App.tsx` → `setUserProgress` |
+| `koda.ai.tutor()` | `POST /api/tutor/respond` |
+| `koda.ai.generateProblem()` | `POST /api/tutor/generate-problem` |
+| `koda.ai.analyzeDrawing()` | `POST /api/tutor/analyze-drawing` |
+| `koda.config.isEnabled()` | `PluginManagerAPI.isFeatureEnabled()` |
+| `koda.log()` | `PluginManagerAPI.logAction()` |
+
+### Two rules that keep this cheap later
+
+**Injected, never `window.Koda`.** A real global cannot be versioned, mocked in tests, scoped
+per plugin, or reached from an iframe. Injection reads identically for the developer and
+keeps all four doors open.
+
+**Async wherever a boundary could ever exist.** `awardXp()` returns a `Promise` although
+today it is a synchronous `setState`. That single choice makes a later sandbox/RPC swap a
+drop-in instead of a rewrite of every skill.
+
+`koda.config.isEnabled()` and `koda.log()` take **no plugin id** — the host binds it once. A
+skill therefore cannot read another plugin's flags or log under another plugin's name, which
+is the bug at `CountingGameApp.tsx:717` today.
+
+### What a skill must never reach
+
+Raw `localStorage` (namespace it under the plugin id), direct `fetch` (proxy through the host
+so the Gemini key never leaks), the DOM outside its own root, another plugin's data, or app
+state. **This list is the permissions model** — far cheaper to hold from the first plugin
+than to retrofit onto nine.
+
+---
+
+## 5. Folder layout
+
+```
+src/plugins/
+├── types.ts                  # the contract
+├── registry.ts               # the ONE file you edit to add a plugin
+├── sdk/                      # createKodaSDK()
+├── host/
+│   ├── PluginProvider.tsx    # binds settings/features/log/progress to one id
+│   └── PluginHost.tsx        # resolves "plugin/activity" → component
+├── kit/                      # shared round loop, chrome, manipulatives
+├── _template/                # working stub — copy to start a skill
+│
+├── counting/                 # ONE folder = the complete counting skill
+│   ├── index.ts              # export const plugin: SkillPlugin
+│   ├── manifest.ts           # metadata, features, settings defaults
+│   ├── lessons.ts            # the lessons counting contributes
+│   ├── activities/           # what counting EXPORTS for anyone to reference
+│   │   └── CountingQuest.tsx #   → "counting/quest"   (today: the whole game)
+│   │                         #   target, one per GameMode:
+│   │                         #     TouchOrbit · SubitizingRush
+│   │                         #     TenFrameRocket · FroggySkip
+│   └── internal/             # implementation: components, data, manipulatives
+│
+└── number-bonds/
+    ├── index.ts
+    ├── manifest.ts
+    ├── lessons.ts
+    └── activities/
+        └── TenFrame.tsx      # counting's "Making 10" lesson points HERE.
+                              # One implementation, two curricula.
+```
+
+`index.ts` is the **only** file the rest of the app may import from a plugin.
+
+### The kit
+
+Roughly 80% of `CountingGameApp.tsx` (3,053 lines) is not about counting — it is round
+sequencing, scoring, stars, streaks, hints, the progress bar, the feedback banner and the
+completion modal. If that stays inside the counting folder, skills 2–9 each copy it.
+
+```
+src/plugins/kit/
+├── round/     useSkillRound, useScoring, types
+├── chrome/    SkillTopBar, SkillPrompt, SkillFeedback, RoundComplete
+├── manipulatives/
+│   ├── TappableSet.tsx   → counting, comparing
+│   ├── DragBin.tsx       → sorting, base-ten
+│   ├── TenFrame.tsx      → number bonds, addition
+│   ├── NumberLine.tsx    → addition, subtraction
+│   └── BalanceScale.tsx  → comparing, equations
+└── answer/    ChoiceGrid, NumberPad
+```
+
+**Extract the kit during the counting migration, before skill two exists.** If skill two is
+built first, the kit has to be reverse-engineered from two divergent implementations.
+
+With the kit, an activity is mostly declaration:
+
+```tsx
+// src/plugins/comparing/activities/BalanceCompare.tsx
+export function BalanceCompare({ params, level, koda, onComplete }: ActivityProps<CompareParams>) {
+  const round = useSkillRound({ questions: buildQuestions(level, params) });
+
+  return (
+    <SkillShell onExit={koda.ui.exit}>
+      <SkillTopBar level={level} progress={round.progress} />
+      <SkillPrompt text={round.question.prompt} onSpeak={koda.speech.say} />
+
+      {/* the only genuinely comparing-specific part */}
+      <BalanceScale
+        left={round.question.left}
+        right={round.question.right}
+        onSettle={(v) => { koda.sound.play(v.correct ? "success" : "error"); round.answer(v); }}
+      />
+
+      <SkillFeedback state={round.feedback} />
+      <RoundComplete
+        result={round.result}
+        onDone={async (r) => { await koda.progress.awardXp(r.xpEarned); onComplete(r); }}
+      />
+    </SkillShell>
+  );
+}
+```
+
+---
+
+## 6. Registry and course
+
+```ts
+// src/plugins/registry.ts
+export const PLUGINS: SkillPlugin[] = [counting, numberBonds, comparing];
+
+// Every activity from every plugin, addressable as "plugin/activity".
+// This is the reuse surface — no cross-folder imports.
+export const resolveActivity = (ref: string) => {
+  const [pluginId, activityId] = ref.split("/");
+  return PLUGINS.find((p) => p.manifest.id === pluginId)?.activities[activityId];
+};
+```
+
+```ts
+// src/curriculum/course.ts — sequencing, and nothing else
+export const COURSE: Unit[] = [
+  {
+    id: "u1", title: "Subitizing & Dot Matrix", icon: "🌱",
+    lessons: [
+      "counting/count-in-a-row",
+      "counting/count-scattered",
+      "comparing/two-groups",       // another skill, mid-unit. Fine.
+      "counting/dice-patterns",
+    ],
+  },
+  {
+    id: "u2", title: "Ten-Frames & Place Value", icon: "⚡",
+    lessons: [
+      "number-bonds/part-whole",
+      "number-bonds/making-10",     // the old counting L8. Now owned once.
+      "base-ten/teen-numbers",
+    ],
+  },
+];
+```
+
+Reordering the course, A/B-testing a sequence, or shipping a Grade 2 variant is a data change
+here. No skill folder is touched.
+
+---
+
+## 7. Adding a new skill
+
+1. **Copy the template.** `cp -r src/plugins/_template src/plugins/<skill-name>`. It compiles
+   and mounts before you write anything, so you start by changing behaviour, not wiring.
+2. **Declare the manifest.** Kebab-case `id`, a category, the feature flags the skill checks
+   at runtime, and settings defaults so Plugin Lab can render controls before the skill runs.
+3. **Export your activities.** Check the registry first — if the interaction already exists
+   (a ten-frame, a number line), reference it instead of writing a second one.
+4. **Write your lessons** in `lessons.ts`, each pointing at an activity and configuring it.
+5. **Register it** — one import, one array entry in `registry.ts`.
+6. **Place lessons in the course** (`curriculum/course.ts`). Along with the registry, this is
+   the only edit outside your folder.
+7. **Verify in Plugin Lab.** Toggle the plugin off and confirm it leaves the sidebar,
+   dashboard and routes; toggle each feature and confirm behaviour changes.
+
+### Definition of done
+
+- [ ] Imports nothing from another plugin folder. Reuse goes through
+      `resolveActivity("plugin/activity")` or `kit/`. **A direct cross-folder import is the
+      failure mode that ends modularity** — worth a lint rule.
+- [ ] Touches the host only through `koda`. No direct import of `playSound`,
+      `PluginManagerAPI`, or app state.
+- [ ] Owns no lesson that belongs to another skill. If a lesson teaches number bonds it lives
+      in the number-bonds folder, even when it appears inside a counting unit.
+- [ ] Nothing outside imports past its `index.ts`.
+- [ ] Correct in light **and** dark, built on `themeSystem` tokens and checked in both.
+- [ ] Disabling it removes it from sidebar, dashboard and routes.
+- [ ] Logs under its own id only.
+- [ ] Keyboard reachable; state never carried by colour alone.
+- [ ] Entry component under ~300 lines. Past that, the generic part belongs in the kit.
+
+---
+
+## 8. Lifecycle — from folder to learner
+
+| # | Stage | Owner | Status |
+| --- | --- | --- | --- |
+| 1 | Build from the template | developer | `draft` |
+| 2 | Register (one line) | developer | `draft` |
+| 3 | **Verify in Plugin Lab** (the gate) | developer | `draft` |
+| 4 | Promote to beta | you | `beta` |
+| 5 | Place lessons in the course | curriculum owner | `beta` |
+| 6 | Publish — merge and deploy | you | `published` |
+| 7 | Parent/teacher toggles per install | parent | — |
+
+`status` lets a skill **ship in the bundle but stay hidden from learners**, which is what
+makes releasing safe. One resolver decides visibility, consulted by the sidebar, dashboard
+and router:
+
+```ts
+export const visibleTo = (p: SkillPlugin, viewer: Viewer) =>
+  p.manifest.status === "published" ? matchesAudience(p, viewer) && enabledForInstall(p.manifest.id)
+: p.manifest.status === "beta"      ? viewer.betaOptIn && enabledForInstall(p.manifest.id)
+: /* draft */                         viewer.isDeveloper;
+```
+
+Stage 5 is deliberately separate from code review: whoever decides pedagogy is usually not
+the person who wrote the component, and placing lessons touches no code.
+
+> **Scope.** This is build-time distribution — "publish" means a status change plus a deploy
+> of our own app. Nobody outside this repo can ship a plugin. Stages 1–3 and 7 are identical
+> in a third-party store; only 4–6 would change, growing a review queue, signed bundles and a
+> registry service. See §10.
+
+---
+
+## 9. Managing plugins
+
+`src/components/PluginSettingsPanel.tsx`, rendered from `SettingsPage.tsx:188`, already
+provides per-feature toggles, engine fine-tuning (speech rate, bounce scale, haptic
+intensity), a live interaction sandbox, filterable action logs, and export/import of the
+whole config as JSON.
+
+Two changes make it a *plugin* manager rather than a *counting* manager:
+
+- **Read the registry.** `selectedPluginId` defaults to `"counting-mastery"`, the feature list
+  reads `countingPlugin.features`, and there is a literal "Reset Counting Defaults" button.
+  Skill two would not appear.
+- **Show release status**, so draft and beta skills are visible here and nowhere else.
+
+---
+
+## 10. Open decisions
+
+- **Lazy loading.** `ActivityDefinition.component` can be a `React.lazy` import so each skill
+  is its own chunk. Worth doing from the start — the bundle is already ~492 KB.
+- **Runtime vs build-time.** This design is build-time. True third-party loading needs a
+  frozen SDK, a loader, sandboxing, and a permissions model. Do not freeze an SDK validated
+  against a single skill.
+- **Two taxonomies.** `skillTreeRoadmap.ts` uses `stage_baseten` / `stage_fractions`;
+  `types.ts` `TopicCategory` uses `base_ten_blocks` / `fraction_lab`, and each list has
+  entries the other lacks. **Proposal: the plugin id becomes canonical** (kebab-case, no
+  prefix) and `TopicCategory` derives from the registry. Settle this before ids are baked in.
+- **Versioning.** `manifest.version` exists but nothing reads it. Decide whether stored
+  settings migrate when a plugin's version changes.
+- **Reclassify the fragment plugins.** `step-header-tagger`, `feedback-drawer` and friends in
+  `DEFAULT_PLUGINS` are UI fragments of counting, not skills. They should become `features` of
+  the counting plugin rather than peers of it.

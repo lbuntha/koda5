@@ -1,0 +1,184 @@
+{
+  "lessons": [
+    {
+      "id": "count-in-a-row",
+      "title": "Count in a Row (1 to 10)",
+      "concept": "One-to-One Correspondence & Total Amount",
+      "activity": "counting/quest",
+      "params": {
+        "level": 1
+      },
+      "xpReward": 50,
+      "difficulty": "Easy",
+      "icon": "⭐"
+    },
+    {
+      "id": "count-scattered-objects",
+      "title": "Count Scattered Objects (1 to 10)",
+      "concept": "Tracking Scattered Objects",
+      "activity": "counting/quest",
+      "params": {
+        "level": 2
+      },
+      "xpReward": 50,
+      "difficulty": "Easy",
+      "icon": "✨"
+    },
+    {
+      "id": "comparing-two-groups",
+      "title": "Comparing Two Groups (Conservation)",
+      "concept": "Conservation of Quantity",
+      "activity": "counting/quest",
+      "params": {
+        "level": 3
+      },
+      "xpReward": 50,
+      "difficulty": "Easy",
+      "icon": "⚖️"
+    },
+    {
+      "id": "quick-dice-patterns",
+      "title": "Quick Dice Patterns (1 to 6)",
+      "concept": "Instant Recognition of Dot Patterns",
+      "activity": "counting/quest",
+      "params": {
+        "level": 4
+      },
+      "xpReward": 50,
+      "difficulty": "Medium",
+      "icon": "🎲"
+    },
+    {
+      "id": "quick-dot-groups",
+      "title": "Quick Dot Groups (3 to 7)",
+      "concept": "Seeing Amounts at a Glance",
+      "activity": "counting/quest",
+      "params": {
+        "level": 5
+      },
+      "xpReward": 50,
+      "difficulty": "Medium",
+      "icon": "⚡"
+    },
+    {
+      "id": "two-color-groups",
+      "title": "Two-Color Groups (Part-Whole)",
+      "concept": "Seeing Parts and Total Amount",
+      "activity": "counting/quest",
+      "params": {
+        "level": 6
+      },
+      "xpReward": 50,
+      "difficulty": "Medium",
+      "icon": "🔮"
+    },
+    {
+      "id": "ten-frame-5-and-more",
+      "title": "Ten-Frame: 5 and More",
+      "concept": "Using 5 as an Anchor Benchmark",
+      "activity": "counting/quest",
+      "params": {
+        "level": 7
+      },
+      "xpReward": 50,
+      "difficulty": "Challenging",
+      "icon": "🛸"
+    },
+    {
+      "id": "making-10",
+      "title": "Making 10 (Friends of 10)",
+      "concept": "Number Pairs that Make 10",
+      "activity": "counting/quest",
+      "params": {
+        "level": 8
+      },
+      "xpReward": 50,
+      "difficulty": "Challenging",
+      "icon": "🔋"
+    },
+    {
+      "id": "teen-numbers",
+      "title": "Teen Numbers (10 + Ones)",
+      "concept": "Place Value for Numbers 11 to 19",
+      "activity": "counting/quest",
+      "params": {
+        "level": 9
+      },
+      "xpReward": 50,
+      "difficulty": "Challenging",
+      "icon": "🛰️"
+    },
+    {
+      "id": "skip-counting-by-2s-and-5s",
+      "title": "Skip Counting by 2s and 5s",
+      "concept": "Equal-Step Linear Counting",
+      "activity": "counting/quest",
+      "params": {
+        "level": 10
+      },
+      "xpReward": 50,
+      "difficulty": "Advanced",
+      "icon": "🐸"
+    },
+    {
+      "id": "count-by-10s-up-to-100",
+      "title": "Count by 10s up to 100",
+      "concept": "Decade Jumps and Patterns up to 100",
+      "activity": "counting/quest",
+      "params": {
+        "level": 11
+      },
+      "xpReward": 50,
+      "difficulty": "Advanced",
+      "icon": "🌊"
+    },
+    {
+      "id": "find-the-missing-number",
+      "title": "Find the Missing Number",
+      "concept": "Number Sequences & Pattern Rules",
+      "activity": "counting/quest",
+      "params": {
+        "level": 12
+      },
+      "xpReward": 50,
+      "difficulty": "Advanced",
+      "icon": "🔍"
+    },
+    {
+      "id": "make-a-ten",
+      "title": "Make a Ten (10 Ones = 1 Ten)",
+      "concept": "Grouping: 10 Ones Become 1 Ten",
+      "activity": "counting/quest",
+      "params": {
+        "level": 13
+      },
+      "xpReward": 50,
+      "difficulty": "Master",
+      "icon": "💎"
+    },
+    {
+      "id": "make-a-hundred",
+      "title": "Make a Hundred (10 Tens = 1 Hundred)",
+      "concept": "Place Value: Hundreds, Tens, and Ones",
+      "activity": "counting/quest",
+      "params": {
+        "level": 14
+      },
+      "xpReward": 50,
+      "difficulty": "Master",
+      "icon": "🌌"
+    },
+    {
+      "id": "build-numbers-with-hundreds-tens-ones",
+      "title": "Build Numbers with Hundreds, Tens & Ones",
+      "concept": "Building Numbers up to 100 and Beyond",
+      "activity": "counting/quest",
+      "params": {
+        "level": 15
+      },
+      "xpReward": 50,
+      "difficulty": "Master",
+      "icon": "👑"
+    }
+  ]
+}

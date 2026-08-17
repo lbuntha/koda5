@@ -1,0 +1,21 @@
+{
+  "brand": {
+    "title": "KODA",
+    "logoUrl": "/favicon.svg"
+  },
+  "sections": [
+    {
+      "id": "main",
+      "items": [
+        { "id": "home", "label": "Dashboard", "icon": "home", "badge": "Pathway" },
+        { "id": "game", "label": "Learn", "icon": "game", "badge": "15 Levels" },
+        { "id": "settings", "label": "Settings", "icon": "settings", "badge": "Plugins" }
+      ]
+    }
+  ],
+  "profile": {
+    "name": "Alex Rivera",
+    "role": "Level 3 Explorer",
+    "initials": "AR"
+  }
+}
