@@ -1,132 +1,299 @@
-import React, { useState } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import {
-  Sparkles,
-  Volume2,
-  VolumeX,
-  Mic,
-  Sun,
-  Moon,
-  Gamepad2,
   Check,
-  Music,
-  User,
-  Flame,
-  Zap,
-  Terminal,
-  Settings2,
-  Trash2,
-  Key,
   Eye,
   EyeOff,
-  Sliders,
-  Boxes,
-  Layers,
-  ChevronRight,
+  Key,
+  Mic,
+  Monitor,
+  Moon,
+  Music,
+  RotateCcw,
+  Star,
+  Sun,
+  Trash2,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { playSound } from "../utils/audio";
-import { useGlobalActionLogs, useLearningPlugins, PluginManagerAPI } from "../lib/pluginStore";
+import { themeSystem } from "../lib/themeSystem";
+import { UISectionHeader } from "./ui";
+import { ScoringAPI, type ScoringConfig } from "../lib/scoring";
+import { clearProgress } from "../lib/learnerProgress";
 
 interface SettingsPageProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
   voiceEnabled: boolean;
   onToggleVoice: () => void;
-  kidThemeMode: "magical" | "cyber" | "candy" | "retro";
-  onSelectKidTheme: (theme: "magical" | "cyber" | "candy" | "retro") => void;
-  selectedAvatar: string;
-  onSelectAvatar: (avatar: string) => void;
-  gameSpeed: "gentle" | "brave" | "speedster";
-  onSelectGameSpeed: (speed: "gentle" | "brave" | "speedster") => void;
-  userProgress: {
-    xp: number;
-    streakDays: number;
-  };
-  initialSection?: "plugins" | "profile";
 }
 
+/** On/off switch. The track colour carries the state; the knob only moves. */
+const Switch: React.FC<{ checked: boolean; onChange: () => void; label: string; tone?: "emerald" | "indigo" }> = ({
+  checked,
+  onChange,
+  label,
+  tone = "indigo",
+}) => (
+  <button
+    role="switch"
+    aria-checked={checked}
+    aria-label={label}
+    onClick={onChange}
+    className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:ring-indigo-500 ${
+      checked
+        ? tone === "emerald"
+          ? "bg-emerald-600"
+          : "bg-indigo-600"
+        : "bg-slate-300 dark:bg-slate-700"
+    }`}
+  >
+    <div
+      className={`w-5 h-5 rounded-full bg-white shadow-sm transition-all absolute top-1 ${
+        checked ? "left-6" : "left-1"
+      }`}
+    />
+  </button>
+);
+
+/** One labelled setting row inside a card. */
+const SettingRow: React.FC<{
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  control: React.ReactNode;
+}> = ({ icon, title, description, control }) => (
+  <div className="bg-surface-muted border border-line rounded-2xl p-4 flex items-center justify-between gap-4">
+    <div className="flex items-center gap-3 min-w-0">
+      <div className="w-10 h-10 rounded-xl bg-surface border border-line flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <h4 className="text-sm font-bold text-ink font-mono">{title}</h4>
+        <p className="text-xs text-muted">{description}</p>
+      </div>
+    </div>
+    {control}
+  </div>
+);
+
+
+/** One numeric scoring control: a slider and the value it is set to. */
+const ScoringSlider: React.FC<{
+  label: string;
+  description: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  format(value: number): string;
+  onChange(value: number): void;
+}> = ({ label, description, value, min, max, step, format, onChange }) => (
+  <div className="bg-surface-muted border border-line rounded-2xl p-4 flex items-center justify-between gap-4">
+    <div className="min-w-0">
+      <h4 className="text-sm font-bold text-ink font-mono">{label}</h4>
+      <p className="text-xs text-muted">{description}</p>
+    </div>
+    <div className="flex items-center gap-3 shrink-0">
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="w-28 sm:w-36 accent-indigo-600"
+        aria-label={label}
+      />
+      <span className="w-14 text-right text-sm font-mono font-black text-indigo-600 dark:text-indigo-400 tabular-nums">
+        {format(value)}
+      </span>
+    </div>
+  </div>
+);
+
+/**
+ * The reward economy, in one place.
+ *
+ * Every skill scores its rounds through the same function, and that function
+ * reads these values — so tuning them here changes counting, addition and
+ * anything installed later, with no skill edit and no rebuild. A skill that
+ * set its own rates is the thing this replaces: XP is one number a learner
+ * carries across every skill, so it cannot mean two things.
+ */
+const ScoringSection: React.FC = () => {
+  useSyncExternalStore(ScoringAPI.subscribe, ScoringAPI.version);
+  const config = ScoringAPI.current();
+  const set = (patch: Partial<ScoringConfig>) => ScoringAPI.update(patch);
+
+  return (
+    <section className={themeSystem.card("default", `${themeSystem.spacing.card} space-y-4`)}>
+      <UISectionHeader
+        title="Scoring & XP"
+        subtitle="What a finished level is worth — applies to every skill"
+        icon={<Star className="w-5 h-5 text-amber-500" />}
+        action={
+          ScoringAPI.isEdited() ? (
+            <button
+              onClick={() => {
+                ScoringAPI.reset();
+                playSound("pop");
+              }}
+              className={themeSystem.button("secondary", "sm")}
+            >
+              <RotateCcw />
+              Reset
+            </button>
+          ) : undefined
+        }
+      />
+
+      <div className="space-y-3">
+        <ScoringSlider
+          label="Two-star share"
+          description="How much of a level's XP a two-star round pays."
+          value={config.twoStarShare}
+          min={0}
+          max={1}
+          step={0.05}
+          format={(v) => `${Math.round(v * 100)}%`}
+          onChange={(v) => set({ twoStarShare: v })}
+        />
+        <ScoringSlider
+          label="One-star share"
+          description="Same, for a round below the two-star line."
+          value={config.oneStarShare}
+          min={0}
+          max={1}
+          step={0.05}
+          format={(v) => `${Math.round(v * 100)}%`}
+          onChange={(v) => set({ oneStarShare: v })}
+        />
+        <ScoringSlider
+          label="XP per level"
+          description="What one finished level is worth at three stars. The only place XP is set."
+          value={config.xpPerLevel}
+          min={0}
+          max={200}
+          step={5}
+          format={(v) => `${v} XP`}
+          onChange={(v) => set({ xpPerLevel: v })}
+        />
+        <ScoringSlider
+          label="Coins per star"
+          description="Same rule, in coins."
+          value={config.coinsPerStar}
+          min={0}
+          max={100}
+          step={5}
+          format={(v) => `${v}`}
+          onChange={(v) => set({ coinsPerStar: v })}
+        />
+        <ScoringSlider
+          label="Three stars at"
+          description="First-try accuracy needed for a perfect round."
+          value={config.threeStarAt}
+          min={0.5}
+          max={1}
+          step={0.05}
+          format={(v) => `${Math.round(v * 100)}%`}
+          onChange={(v) => set({ threeStarAt: v })}
+        />
+        <ScoringSlider
+          label="Two stars at"
+          description="Below this, a round earns one star."
+          value={config.twoStarAt}
+          min={0}
+          max={0.95}
+          step={0.05}
+          format={(v) => `${Math.round(v * 100)}%`}
+          onChange={(v) => set({ twoStarAt: v })}
+        />
+      </div>
+
+
+    </section>
+  );
+};
+
+
+/**
+ * Wipe this device's learner and start again.
+ *
+ * Two steps, because it takes away every star and all the XP a child has
+ * earned. Reloads afterwards: the progress is React state at the top of the
+ * app, so the cleanest way to adopt an empty learner is to start over.
+ */
+const ProgressSection: React.FC = () => {
+  const [confirming, setConfirming] = useState(false);
+
+  return (
+    <section className={themeSystem.card("default", `${themeSystem.spacing.card} space-y-4`)}>
+      <UISectionHeader
+        title="Learner Progress"
+        subtitle="XP, stars and finished levels, saved on this device"
+        icon={<Trash2 className="w-5 h-5 text-rose-500" />}
+      />
+
+      {confirming ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              clearProgress();
+              window.location.reload();
+            }}
+            className={themeSystem.button("danger", "sm")}
+          >
+            <Trash2 />
+            Erase progress
+          </button>
+          <button onClick={() => setConfirming(false)} className={themeSystem.button("secondary", "sm")}>
+            Cancel
+          </button>
+          <span className="text-xs text-muted">
+            Every star and all XP, gone. Skills and settings are untouched.
+          </span>
+        </div>
+      ) : (
+        <button onClick={() => setConfirming(true)} className={themeSystem.button("secondary", "sm")}>
+          <Trash2 />
+          Reset progress
+        </button>
+      )}
+    </section>
+  );
+};
+
+/**
+ * System settings — the device-level preferences that apply across the whole
+ * app: appearance, audio output, and the API credential. Learner-facing
+ * personalisation lives with the learner; skill configuration lives in the
+ * Skill Manager.
+ */
 export const SettingsPage: React.FC<SettingsPageProps> = ({
   soundEnabled,
   onToggleSound,
   voiceEnabled,
   onToggleVoice,
-  kidThemeMode,
-  onSelectKidTheme,
-  selectedAvatar,
-  onSelectAvatar,
-  gameSpeed,
-  onSelectGameSpeed,
-  userProgress,
-  initialSection = "plugins",
 }) => {
   const { theme, toggleTheme } = useTheme();
-  const [activeSection, setActiveSection] = useState<"plugins" | "profile">(initialSection);
-  const plugins = useLearningPlugins();
-  const countingPlugin = plugins.find((p) => p.id === "counting");
+  const isDark = theme === "dark";
+
+  const [customApiKey, setCustomApiKey] = useState(() => localStorage.getItem("custom_gemini_api_key") || "");
+  const [showKey, setShowKey] = useState(false);
+  const [savedKeySuccess, setSavedKeySuccess] = useState(false);
 
   const handleToggleSound = () => {
-    playSound("pop");
+    // Toggle first so switching sound back on is confirmed by the pop itself.
     onToggleSound();
+    playSound("pop");
   };
 
   const handleToggleVoice = () => {
     playSound("pop");
     onToggleVoice();
   };
-
-  const themesList = [
-    {
-      id: "magical" as const,
-      name: "Magical Forest",
-      description: "Lush green & sparkling emerald woodscapes",
-      bgClass: "bg-gradient-to-br from-emerald-950 to-teal-900 border-emerald-500/40 text-emerald-100",
-      accent: "text-emerald-400",
-      emoji: "🌿✨",
-    },
-    {
-      id: "cyber" as const,
-      name: "Cyber Quest",
-      description: "Futuristic neon grids & cool spaceships",
-      bgClass: "bg-gradient-to-br from-slate-900 to-indigo-950 border-indigo-500/40 text-indigo-100",
-      accent: "text-indigo-400",
-      emoji: "🚀🤖",
-    },
-    {
-      id: "candy" as const,
-      name: "Candy Kingdom",
-      description: "Sweet fluffy pink clouds & sweet lollipops",
-      bgClass: "bg-gradient-to-br from-pink-950 to-rose-900 border-rose-500/40 text-rose-100",
-      accent: "text-rose-400",
-      emoji: "🍭🎈",
-    },
-    {
-      id: "retro" as const,
-      name: "Retro Arcade",
-      description: "Pixel-perfect nostalgic 8-bit classic gaming",
-      bgClass: "bg-gradient-to-br from-amber-950 to-orange-900 border-amber-500/40 text-amber-100",
-      accent: "text-amber-400",
-      emoji: "👾🕹️",
-    },
-  ];
-
-  const avatars = [
-    { id: "dino", name: "Koda the Dino", emoji: "🦖", description: "Roaring helper" },
-    { id: "astronaut", name: "Space Cadet", emoji: "👩‍🚀", description: "Cosmic math explorer" },
-    { id: "wizard", name: "Koda Wizard", emoji: "🧙‍♂️", description: "Magical counter" },
-    { id: "ninja", name: "Pixel Ninja", emoji: "🥷", description: "Math accuracy expert" },
-  ];
-
-  const speeds = [
-    { id: "gentle" as const, name: "Gentle Explorer", desc: "No timers, cozy Socratic helpers", xpBonus: "1x XP" },
-    { id: "brave" as const, name: "Brave Adventurer", desc: "Classic socratic guidance puzzles", xpBonus: "1.5x XP" },
-    { id: "speedster" as const, name: "Math Speedster", desc: "Faster dynamic counters!", xpBonus: "2x XP 🔥" },
-  ];
-
-  const [customApiKey, setCustomApiKey] = React.useState(() => {
-    return localStorage.getItem("custom_gemini_api_key") || "";
-  });
-  const [showKey, setShowKey] = React.useState(false);
-  const [savedKeySuccess, setSavedKeySuccess] = React.useState(false);
 
   const handleSaveApiKey = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,397 +310,133 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 pb-16">
-      {/* SECTION SELECTOR NAV TABS */}
-      <div className="flex items-center gap-3 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 shadow-sm max-w-xl mx-auto">
-        <button
-          onClick={() => {
-            playSound("pop");
-            setActiveSection("plugins");
-          }}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-mono text-xs sm:text-sm font-bold transition cursor-pointer ${
-            activeSection === "plugins"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-              : "text-slate-400 hover:text-slate-200 hover:bg-slate-850"
-          }`}
-        >
-          <Sliders className="w-4 h-4 text-amber-400" />
-          <span>Plugin & Feature Manager</span>
-          {countingPlugin && (
-            <span className="hidden sm:inline-block text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
-              {countingPlugin.features.filter((f) => f.isEnabled).length}/{countingPlugin.features.length}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => {
-            playSound("pop");
-            setActiveSection("profile");
-          }}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-mono text-xs sm:text-sm font-bold transition cursor-pointer ${
-            activeSection === "profile"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-              : "text-slate-400 hover:text-slate-200 hover:bg-slate-850"
-          }`}
-        >
-          <Sparkles className="w-4 h-4 text-indigo-400" />
-          <span>Clubhouse Profile</span>
-        </button>
+    <div className={`max-w-3xl mx-auto ${themeSystem.spacing.page} space-y-6 pb-16`}>
+      <div>
+        <h2 className={themeSystem.typography("h2")}>System Settings</h2>
+        <p className={themeSystem.typography("body-sm", "mt-1")}>
+          Preferences that apply across the whole app on this device.
+        </p>
       </div>
 
-      {/* VIEW 1: PLUGINS & FEATURE MANAGEMENT */}
-      {activeSection === "plugins" && (
-        <div className="text-sm text-slate-600 dark:text-slate-400">
-          Skills and their settings now live under <strong>Plugins</strong> in the sidebar.
+      {/* APPEARANCE */}
+      <section className={themeSystem.card("default", `${themeSystem.spacing.card} space-y-4`)}>
+        <UISectionHeader
+          title="Appearance"
+          subtitle="Light or dark interface"
+          icon={<Monitor className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
+        />
+        <SettingRow
+          icon={
+            isDark ? <Moon className="w-5 h-5 text-indigo-400" /> : <Sun className="w-5 h-5 text-amber-500" />
+          }
+          title="Dark Mode"
+          description={isDark ? "Dark surfaces, light text" : "Light surfaces, dark text"}
+          control={
+            <Switch
+              checked={isDark}
+              onChange={() => {
+                playSound("pop");
+                toggleTheme();
+              }}
+              label="Dark mode"
+            />
+          }
+        />
+      </section>
+
+      {/* AUDIO & VOICE */}
+      <section className={themeSystem.card("default", `${themeSystem.spacing.card} space-y-4`)}>
+        <UISectionHeader
+          title="Audio & Voice"
+          subtitle="Sound FX and spoken guidance — both off leaves the app silent"
+          icon={<Music className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <SettingRow
+            icon={
+              soundEnabled ? (
+                <Volume2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <VolumeX className="w-5 h-5 text-muted" />
+              )
+            }
+            title="Sound FX"
+            description="Pops, chimes, and victory fanfares"
+            control={
+              <Switch checked={soundEnabled} onChange={handleToggleSound} label="Sound effects" tone="emerald" />
+            }
+          />
+          <SettingRow
+            icon={
+              <Mic className={`w-5 h-5 ${voiceEnabled ? "text-indigo-600 dark:text-indigo-400" : "text-muted"}`} />
+            }
+            title="Koda's Voice"
+            description="Spoken socratic guidance & chat"
+            control={<Switch checked={voiceEnabled} onChange={handleToggleVoice} label="Voice speech" />}
+          />
         </div>
-      )}
+      </section>
 
-      {/* VIEW 2: CLUBHOUSE PROFILE & GAMEPLAY */}
-      {activeSection === "profile" && (
-        <div className="space-y-8 animate-fadeIn">
-          {/* HEADER SECTION */}
-          <div className="bg-gradient-to-r from-indigo-900/60 to-purple-900/60 rounded-3xl p-6 border-2 border-indigo-500/30 flex flex-col md:flex-row items-center gap-6 shadow-lg shadow-indigo-500/5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
-            
-            <div className="w-20 h-20 rounded-2xl bg-indigo-600 flex items-center justify-center text-4xl shrink-0 shadow-lg border-2 border-indigo-400/30 animate-bounce">
-              {avatars.find((a) => a.id === selectedAvatar)?.emoji || "🦖"}
-            </div>
-            <div className="text-center md:text-left space-y-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-full text-xs font-bold font-mono">
-                <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
-                <span>Koda's Clubhouse Settings</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
-                Welcome to your Command Center!
-              </h2>
-              <p className="text-slate-300 text-sm max-w-lg">
-                Hi! I am Koda. Tap the options below to customize your math adventure just the way you like it!
-              </p>
-            </div>
+      {/* SCORING */}
+      <ScoringSection />
 
-            {/* Dynamic XP Badge on top-right */}
-            <div className="md:ml-auto flex items-center gap-4 bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3.5 shadow-sm shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
-                  <Flame className="w-5 h-5 text-amber-400 fill-amber-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-black font-mono text-amber-400 leading-none">
-                    {userProgress.streakDays} Days
-                  </div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    STREAK
-                  </div>
-                </div>
-              </div>
-              <div className="w-px h-8 bg-slate-700" />
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center shrink-0">
-                  <Zap className="w-5 h-5 text-indigo-400 fill-indigo-400" />
-                </div>
-                <div>
-                  <div className="text-sm font-black font-mono text-indigo-300 leading-none">
-                    {userProgress.xp} XP
-                  </div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    POINTS
-                  </div>
-                </div>
-              </div>
+      {/* LEARNER PROGRESS */}
+      <ProgressSection />
+
+      {/* GEMINI API */}
+      <section className={themeSystem.card("default", `${themeSystem.spacing.card} space-y-4`)}>
+        <UISectionHeader
+          title="Gemini API"
+          subtitle="Custom key for production — the development default is used when blank"
+          icon={<Key className="w-5 h-5 text-amber-500" />}
+        />
+
+        <form onSubmit={handleSaveApiKey} className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="gemini-api-key" className="text-xs font-mono font-bold text-body">
+              Custom Gemini API Key
+            </label>
+            <div className="relative">
+              <input
+                id="gemini-api-key"
+                type={showKey ? "text" : "password"}
+                value={customApiKey}
+                onChange={(e) => setCustomApiKey(e.target.value)}
+                placeholder="AIzaSy..."
+                className="w-full bg-surface-muted border border-line rounded-2xl px-4 py-3 pr-12 text-sm font-mono text-ink placeholder:text-muted focus:outline-none focus:border-indigo-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowKey(!showKey)}
+                aria-label={showKey ? "Hide API key" : "Show API key"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted hover:text-ink cursor-pointer"
+              >
+                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
-          {/* QUICK BANNER TO JUMP TO PLUGIN SETTINGS */}
-          <div
-            onClick={() => {
-              playSound("pop");
-              setActiveSection("plugins");
-            }}
-            className="bg-gradient-to-r from-amber-500/15 via-indigo-500/15 to-purple-500/15 hover:from-amber-500/25 hover:to-purple-500/25 border-2 border-amber-400/40 rounded-3xl p-5 flex items-center justify-between gap-4 transition cursor-pointer group shadow-md"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0">
-                <Sliders className="w-6 h-6 text-amber-400 group-hover:rotate-45 transition-transform" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-sm sm:text-base font-black text-white font-mono">
-                    Manage Counting & Learning Plugins
-                  </h4>
-                  <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-md bg-amber-400 text-slate-950">
-                    CONFIGURATOR
-                  </span>
-                </div>
-                <p className="text-xs text-slate-300 mt-0.5">
-                  Tune tactile pop physics, speech synthesizer rates, 1-to-1 tag badges, and pedagogical tips.
-                </p>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform shrink-0" />
-          </div>
-
-          {/* GEMINI API CONFIGURATION */}
-          <div className="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 space-y-6 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                  <Key className="w-5 h-5 text-amber-400" />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-white font-mono">Gemini API Configuration</h3>
-                  <p className="text-xs text-slate-400">Set custom API key for production (uses default in development)</p>
-                </div>
-              </div>
-            </div>
-
-            <form onSubmit={handleSaveApiKey} className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-mono font-bold text-slate-300">Custom Gemini API Key</label>
-                <div className="relative">
-                  <input
-                    type={showKey ? "text" : "password"}
-                    value={customApiKey}
-                    onChange={(e) => setCustomApiKey(e.target.value)}
-                    placeholder="AIzaSy..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm font-mono text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowKey(!showKey)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-white"
-                  >
-                    {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between flex-wrap gap-2 pt-2">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-mono text-xs font-bold transition shadow-md shadow-indigo-600/20 cursor-pointer"
-                  >
-                    Save API Key
-                  </button>
-                  {customApiKey && (
-                    <button
-                      type="button"
-                      onClick={handleClearApiKey}
-                      className="px-4 py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-300 rounded-xl font-mono text-xs font-bold transition cursor-pointer"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-
-                {savedKeySuccess && (
-                  <span className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1.5">
-                    <Check className="w-4 h-4" />
-                    Key saved to local storage!
-                  </span>
-                )}
-              </div>
-            </form>
-          </div>
-
-          {/* AUDIO & VOICE SETTINGS */}
-          <div className="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 space-y-6 shadow-sm">
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                <Music className="w-5 h-5 text-indigo-400" />
-              </div>
-              <div>
-                <h3 className="text-base font-black text-white font-mono">Audio & Voice Engine</h3>
-                <p className="text-xs text-slate-400">Manage sound FX & AI conversational voice</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Sound Effects Toggle */}
-              <div className="bg-slate-800/50 border border-slate-700/60 rounded-2xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center text-slate-200">
-                    {soundEnabled ? <Volume2 className="w-5 h-5 text-emerald-400" /> : <VolumeX className="w-5 h-5 text-slate-400" />}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white font-mono">Game Sound FX</h4>
-                    <p className="text-xs text-slate-400">Pops, chimes, and victory fanfares</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleToggleSound}
-                  className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer ${
-                    soundEnabled ? "bg-emerald-500" : "bg-slate-700"
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full bg-white transition-transform absolute top-1 ${
-                      soundEnabled ? "right-1" : "left-1"
-                    }`}
-                  />
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <button type="submit" className={themeSystem.button("primary", "sm")}>
+                Save API Key
+              </button>
+              {customApiKey && (
+                <button type="button" onClick={handleClearApiKey} className={themeSystem.button("secondary", "sm")}>
+                  Clear
                 </button>
-              </div>
-
-              {/* Socratic Voice Toggle */}
-              <div className="bg-slate-800/50 border border-slate-700/60 rounded-2xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center text-slate-200">
-                    <Mic className={`w-5 h-5 ${voiceEnabled ? "text-indigo-400" : "text-slate-400"}`} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white font-mono">Koda's Voice Speech</h4>
-                    <p className="text-xs text-slate-400">Spoken socratic guidance & chat</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleToggleVoice}
-                  className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer ${
-                    voiceEnabled ? "bg-indigo-600" : "bg-slate-700"
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 rounded-full bg-white transition-transform absolute top-1 ${
-                      voiceEnabled ? "right-1" : "left-1"
-                    }`}
-                  />
-                </button>
-              </div>
+              )}
             </div>
+
+            {savedKeySuccess && (
+              <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                <Check className="w-4 h-4" />
+                Key saved to local storage!
+              </span>
+            )}
           </div>
-
-          {/* AVATAR CHOOSER */}
-          <div className="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 space-y-6 shadow-sm">
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-                <User className="w-5 h-5 text-purple-400" />
-              </div>
-              <div>
-                <h3 className="text-base font-black text-white font-mono">Choose Your Math Avatar</h3>
-                <p className="text-xs text-slate-400">Pick your favorite character companion</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {avatars.map((av) => {
-                const isSelected = selectedAvatar === av.id;
-                return (
-                  <button
-                    key={av.id}
-                    onClick={() => {
-                      playSound("pop");
-                      onSelectAvatar(av.id);
-                    }}
-                    className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 cursor-pointer text-center ${
-                      isSelected
-                        ? "bg-indigo-600/20 border-indigo-500 shadow-md shadow-indigo-500/10 scale-105"
-                        : "bg-slate-800/40 border-slate-700 hover:border-slate-600 hover:bg-slate-800"
-                    }`}
-                  >
-                    <span className="text-4xl">{av.emoji}</span>
-                    <span className="text-xs font-bold text-white font-mono">{av.name}</span>
-                    <span className="text-[10px] text-slate-400">{av.description}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* THEME CHOOSER */}
-          <div className="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 space-y-6 shadow-sm">
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
-              <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center border border-pink-500/20">
-                <Gamepad2 className="w-5 h-5 text-pink-400" />
-              </div>
-              <div>
-                <h3 className="text-base font-black text-white font-mono">Clubhouse Theme</h3>
-                <p className="text-xs text-slate-400">Visual atmosphere and aesthetic world</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {themesList.map((th) => {
-                const isSelected = kidThemeMode === th.id;
-                return (
-                  <button
-                    key={th.id}
-                    onClick={() => {
-                      playSound("pop");
-                      onSelectKidTheme(th.id);
-                    }}
-                    className={`p-4 rounded-2xl border-2 text-left transition cursor-pointer ${th.bgClass} ${
-                      isSelected ? "ring-2 ring-white shadow-lg scale-[1.02]" : "opacity-80 hover:opacity-100"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl">{th.emoji}</span>
-                      {isSelected && (
-                        <span className="bg-white/20 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
-                          ACTIVE
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="text-sm font-black mt-2">{th.name}</h4>
-                    <p className="text-xs opacity-80 mt-0.5">{th.description}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* SPEED / DIFFICULTY PACING */}
-          <div className="bg-slate-900/90 border-2 border-slate-800 rounded-3xl p-6 space-y-6 shadow-sm">
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                <Zap className="w-5 h-5 text-amber-400" />
-              </div>
-              <div>
-                <h3 className="text-base font-black text-white font-mono">Learning Pace & XP Multipliers</h3>
-                <p className="text-xs text-slate-400">Adjust the timer pacing and bonus point rate</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {speeds.map((sp) => {
-                const isSelected = gameSpeed === sp.id;
-                return (
-                  <button
-                    key={sp.id}
-                    onClick={() => {
-                      playSound("pop");
-                      onSelectGameSpeed(sp.id);
-                    }}
-                    className={`p-4 rounded-2xl border-2 text-left transition flex flex-col justify-between gap-3 cursor-pointer ${
-                      isSelected
-                        ? "bg-amber-500/10 border-amber-500/60 shadow-md scale-[1.02]"
-                        : "bg-slate-800/40 border-slate-700/60 hover:bg-slate-800"
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black font-mono text-white">{sp.name}</span>
-                        <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-                          {sp.xpBonus}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1">{sp.desc}</p>
-                    </div>
-                    {isSelected && (
-                      <div className="text-[10px] font-mono text-amber-300 font-bold flex items-center gap-1">
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Selected Pace</span>
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+        </form>
+      </section>
     </div>
   );
 };

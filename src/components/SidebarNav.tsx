@@ -17,9 +17,10 @@ import {
 } from "./ui";
 import sidebarNav from "../data/sidebarNav.json";
 import { getCourseLessons } from "../curriculum";
-import { useViewer } from "../plugins/viewer";
+import { useViewer } from "../skills/viewer";
+import { svgAssetIds } from "../assets/svg";
 
-type TabId = "home" | "game" | "plugins" | "settings";
+type TabId = "home" | "game" | "skills" | "assets" | "settings";
 
 const config = sidebarNav as SidebarConfig;
 
@@ -110,9 +111,12 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   const sections = config.sections.map((section) => ({
     ...section,
     items: section.items
-      .map((item) =>
-        item.id === "game" ? { ...item, badge: `${lessonCount} Levels` } : item,
-      )
+      .map((item) => {
+        if (item.id === "game") return { ...item, badge: `${lessonCount} Levels` };
+        // Counted from the folder, so the badge cannot drift from what is there.
+        if (item.id === "assets") return { ...item, badge: `${svgAssetIds.length} SVG` };
+        return item;
+      })
       .filter((item) => item.id !== "game" || lessonCount > 0),
   }));
 

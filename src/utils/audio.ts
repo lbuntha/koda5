@@ -1,5 +1,32 @@
 // Web Audio API Sound Synthesizer for gamified math interaction FX
 
+const SOUND_PREF_KEY = "koda_sound_enabled";
+
+// Interaction sound FX are OFF by default — tapping through an activity should
+// be silent unless a learner deliberately turns chimes on in Settings.
+let soundEnabled = readSoundPref();
+
+function readSoundPref(): boolean {
+  try {
+    return localStorage.getItem(SOUND_PREF_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+export function isSoundEnabled(): boolean {
+  return soundEnabled;
+}
+
+export function setSoundEnabled(enabled: boolean) {
+  soundEnabled = enabled;
+  try {
+    localStorage.setItem(SOUND_PREF_KEY, enabled ? "true" : "false");
+  } catch {
+    // Private mode / storage disabled — the in-memory flag still applies.
+  }
+}
+
 let audioCtx: AudioContext | null = null;
 
 function getAudioContext(): AudioContext {
@@ -14,6 +41,7 @@ function getAudioContext(): AudioContext {
 }
 
 export function playSound(type: "pop" | "clink" | "success" | "hint" | "levelup" | "error") {
+  if (!soundEnabled) return;
   try {
     const ctx = getAudioContext();
     const now = ctx.currentTime;

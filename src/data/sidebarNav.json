@@ -17,13 +17,19 @@
           "id": "game",
           "label": "Learn",
           "icon": "game",
-          "badge": "15 Levels"
+          "badge": "All skills"
         },
         {
-          "id": "plugins",
-          "label": "Plugins",
+          "id": "skills",
+          "label": "Skills",
           "icon": "brain",
-          "badge": "Skills"
+          "badge": "Manage"
+        },
+        {
+          "id": "assets",
+          "label": "Art",
+          "icon": "shapes",
+          "badge": "SVG"
         },
         {
           "id": "settings",

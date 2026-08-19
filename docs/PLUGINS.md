@@ -116,7 +116,6 @@ export interface Lesson {
   concept: string;            // what mastery is tracked against
   activity: string;           // "number-bonds/ten-frame" — MAY be another plugin's
   params?: Record<string, unknown>;
-  xpReward: number;
 }
 ```
 
@@ -144,6 +143,22 @@ export interface KodaSDK {
     awardXp(amount: number): Promise<void>;
     complete(result: SkillResult): Promise<void>;
     snapshot(): Promise<LearnerSnapshot>;   // a copy, never live state
+    // What to do next, across every installed skill. A host API for the same
+    // reason XP is: the answer may well be "leave this skill".
+    nextStep(): Promise<Recommendation | undefined>;
+  };
+
+  // Learning telemetry. A skill reports facts; the SDK derives every number,
+  // which is what makes the data comparable across skills.
+  // Full contract: docs/LEARNING_LOG.md
+  learning: {
+    startLesson(entry?: LessonEntry, levelNumber?: number): void;
+    present(q: { questionId: string; index: number; taskKind: string;
+                 expected?: string; itemCount?: number }): void;
+    answered(r: AnswerReport): void;
+    supportUsed(support: SupportKind, hintLevel?: number): void;
+    completeLesson(extras?: { stars?: number; xpEarned?: number }): void;
+    abandonLesson(): void;
   };
 
   ai: {
@@ -207,29 +222,24 @@ src/plugins/
 ├── registry.ts               # the ONE file you edit to add a plugin
 ├── sdk/                      # createKodaSDK()
 ├── host/
-│   ├── PluginProvider.tsx    # binds settings/features/log/progress to one id
-│   └── PluginHost.tsx        # resolves "plugin/activity" → component
-├── kit/                      # shared round loop, chrome, manipulatives
-├── _template/                # working stub — copy to start a skill
+│   └── PluginHost.tsx        # resolves "plugin/activity" → component, binds the SDK
+├── kit/                      # shared skill furniture — use it, do not rebuild it
+│   ├── round/                #   useSkillRound, scoreRound
+│   └── chrome/               #   SkillRound, SkillRoundTopBar, step header, complete modal
 │
-├── counting/                 # ONE folder = the complete counting skill
+├── addition/                 # the reference skill — read this one
 │   ├── index.ts              # export const plugin: SkillPlugin
-│   ├── manifest.ts           # metadata, features, settings defaults
-│   ├── lessons.ts            # the lessons counting contributes
-│   ├── activities/           # what counting EXPORTS for anyone to reference
-│   │   └── CountingQuest.tsx #   → "counting/quest"   (today: the whole game)
-│   │                         #   target, one per GameMode:
-│   │                         #     TouchOrbit · SubitizingRush
-│   │                         #     TenFrameRocket · FroggySkip
-│   └── internal/             # implementation: components, data, manipulatives
+│   ├── manifest.json         # metadata, listing, features, settings defaults
+│   ├── lessons.json          # the lessons it contributes
+│   └── activities/           # what it EXPORTS for anyone to reference
+│       └── AdditionSprint.tsx#   → "addition/sprint"
 │
-└── number-bonds/
+└── counting/                 # the older skill: same contract, own round loop
     ├── index.ts
-    ├── manifest.ts
-    ├── lessons.ts
-    └── activities/
-        └── TenFrame.tsx      # counting's "Making 10" lesson points HERE.
-                              # One implementation, two curricula.
+    ├── manifest.json
+    ├── lessons.json
+    ├── activities/
+    └── internal/             # private — nothing outside this folder imports it
 ```
 
 `index.ts` is the **only** file the rest of the app may import from a plugin.
@@ -331,8 +341,10 @@ here. No skill folder is touched.
 
 ## 7. Adding a new skill
 
-1. **Copy the template.** `cp -r src/plugins/_template src/plugins/<skill-name>`. It compiles
-   and mounts before you write anything, so you start by changing behaviour, not wiring.
+1. **Start from the reference skill.** `addition/` is the smallest complete example —
+   manifest, lessons, one activity built on the kit, registered in two places.
+   `docs/NEW_SKILL_PROMPT.md` is the standard prompt that builds one from it. Read
+   `addition`, not `counting`: counting predates the kit and still runs its own round loop.
 2. **Declare the manifest.** Kebab-case `id`, a category, the feature flags the skill checks
    at runtime, and settings defaults so Plugin Lab can render controls before the skill runs.
 3. **Export your activities.** Check the registry first — if the interaction already exists
@@ -343,6 +355,43 @@ here. No skill folder is touched.
    the only edit outside your folder.
 7. **Verify in Plugin Lab.** Toggle the plugin off and confirm it leaves the sidebar,
    dashboard and routes; toggle each feature and confirm behaviour changes.
+
+### Curriculum standards — the rule
+
+Each lesson carries its own `standards` array. Nobody validates it, so the rule is a
+convention every skill follows rather than something the build enforces. Six lines:
+
+1. **Copy the code, never invent it.** Take the exact published string —
+   `CCSS.K.CC.B.4a`, not `K.CC.4a` or `CCSS.K.CC.B.4.a`. Format is
+   `CCSS.<grade>.<domain>.<cluster>.<item>`, no spaces. A wrong code is worse than none,
+   because a teacher will believe it.
+
+2. **Check what an existing lesson used.** Before writing a code for "counting a row of
+   objects", search `lessons.json` across the plugins for a lesson teaching the same thing
+   and reuse its codes. Two skills labelling one idea differently is the failure this rule
+   exists to prevent, and grep is the only thing standing in the way.
+
+3. **First is primary.** Plugin Lab's lesson list shows `standards[0]` and nothing else, so
+   put the code the lesson is chiefly about at the front. The rest are visible in the lesson
+   detail panel. Order is meaning, not alphabetical.
+
+4. **List what the lesson is assessed on, not what it brushes past.** The test: if a child
+   fails this lesson, are they failing that standard? If not, leave it out. Three codes is a
+   lot; one is normal.
+
+5. **Empty is a real answer.** `"standards": []` means the framework has no code for this
+   skill. Subitizing is the standing example — Quick Dice Patterns and Quick Dot Groups both
+   ship empty, deliberately. Never reach for an approximate code just to fill the field.
+
+6. **If it is empty, `trajectoryLevel` must not be.** A lesson may sit outside the official
+   standards, but it may not sit outside both frameworks. The Clements & Sarama trajectory
+   position carries the pedagogical claim when Common Core has nothing to say.
+
+Two things are deliberately *not* in this list. There is no central table mapping concepts to
+codes: skills own their own data, and the cost of that is drift you catch by reading, not by
+tooling. And the codes drive nothing — they are displayed, never computed on. `conceptKey` is
+the field that does the work, and unlike `standards` it must never be empty or invented,
+because mastery tracking aggregates on it.
 
 ### Definition of done
 
@@ -357,6 +406,14 @@ here. No skill folder is touched.
 - [ ] Correct in light **and** dark, built on `themeSystem` tokens and checked in both.
 - [ ] Disabling it removes it from sidebar, dashboard and routes.
 - [ ] Logs under its own id only.
+- [ ] Built on `kit/` — `useSkillRound` for the loop, `SkillRound` for the chrome. A skill
+      that hand-rolls either will drift from every other skill, which is how one round
+      ended up with its own top bar and a non-standard feedback message.
+- [ ] Sets no XP anywhere. One rate lives in Settings; stars come from first-try accuracy.
+- [ ] Reaches the host only through `koda` — including sound, haptics and speech.
+- [ ] Every lesson names a `conceptKey` that already exists if the skill is not new, and
+      carries `standards` codes copied from the published source — or an empty array plus a
+      `trajectoryLevel`. See the rule above.
 - [ ] Keyboard reachable; state never carried by colour alone.
 - [ ] Entry component under ~300 lines. Past that, the generic part belongs in the kit.
 

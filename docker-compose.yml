@@ -1,0 +1,64 @@
+# Local stack. `make dev-local` runs the app and Mongo; the FastAPI service
+# joins the same network once it exists (`make dev-local-api`).
+#
+# Ports are overridable so a container can run beside a host `npm run dev`:
+#   APP_PORT=3002 make dev-local
+
+services:
+  app:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "${APP_PORT:-3001}:3001"
+    environment:
+      PORT: "3001"
+      # Where the Node process proxies /v1. Inside compose that is a service
+      # name, not localhost — the API is a different container.
+      API_URL: "http://api:8000"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      # The working tree, so an edit on the host reloads in the container.
+      - .:/app
+      # …except node_modules, which stays the Linux copy built into the image
+      # rather than whatever the host installed for its own platform.
+      - /app/node_modules
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  # Not built until server/ exists. `make dev-local-api` turns it on.
+  api:
+    profiles: ["api"]
+    build:
+      context: ./server
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      MONGODB_URI: "mongodb://mongo:27017/koda"
+    env_file:
+      - path: server/.env
+        required: false
+    volumes:
+      - ./server:/srv
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo-data:

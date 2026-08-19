@@ -1,16 +1,17 @@
-import { getPlugin, visibleTo } from "../plugins/registry";
-import { getViewer } from "../plugins/viewer";
-import type { Viewer } from "../plugins/viewer";
-import type { Lesson } from "../plugins/types";
+import { getSkill, visibleTo } from "../skills/registry";
+import { getViewer } from "../skills/viewer";
+import type { Viewer } from "../skills/viewer";
+import type { Lesson } from "../skills/types";
 import courseJson from "./course.json";
+import { withLessonEdits } from "../lib/lessonContent";
 
 /**
  * The course — what is taught, in what order.
  *
  * Sequencing lives here and nowhere else, so two skills can never fight over a
- * lesson's position and reordering a unit never touches a plugin folder. A unit
+ * lesson's position and reordering a unit never touches a skill folder. A unit
  * may freely mix lessons from different skills: `lessons` holds
- * "pluginId/lessonId" references, not imports.
+ * "skillId/lessonId" references, not imports.
  */
 export interface CourseUnitConfig {
   id: string;
@@ -27,9 +28,9 @@ export interface CourseUnit extends Omit<CourseUnitConfig, "lessons"> {
 }
 
 export interface ResolvedLesson extends Lesson {
-  /** "pluginId/lessonId" — how the course names it. */
+  /** "skillId/lessonId" — how the course names it. */
   ref: string;
-  pluginId: string;
+  skillId: string;
   /** Position within the whole course, 1-based. What the learner calls "level N". */
   levelNumber: number;
 }
@@ -37,7 +38,7 @@ export interface ResolvedLesson extends Lesson {
 const config = courseJson.units as CourseUnitConfig[];
 
 /**
- * Resolve one reference. Returns undefined when the owning plugin is missing or
+ * Resolve one reference. Returns undefined when the owning skill is missing or
  * not visible, so disabling a skill removes its lessons from the course rather
  * than leaving a broken entry behind.
  */
@@ -52,8 +53,8 @@ const config = courseJson.units as CourseUnitConfig[];
 const STRETCH_YEARS = 1;
 
 function resolve(ref: string, levelNumber: number, viewer: Viewer): ResolvedLesson | undefined {
-  const [pluginId, lessonId] = ref.split("/");
-  const owner = getPlugin(pluginId);
+  const [skillId, lessonId] = ref.split("/");
+  const owner = getSkill(skillId);
   if (!owner || !visibleTo(owner, viewer)) return undefined;
 
   const lesson = owner.lessons.find((l) => l.id === lessonId);
@@ -63,12 +64,13 @@ function resolve(ref: string, levelNumber: number, viewer: Viewer): ResolvedLess
   // than a year beyond the learner is held back rather than shown and failed.
   if (lesson.ageBand && lesson.ageBand[0] > viewer.age + STRETCH_YEARS) return undefined;
 
-  return { ...lesson, ref, pluginId, levelNumber };
+  // A teacher's wording edit applies here, once, rather than at each display.
+  return { ...withLessonEdits(skillId, lesson), ref, skillId, levelNumber };
 }
 
 /**
  * The course as the dashboard should render it: units in order, each holding
- * only lessons whose plugin is present and visible. Empty units are dropped.
+ * only lessons whose skill is present and visible. Empty units are dropped.
  */
 export function getCourseUnits(viewer: Viewer = getViewer()): CourseUnit[] {
   let level = 0;
@@ -96,3 +98,33 @@ export function getLessonByLevel(
 }
 
 export const totalLessonCount = (): number => getCourseLessons().length;
+
+/** Every lesson one skill contributes, in course order. */
+export function getSkillLessons(skillId: string, viewer?: Viewer): ResolvedLesson[] {
+  return getCourseLessons(viewer).filter((l) => l.skillId === skillId);
+}
+
+/**
+ * Whether a lesson is open to this learner yet.
+ *
+ * Progression runs per skill, not across the whole course: a global "one past
+ * your current level" cutoff locked every lesson of the second skill behind the
+ * whole of the first, which is not what "next" means when two skills teach
+ * different things.
+ *
+ * Lives here rather than in the page that draws the padlock, so the learning
+ * path and anything else asking "can they do this yet?" cannot disagree.
+ */
+export function isUnlocked(
+  lesson: ResolvedLesson,
+  completed: Record<number, number>,
+  viewer?: Viewer,
+): boolean {
+  if ((completed[lesson.levelNumber] ?? 0) > 0) return true;
+
+  const siblings = getSkillLessons(lesson.skillId, viewer);
+  const index = siblings.findIndex((l) => l.levelNumber === lesson.levelNumber);
+  if (index <= 0) return true;
+
+  return (completed[siblings[index - 1].levelNumber] ?? 0) > 0;
+}

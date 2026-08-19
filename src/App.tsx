@@ -35,37 +35,46 @@ import { INITIAL_SKILL_NODES, SAMPLE_PROBLEMS } from "./data/sampleProblems";
 import { SKILL_GROWTH_ROADMAP, SkillQuestStage } from "./data/skillTreeRoadmap";
 import { KodaAvatar } from "./components/KodaAvatar";
 import { SocraticChatPanel } from "./components/SocraticChatPanel";
-import { SkillAdventureMap } from "./components/SkillAdventureMap";
-import { SkillQuestPlayer } from "./components/SkillQuestPlayer";
-import { SkillProgressionLab } from "./components/SkillProgressionLab";
 import { Home } from "./components/Home";
+import {
+  loadCompletedLevels,
+  loadProgress,
+  saveCompletedLevels,
+  saveProgress,
+} from "./lib/learnerProgress";
+import { LearnPage } from "./components/LearnPage";
 import { SidebarNav } from "./components/SidebarNav";
 import { MainLayout } from "./components/layout/MainLayout";
-import { PluginHost } from "./plugins/host/PluginHost";
-import { PluginManagerPage } from "./components/plugins/PluginManagerPage";
+import { SkillHost } from "./skills/host/SkillHost";
+import { getLessonByLevel } from "./curriculum";
+import { useViewer } from "./skills/viewer";
+import { SkillManagerPage } from "./components/skills/SkillManagerPage";
 import { SettingsPage } from "./components/SettingsPage";
+import { SvgAssetsPage } from "./components/SvgAssetsPage";
 import { WhiteboardModal } from "./components/WhiteboardModal";
-import { SkillMap } from "./components/SkillMap";
 import { MathConceptsModal } from "./components/MathConceptsModal";
 import { DailyStudyGoal } from "./components/DailyStudyGoal";
 import { QuickMathPanel } from "./components/QuickMathPanel";
 import { LiveVoiceCoachModal } from "./components/LiveVoiceCoachModal";
-import { playSound, playBase64Pcm, speakWebSpeech } from "./utils/audio";
+import { playSound, playBase64Pcm, speakWebSpeech, isSoundEnabled, setSoundEnabled as persistSoundEnabled } from "./utils/audio";
 import { generateLocalSocraticResponse } from "./utils/socraticEngine";
 
 export default function App() {
   const [skillNodes, setSkillNodes] = useState<SkillNode[]>(INITIAL_SKILL_NODES);
-  const [activeTab, setActiveTab] = useState<"home" | "game" | "plugins" | "settings">("home");
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  const [kidThemeMode, setKidThemeMode] = useState<"magical" | "cyber" | "candy" | "retro">("magical");
-  const [selectedAvatar, setSelectedAvatar] = useState<string>("dino");
-  const [gameSpeed, setGameSpeed] = useState<"gentle" | "brave" | "speedster">("brave");
+  const [activeTab, setActiveTab] = useState<"home" | "game" | "skills" | "assets" | "settings">("home");
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(isSoundEnabled());
   const [activeLevelNumber, setActiveLevelNumber] = useState<number>(1);
-  const [completedGameLevels, setCompletedGameLevels] = useState<Record<number, number>>({
-    1: 3,
-    2: 2,
-    3: 1,
-  });
+  /**
+   * Whether the Learn tab is playing a round or offering the picker.
+   *
+   * The tab used to mount the activity directly, which only worked while one
+   * skill existed: it opened whatever lesson `activeLevelNumber` pointed at and
+   * gave a learner no way to reach a second skill.
+   */
+  const [inRound, setInRound] = useState<boolean>(false);
+  const viewer = useViewer();
+  const [completedGameLevels, setCompletedGameLevels] =
+    useState<Record<number, number>>(loadCompletedLevels);
   const [activeSkillId, setActiveSkillId] = useState<string>("stage_counting");
   const [studioMode, setStudioMode] = useState<"manipulatives" | "quickmath">("manipulatives");
   const [activeTopic, setActiveTopic] = useState<TopicCategory>("number_bonds");
@@ -91,27 +100,16 @@ export default function App() {
   const [whiteboardLoading, setWhiteboardLoading] = useState(false);
   const [whiteboardFeedback, setWhiteboardFeedback] = useState<string | null>(null);
 
-  const [userProgress, setUserProgress] = useState<UserProgress>({
-    xp: 420,
-    level: 3,
-    streakDays: 5,
-    problemsSolved: 12,
-    dailyGoal: 5,
-    dailySolved: 3,
-    unlockedSkills: ["number_bonds", "base_ten_blocks", "time_and_money", "balance_equations", "fraction_lab", "spatial_puzzles"],
-    masteryByTopic: {
-      number_bonds: 90,
-      base_ten_blocks: 80,
-      time_and_money: 75,
-      balance_equations: 85,
-      fraction_lab: 60,
-      spatial_puzzles: 40,
-      exponent_growth: 10,
-      coordinate_quest: 0,
-      logic_matrix: 0,
-    },
-    recentBadges: ["Scale Master", "Socratic Thinker", "Fraction Architect", "Number Bond Champion"],
-  });
+  const [userProgress, setUserProgress] = useState<UserProgress>(loadProgress);
+  // Kept on this device, so a round played yesterday is still there today.
+  useEffect(() => {
+    saveProgress(userProgress);
+  }, [userProgress]);
+
+  useEffect(() => {
+    saveCompletedLevels(completedGameLevels);
+  }, [completedGameLevels]);
+
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
@@ -336,13 +334,34 @@ export default function App() {
     ],
   };
 
-  const countingHost = (
-    <PluginHost
-      activityRef="counting/quest"
-      params={{ level: activeLevelNumber }}
+  // The lesson at this position decides which skill runs. Hardcoding
+  // "counting/quest" here worked while counting was the only skill and sent
+  // every other skill's lessons into the counting game the moment a second one
+  // registered — the course already knows the answer, so ask it.
+  const activeLesson = getLessonByLevel(activeLevelNumber, viewer);
+
+  const lessonHost = (
+    <SkillHost
+      key={activeLesson?.ref ?? activeLevelNumber}
+      activityRef={activeLesson?.activity ?? "counting/quest"}
+      params={{ level: activeLevelNumber, ...(activeLesson?.params ?? {}) }}
       level={activeLevelNumber}
+      lesson={
+        // Without this the learning log is a silent no-op — the SDK refuses to
+        // record events it cannot attribute to a concept.
+        activeLesson?.conceptKey
+          ? {
+              lessonId: activeLesson.id,
+              conceptKey: activeLesson.conceptKey,
+              standards: activeLesson.standards,
+              ageBand: activeLesson.ageBand,
+              title: activeLesson.title,
+              concept: activeLesson.concept,
+            }
+          : undefined
+      }
       snapshot={userProgress}
-      onExit={() => setActiveTab("home")}
+      onExit={() => setInRound(false)}
       onAwardXp={(earnedXp) =>
         setUserProgress((prev) => ({ ...prev, xp: prev.xp + earnedXp }))
       }
@@ -354,7 +373,11 @@ export default function App() {
         }));
         setCompletedGameLevels((prev) => ({
           ...prev,
-          [result.levelNumber]: result.stars,
+          // Best ever, not most recent: a level's stars are what the learner has
+          // shown they can do, so replaying it and having an off day must never
+          // take a star away. Counting already kept the maximum internally; the
+          // app's copy — the one the Learn page reads — did not.
+          [result.levelNumber]: Math.max(prev[result.levelNumber] ?? 0, result.stars),
         }));
       }}
     />
@@ -362,7 +385,8 @@ export default function App() {
 
   return (
     <MainLayout
-      contained={activeTab !== "game"}
+      // Only a running round wants the full width; the picker is a normal page.
+      contained={!(activeTab === "game" && inRound)}
       sidebar={
         <SidebarNav
           activeTab={activeTab}
@@ -377,9 +401,21 @@ export default function App() {
       }
     >
       <>
-        {/* TAB 1: THE COUNTING SKILL — inside the shell, so the sidebar stays
+        {/* TAB 1: THE ACTIVE LESSON'S SKILL — inside the shell, so the sidebar stays
             reachable mid-lesson. contained={false} lets it use the full width. */}
-        {activeTab === "game" && countingHost}
+        {activeTab === "game" &&
+          (inRound ? (
+            lessonHost
+          ) : (
+            <LearnPage
+              activeLevelNumber={activeLevelNumber}
+              completedLevels={completedGameLevels}
+              onStartLesson={(levelNumber) => {
+                setActiveLevelNumber(levelNumber);
+                setInRound(true);
+              }}
+            />
+          ))}
 
         {/* TAB 0: CREATIVE LEARNING PATHWAY HOME HUB */}
           {activeTab === "home" && (
@@ -391,28 +427,31 @@ export default function App() {
                 if (targetLevel) {
                   setActiveLevelNumber(targetLevel);
                 }
+                // The dashboard's card resumes a round rather than offering the
+                // picker — it already names the lesson it will open.
+                setInRound(true);
                 setActiveTab("game");
               }}
             />
           )}
 
           {/* TAB: PLUGIN MANAGER — its own destination, not buried in Settings */}
-          {activeTab === "plugins" && <PluginManagerPage />}
+          {activeTab === "skills" && <SkillManagerPage />}
 
-          {/* TAB 2: CLUBHOUSE SETTINGS PAGE FOR KIDS */}
+          {/* TAB: SVG COLLECTION — what is in src/assets/svg, drawn */}
+          {activeTab === "assets" && <SvgAssetsPage />}
+
+          {/* TAB 2: SYSTEM SETTINGS */}
           {activeTab === "settings" && (
             <SettingsPage
               soundEnabled={soundEnabled}
-              onToggleSound={() => setSoundEnabled(!soundEnabled)}
+              onToggleSound={() => {
+                const next = !soundEnabled;
+                persistSoundEnabled(next);
+                setSoundEnabled(next);
+              }}
               voiceEnabled={voiceEnabled}
               onToggleVoice={() => setVoiceEnabled(!voiceEnabled)}
-              kidThemeMode={kidThemeMode}
-              onSelectKidTheme={setKidThemeMode}
-              selectedAvatar={selectedAvatar}
-              onSelectAvatar={setSelectedAvatar}
-              gameSpeed={gameSpeed}
-              onSelectGameSpeed={setGameSpeed}
-              userProgress={userProgress}
             />
           )}
       </>

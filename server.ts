@@ -5,6 +5,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, LiveServerMessage, Modality, Type } from "@google/genai";
 import { WebSocketServer, WebSocket } from "ws";
 import dotenv from "dotenv";
+import { registerSvgAssetRoutes } from "./svgAssetRoutes";
 
 dotenv.config();
 
@@ -28,6 +29,9 @@ function getGeminiClient(customApiKey?: string) {
     },
   });
 }
+
+// The SVG collection, read and written as files under src/assets/svg.
+registerSvgAssetRoutes(app);
 
 // 1. Socratic Tutor Conversational API
 app.post("/api/tutor/respond", async (req, res) => {
@@ -527,8 +531,29 @@ PEDAGOGICAL & VOCAL RULES:
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
+
+    app.use(
+      express.static(distPath, {
+        setHeaders(res, filePath) {
+          const name = path.basename(filePath);
+          // The service worker and the manifest must never be served stale: a
+          // cached sw.js is the classic way a PWA pins itself to an old build
+          // and stops taking updates. Everything else in dist is content-hashed
+          // and safe to cache hard.
+          if (name === "sw.js" || name.endsWith(".webmanifest") || name === "index.html") {
+            res.setHeader("Cache-Control", "no-cache");
+            // Vite names built assets `index-lYd6e-q5.js` — the hash is
+            // base64url after a dash, not a dotted hex segment, so it needs
+            // matching on that shape or every asset silently revalidates.
+          } else if (/-[A-Za-z0-9_-]{8,}\.(?:js|css)$/.test(name)) {
+            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          }
+        },
+      }),
+    );
+
     app.get("*", (req, res) => {
+      res.setHeader("Cache-Control", "no-cache");
       res.sendFile(path.join(distPath, "index.html"));
     });
   }

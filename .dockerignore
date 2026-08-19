@@ -1,0 +1,10 @@
+node_modules
+dist
+dev-dist
+.git
+.DS_Store
+coverage
+*.log
+server/.venv
+server/__pycache__
+**/__pycache__

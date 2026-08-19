@@ -6,7 +6,7 @@ export type ButtonVariant =
   | "warning"
   | "ghost"
   | "outline";
-export type ButtonSize = "sm" | "md" | "lg" | "icon";
+export type ButtonSize = "sm" | "md" | "lg" | "icon" | "choice";
 
 export type CardVariant = "default" | "glass" | "bordered" | "interactive";
 export type BadgeVariant = "primary" | "success" | "warning" | "danger" | "info" | "neutral";
@@ -51,6 +51,8 @@ export const themeSystem = {
       md: "px-4 py-2.5 text-sm gap-2 [&>svg]:w-4 [&>svg]:h-4",
       lg: "px-6 py-3.5 text-base gap-2.5 [&>svg]:w-5 [&>svg]:h-5",
       icon: "p-2.5 gap-0 [&>svg]:w-4 [&>svg]:h-4",
+      /* Answer tiles a child taps: square, large type, a comfortable target. */
+      choice: "w-14 h-14 sm:w-16 sm:h-16 text-xl sm:text-2xl gap-0 p-0",
     };
 
     const variants = {
@@ -159,7 +161,7 @@ export const themeSystem = {
       };
       return `${base} ${variants[variant]} ${className}`;
     },
-    well: "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 [&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6",
+    well: "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 [&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6",
     value:
       "text-base sm:text-xl font-bold font-mono text-slate-900 dark:text-slate-100 tabular-nums",
     label:
@@ -252,7 +254,8 @@ export const themeSystem = {
     wrap: "flex items-center justify-between gap-4",
     title:
       "text-lg sm:text-xl font-black font-mono text-slate-900 dark:text-white flex items-center gap-2",
-    eyebrowIcon: "text-indigo-500 dark:text-indigo-400",
+    eyebrowIcon:
+      "text-indigo-500 dark:text-indigo-400 [&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6",
     subtitle: "text-xs sm:text-sm text-slate-600 dark:text-indigo-200/70 font-medium",
   },
 

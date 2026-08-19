@@ -4,17 +4,8 @@ import { UserProgress } from "../types";
 import { getCourseUnits, getLessonByLevel, totalLessonCount } from "../curriculum";
 import { playSound } from "../utils/audio";
 import { themeSystem } from "../lib/themeSystem";
-import {
-  UIFeatureCard,
-  UIFeatureCardAction,
-  UISectionHeader,
-  UIStatGrid,
-  UIStatTile,
-  UIPathGrid,
-  UIPathNode,
-  UIUnitBanner,
-  UIUnitCard,
-} from "./ui";
+import { ScoringAPI } from "../lib/scoring";
+import { UIFeatureCard, UIFeatureCardAction, UIStatGrid, UIStatTile } from "./ui";
 
 interface HomeProps {
   userProgress: UserProgress;
@@ -31,7 +22,7 @@ export const Home: React.FC<HomeProps> = ({
 }) => {
   const [selectedSection, setSelectedSection] = useState<number>(1);
 
-  // Units come from the course, which resolves each "pluginId/lessonId"
+  // Units come from the course, which resolves each "skillId/lessonId"
   // reference through the registry. Adding a skill needs no edit here.
   const sections = getCourseUnits();
 
@@ -43,7 +34,7 @@ export const Home: React.FC<HomeProps> = ({
   const totalMasteredCount = Object.keys(completedLevels).length;
   const totalStarsCount = Object.values(completedLevels).reduce((a: number, b: number) => a + (Number(b) || 0), 0);
 
-  // Every skill can be disabled from Plugin Lab, which empties the course. Say so
+  // Every skill can be disabled from the Skill Manager, which empties the course. Say so
   // rather than rendering a dashboard with nothing behind it.
   if (!currentActiveLevel) {
     return (
@@ -66,7 +57,8 @@ export const Home: React.FC<HomeProps> = ({
       <UIStatGrid>
         <UIStatTile
           icon={<Flame className="fill-current" />}
-          value={`${userProgress.streakDays || 5} DAYS`}
+          // `|| 5` dressed an empty learner up as a five-day streak.
+          value={`${userProgress.streakDays} DAYS`}
           label="Learning Streak"
           tone="streak"
         />
@@ -111,7 +103,8 @@ export const Home: React.FC<HomeProps> = ({
           },
           {
             icon: <Star className="text-amber-500 dark:text-amber-400 fill-current" />,
-            label: "+50 XP",
+            // Was a hardcoded "+50 XP"; the rate is one setting now.
+            label: `up to +${ScoringAPI.current().xpPerLevel} XP`,
           },
         ]}
         action={
@@ -127,64 +120,6 @@ export const Home: React.FC<HomeProps> = ({
         }
       />
 
-      {/* ============================================================ */}
-      {/* 3. WINDING LEARNING PATH (ROADMAP / UNITS)                      */}
-      {/* ============================================================ */}
-      <div className={themeSystem.spacing.section}>
-        <UISectionHeader
-          icon="🔮"
-          title="Your Math Learning Journey"
-          subtitle="Step through structured skill stepping stones to earn crowns & master number sense"
-        />
-
-        {/* Units List */}
-        <div className={themeSystem.spacing.section}>
-          {sections.map((sec, unitIdx) => (
-            <UIUnitCard key={sec.unitNumber}>
-              <UIUnitBanner
-                icon={sec.icon}
-                title={sec.title}
-                description={sec.description}
-                badge={`${sec.lessons.length} Stepping Stones`}
-              />
-
-              {/* Stepping Stone Nodes */}
-              <UIPathGrid>
-                {sec.lessons.map((lvl) => {
-                  const stars = completedLevels[lvl.levelNumber] || 0;
-                  const isCompleted = stars > 0;
-                  const isCurrent = lvl.levelNumber === activeLevelNumber;
-                  const isLocked = lvl.levelNumber > activeLevelNumber + 1 && !isCompleted;
-
-                  const state = isCurrent
-                    ? "current"
-                    : isCompleted
-                      ? "completed"
-                      : isLocked
-                        ? "locked"
-                        : "available";
-
-                  return (
-                    <UIPathNode
-                      key={lvl.levelNumber}
-                      state={state}
-                      icon={lvl.icon}
-                      stars={stars}
-                      startLabel="Start"
-                      title={`L${lvl.levelNumber}: ${lvl.title}`}
-                      subtitle={lvl.concept}
-                      onClick={() => {
-                        playSound("pop");
-                        onStartLearning(lvl.levelNumber);
-                      }}
-                    />
-                  );
-                })}
-              </UIPathGrid>
-            </UIUnitCard>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };

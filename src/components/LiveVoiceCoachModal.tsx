@@ -321,7 +321,7 @@ export const LiveVoiceCoachModal: React.FC<LiveVoiceCoachModalProps> = ({
     }
   };
 
-  // Clean up on unmount or modal close
+  // Stop when the modal closes.
   useEffect(() => {
     if (!isOpen && sessionRef.current) {
       sessionRef.current.stop();
@@ -329,6 +329,22 @@ export const LiveVoiceCoachModal: React.FC<LiveVoiceCoachModalProps> = ({
       setSessionStatus("disconnected");
     }
   }, [isOpen]);
+
+  /**
+   * Stop when the component goes away.
+   *
+   * The close path above only fires while this component is still mounted.
+   * Leaving the round, or the host remounting it, tore the modal down without
+   * ever calling `stop()` — so the microphone stayed open and Koda carried on
+   * talking over the next screen. Runs once, and reads the session through the
+   * ref so it always stops the live one.
+   */
+  useEffect(() => {
+    return () => {
+      sessionRef.current?.stop();
+      sessionRef.current = null;
+    };
+  }, []);
 
   // Quick Questions
   const handleQuickPrompt = (promptText: string) => {

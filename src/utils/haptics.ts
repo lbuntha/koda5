@@ -4,9 +4,9 @@
  * perfectly synchronized with the 'tap-pop-anim' spring bounce sequence.
  */
 
-import { PluginManagerAPI } from "../lib/pluginStore";
+import { SkillStoreAPI } from "../lib/skillStore";
 
-/** Plugin whose flags currently gate haptics. See the note in triggerHaptic. */
+/** Skill whose flags currently gate haptics. See the note in triggerHaptic. */
 const HAPTICS_OWNER = "counting";
 
 export type HapticType =
@@ -48,13 +48,13 @@ export function triggerHaptic(
     return false;
   }
 
-  // A shared util should not know a plugin id — a skill that wants haptics
+  // A shared util should not know a skill id — a skill that wants haptics
   // gated by its own flag should check `koda.config.isEnabled()` and call this
-  // only when enabled. Kept pointing at the counting plugin for now so existing
-  // behaviour is preserved; it defaults to on when the plugin is absent.
+  // only when enabled. Kept pointing at the counting skill for now so existing
+  // behaviour is preserved; it defaults to on when the skill is absent.
   if (
-    typeof PluginManagerAPI !== "undefined" &&
-    !PluginManagerAPI.isFeatureEnabled(HAPTICS_OWNER, "haptic_feedback", true)
+    typeof SkillStoreAPI !== "undefined" &&
+    !SkillStoreAPI.isFeatureEnabled(HAPTICS_OWNER, "haptic_feedback", true)
   ) {
     return false;
   }
@@ -66,8 +66,8 @@ export function triggerHaptic(
 
     // Retrieve configured haptic intensity setting if available
     const intensity =
-      typeof PluginManagerAPI !== "undefined"
-        ? PluginManagerAPI.getPluginSetting<string>(HAPTICS_OWNER, "hapticIntensity", "crisp")
+      typeof SkillStoreAPI !== "undefined"
+        ? SkillStoreAPI.getSkillSetting<string>(HAPTICS_OWNER, "hapticIntensity", "crisp")
         : "crisp";
 
     // Duration multipliers based on intensity setting
