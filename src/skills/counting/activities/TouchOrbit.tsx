@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { motion } from "motion/react";
 import type { ActivityProps } from "../../types";
 import { SkillRound, useSkillRound, type RoundQuestion } from "../../kit";
 import { themeSystem } from "../../../lib/themeSystem";
@@ -176,10 +177,14 @@ const TapGroup: React.FC<{
     {Array.from({ length: count }, (_, i) => {
       const on = tapped.includes(i);
       return (
-        <button
+        <motion.button
           key={i}
           onClick={() => onTap(i)}
-          className={`relative w-10 h-10 rounded-2xl flex items-center justify-center text-lg transition active:scale-90 ${
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.85, rotate: i % 2 === 0 ? -4 : 4 }}
+          transition={{ type: "spring", stiffness: 500, damping: 15 }}
+          aria-label={`Object ${i + 1}${on ? ", counted" : ""}`}
+          className={`relative w-10 h-10 rounded-2xl flex items-center justify-center text-lg transition ${
             on
               ? `${tone === "amber" ? "bg-amber-500/40 border-amber-400" : "bg-cyan-500/40 border-cyan-400"} border-2 scale-105`
               : `${tone === "amber" ? "bg-amber-500/15 border-amber-500/30" : "bg-cyan-500/15 border-cyan-500/30"} border`
@@ -187,11 +192,16 @@ const TapGroup: React.FC<{
         >
           <span>{emoji}</span>
           {on && (
-            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-mono font-black text-[9px] flex items-center justify-center">
+            <motion.span
+              initial={{ scale: 0, rotate: -20 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 600, damping: 14 }}
+              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-mono font-black text-[9px] flex items-center justify-center"
+            >
               {tapped.indexOf(i) + 1}
-            </span>
+            </motion.span>
           )}
-        </button>
+        </motion.button>
       );
     })}
   </div>
@@ -377,13 +387,16 @@ export const TouchOrbit: React.FC<ActivityProps<TouchOrbitParams>> = ({
                 ["B", "Right has more"],
               ] as const
             ).map(([choice, label]) => (
-              <button
+              <motion.button
                 key={choice}
                 onClick={() => answerCompare(choice)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 className={themeSystem.button("secondary", "sm")}
               >
                 {label}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -400,9 +413,13 @@ export const TouchOrbit: React.FC<ActivityProps<TouchOrbitParams>> = ({
               const on = tapped.includes(i);
               const place = question.places?.[i];
               return (
-                <button
+                <motion.button
                   key={i}
                   onClick={() => tap(i)}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.85, rotate: i % 2 === 0 ? -6 : 6 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                  aria-label={`Object ${i + 1}${on ? ", counted" : ""}`}
                   style={
                     place
                       ? {
@@ -413,7 +430,7 @@ export const TouchOrbit: React.FC<ActivityProps<TouchOrbitParams>> = ({
                         }
                       : undefined
                   }
-                  className={`relative w-16 h-16 rounded-2xl border-2 flex items-center justify-center text-3xl transition active:scale-90 ${
+                  className={`relative w-16 h-16 rounded-2xl border-2 flex items-center justify-center text-3xl transition ${
                     on
                       ? "bg-amber-100 dark:bg-amber-500/25 border-amber-400"
                       : "bg-surface border-line hover:border-amber-300"
@@ -421,11 +438,16 @@ export const TouchOrbit: React.FC<ActivityProps<TouchOrbitParams>> = ({
                 >
                   <span>{question.asset.emoji}</span>
                   {on && koda.config.isEnabled("counting_badges", true) && (
-                    <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-amber-400 text-slate-950 font-mono font-black text-[10px] flex items-center justify-center">
+                    <motion.span
+                      initial={{ scale: 0, rotate: -20 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", stiffness: 600, damping: 14 }}
+                      className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-amber-400 text-slate-950 font-mono font-black text-[10px] flex items-center justify-center"
+                    >
                       {tapped.indexOf(i) + 1}
-                    </span>
+                    </motion.span>
                   )}
-                </button>
+                </motion.button>
               );
             })}
           </div>

@@ -51,6 +51,8 @@ import { useViewer } from "./skills/viewer";
 import { SkillManagerPage } from "./components/skills/SkillManagerPage";
 import { SettingsPage } from "./components/SettingsPage";
 import { SvgAssetsPage } from "./components/SvgAssetsPage";
+import { SignInScreen } from "./components/account/SignInScreen";
+import { SessionAPI, installLearningSink, useSession } from "./lib/sync";
 import { WhiteboardModal } from "./components/WhiteboardModal";
 import { MathConceptsModal } from "./components/MathConceptsModal";
 import { DailyStudyGoal } from "./components/DailyStudyGoal";
@@ -61,7 +63,20 @@ import { generateLocalSocraticResponse } from "./utils/socraticEngine";
 
 export default function App() {
   const [skillNodes, setSkillNodes] = useState<SkillNode[]>(INITIAL_SKILL_NODES);
-  const [activeTab, setActiveTab] = useState<"home" | "game" | "skills" | "assets" | "settings">("home");
+  const session = useSession();
+
+  // A stored session is a claim, not proof — check it with the server on boot.
+  // Offline it stands; rejected, it is cleared and the gate comes back.
+  useEffect(() => {
+    void SessionAPI.verify();
+  }, []);
+
+  // Everything the learning log records is also queued for upload. Starting it
+  // here rather than at module load keeps it out of the way of tests.
+  useEffect(() => installLearningSink(), []);
+  const [activeTab, setActiveTab] = useState<
+    "home" | "game" | "skills" | "assets" | "settings"
+  >("home");
   const [soundEnabled, setSoundEnabled] = useState<boolean>(isSoundEnabled());
   const [activeLevelNumber, setActiveLevelNumber] = useState<number>(1);
   /**
@@ -383,6 +398,18 @@ export default function App() {
     />
   );
 
+  /**
+   * Sign-in is required to reach the app.
+   *
+   * Worth knowing what this costs: the session lives in `localStorage`, so a
+   * device that has signed in once still plays with no connection — but a
+   * device that never has cannot get past this screen, which is the one place
+   * Koda now needs a network. Removing the gate is deleting these four lines.
+   */
+  if (!session) {
+    return <SignInScreen />;
+  }
+
   return (
     <MainLayout
       // Only a running round wants the full width; the picker is a normal page.
@@ -440,6 +467,7 @@ export default function App() {
 
           {/* TAB: SVG COLLECTION — what is in src/assets/svg, drawn */}
           {activeTab === "assets" && <SvgAssetsPage />}
+
 
           {/* TAB 2: SYSTEM SETTINGS */}
           {activeTab === "settings" && (

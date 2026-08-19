@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { motion } from "motion/react";
 import type { ActivityProps } from "../../types";
 import { SkillRound, useSkillRound, type RoundQuestion } from "../../kit";
 import { themeSystem } from "../../../lib/themeSystem";
@@ -191,9 +192,16 @@ export const SubitizingRush: React.FC<ActivityProps<SubitizingRushParams>> = ({
               <p className="text-base font-bold text-slate-700 dark:text-body">
                 Ready? Watch closely!
               </p>
-              <button onClick={flash} className={themeSystem.button("primary", "lg")} autoFocus>
+              <motion.button
+                onClick={flash}
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.9, y: 2 }}
+                transition={{ type: "spring", stiffness: 450, damping: 16 }}
+                className={themeSystem.button("primary", "lg")}
+                autoFocus
+              >
                 Show me
-              </button>
+              </motion.button>
             </div>
           )}
 
@@ -205,22 +213,30 @@ export const SubitizingRush: React.FC<ActivityProps<SubitizingRushParams>> = ({
               <p className="text-sm font-bold text-slate-700 dark:text-body">
                 How many dots did you see?
               </p>
-              <button
+              <motion.button
                 onClick={() => {
                   // Re-showing a flashed set is the strongest support here: the
                   // whole point is that the glance was enough.
                   round.useSupport("reveal");
                   flash();
                 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 className={themeSystem.button("secondary", "sm")}
               >
                 Show me again
-              </button>
+              </motion.button>
             </div>
           )}
 
           {phase === "flashing" && (
-            <div className="flex items-center justify-center animate-scaleUp">
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="flex items-center justify-center"
+            >
               {question.parts ? (
                 <div className="flex items-center gap-6 p-4 bg-surface rounded-2xl border border-line">
                   <div className="flex gap-2">
@@ -255,20 +271,23 @@ export const SubitizingRush: React.FC<ActivityProps<SubitizingRushParams>> = ({
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-2.5">
           {choicesFor(question.total, setup).map((num) => (
-            <button
+            <motion.button
               key={num}
               onClick={() => guess(num)}
               disabled={phase !== "answering"}
+              whileHover={phase === "answering" ? { scale: 1.08, y: -2 } : undefined}
+              whileTap={phase === "answering" ? { scale: 0.88, y: 2 } : undefined}
+              transition={{ type: "spring", stiffness: 500, damping: 15 }}
               className={themeSystem.button("secondary", "choice")}
             >
               {num}
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { motion } from "motion/react";
 import { Rocket } from "lucide-react";
 import type { ActivityProps } from "../../types";
 import { SkillRound, useSkillRound, type RoundQuestion } from "../../kit";
@@ -66,20 +67,35 @@ const Cell: React.FC<{
   tone: "purple" | "cyan";
   onClick?: () => void;
   height?: string;
-}> = ({ filled, tone, onClick, height = "h-16" }) => {
+  /** 1-based position, so the cell has a name a screen reader can say. */
+  position?: number;
+}> = ({ filled, tone, onClick, height = "h-16", position }) => {
   const on =
     tone === "purple"
       ? "bg-purple-500 border-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.5)] scale-95"
       : "bg-cyan-500 border-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.5)] scale-95";
   const off = `bg-surface border-line ${onClick ? (tone === "purple" ? "hover:border-purple-400" : "hover:border-cyan-400") : ""}`;
   return (
-    <button
+    <motion.button
       onClick={onClick}
       disabled={!onClick}
+      whileHover={onClick ? { scale: 1.05 } : undefined}
+      whileTap={onClick ? { scale: 0.88 } : undefined}
+      transition={{ type: "spring", stiffness: 500, damping: 18 }}
+      aria-label={`Space ${position ?? ""}${filled ? ", filled" : ", empty"}`}
       className={`${height} rounded-2xl border-2 flex items-center justify-center transition-all ${filled ? on : off}`}
     >
-      {filled && <span className="text-2xl">⚡</span>}
-    </button>
+      {filled && (
+        <motion.span
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 600, damping: 12 }}
+          className="text-2xl"
+        >
+          ⚡
+        </motion.span>
+      )}
+    </motion.button>
   );
 };
 
@@ -221,12 +237,12 @@ export const TenFrameRocket: React.FC<ActivityProps<TenFrameRocketParams>> = ({
           <div className="max-w-md mx-auto bg-canvas p-4 rounded-3xl border-2 border-purple-500/40 space-y-2.5 shadow-2xl">
             <div className="grid grid-cols-5 gap-2">
               {frame.slice(0, 5).map((on, idx) => (
-                <Cell key={idx} filled={on} tone="purple" onClick={() => toggle(idx)} />
+                <Cell key={idx} filled={on} tone="purple" position={idx + 1} onClick={() => toggle(idx)} />
               ))}
             </div>
             <div className="grid grid-cols-5 gap-2">
               {frame.slice(5).map((on, idx) => (
-                <Cell key={idx + 5} filled={on} tone="cyan" onClick={() => toggle(idx + 5)} />
+                <Cell key={idx + 5} filled={on} tone="cyan" position={idx + 6} onClick={() => toggle(idx + 5)} />
               ))}
             </div>
           </div>
@@ -235,10 +251,16 @@ export const TenFrameRocket: React.FC<ActivityProps<TenFrameRocketParams>> = ({
             <span className="font-mono text-xs text-muted">
               Filled: <strong>{filled}</strong> / {question.target}
             </span>
-            <button onClick={checkFill} className={themeSystem.button("primary", "sm")}>
+            <motion.button
+              onClick={checkFill}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              className={themeSystem.button("primary", "sm")}
+            >
               <Rocket />
               Check Ten-Frame
-            </button>
+            </motion.button>
           </div>
         </div>
       )}
@@ -275,13 +297,16 @@ export const TenFrameRocket: React.FC<ActivityProps<TenFrameRocketParams>> = ({
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2.5">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                <button
+                <motion.button
                   key={num}
                   onClick={() => answerComplement(num)}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.88, y: 2 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 16 }}
                   className={themeSystem.button("secondary", "choice")}
                 >
                   {num}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -318,6 +343,7 @@ export const TenFrameRocket: React.FC<ActivityProps<TenFrameRocketParams>> = ({
                     filled={on}
                     tone="cyan"
                     height="h-10"
+                    position={idx + 1}
                     onClick={() => toggle(idx)}
                   />
                 ))}
@@ -329,9 +355,15 @@ export const TenFrameRocket: React.FC<ActivityProps<TenFrameRocketParams>> = ({
             <span className="font-mono text-xs text-muted">
               Total: 10 + {filled} = <strong>{10 + filled}</strong>
             </span>
-            <button onClick={checkTeen} className={themeSystem.button("primary", "sm")}>
+            <motion.button
+              onClick={checkTeen}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              className={themeSystem.button("primary", "sm")}
+            >
               Check Teen Number
-            </button>
+            </motion.button>
           </div>
         </div>
       )}

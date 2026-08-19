@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import type { ActivityProps } from "../../types";
 import { SkillRound, useSkillRound, type RoundQuestion } from "../../kit";
@@ -222,9 +223,18 @@ export const FroggySkip: React.FC<ActivityProps<FroggySkipParams>> = ({
               return (
                 <div key={idx} className="flex flex-col items-center gap-2 shrink-0">
                   {here ? (
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-400 text-slate-950 flex items-center justify-center text-3xl shadow-lg animate-bounce">
+                    <motion.div
+                      key="froggy"
+                      initial={{ scale: 0.6, y: -16 }}
+                      animate={{ scale: 1, y: [0, -10, 0] }}
+                      transition={{
+                        scale: { type: "spring", stiffness: 400, damping: 12 },
+                        y: { duration: 1.2, ease: "easeInOut", repeat: Infinity, repeatDelay: 0.5 },
+                      }}
+                      className="w-14 h-14 rounded-2xl bg-emerald-400 text-slate-950 flex items-center justify-center text-3xl shadow-lg"
+                    >
                       🐸
-                    </div>
+                    </motion.div>
                   ) : (
                     <div
                       className={`w-14 h-14 rounded-2xl border-2 flex items-center justify-center font-mono font-bold text-sm ${
@@ -243,43 +253,51 @@ export const FroggySkip: React.FC<ActivityProps<FroggySkipParams>> = ({
           </div>
 
           <div className="flex items-center justify-center">
-            <button
+            <motion.button
               onClick={hopForward}
               disabled={hop >= (question.pads?.length ?? 1) - 1}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.9, x: 4 }}
+              transition={{ type: "spring", stiffness: 450, damping: 16 }}
               className={themeSystem.button("primary", "sm")}
             >
               Hop Forward (+{question.step})
               <ArrowRight />
-            </button>
+            </motion.button>
           </div>
         </div>
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-center gap-3 py-6 bg-canvas rounded-2xl border border-amber-500/30 overflow-x-auto">
             {(question.sequence ?? []).map((val, idx) => (
-              <div
+              <motion.div
                 key={idx}
+                animate={val === null ? { scale: [1, 1.04, 1] } : {}}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
                 className={`w-16 h-16 rounded-2xl border-2 flex flex-col items-center justify-center font-mono font-black text-sm shrink-0 ${
                   val === null
-                    ? "bg-amber-400/20 border-amber-400 text-slate-800 dark:text-amber-300 animate-pulse"
+                    ? "bg-amber-400/20 border-amber-400 text-slate-800 dark:text-amber-300"
                     : "bg-surface border-line text-ink"
                 }`}
               >
                 <span className="text-lg">{val === null ? "❓" : "🪷"}</span>
                 <span>{val === null ? (guess ?? "___") : val}</span>
-              </div>
+              </motion.div>
             ))}
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             {(question.options ?? []).map((opt) => (
-              <button
+              <motion.button
                 key={opt}
                 onClick={() => answerMissing(opt)}
+                whileHover={{ scale: 1.08, y: -2 }}
+                whileTap={{ scale: 0.88, y: 2 }}
+                transition={{ type: "spring", stiffness: 500, damping: 15 }}
                 className={themeSystem.button("secondary", "choice")}
               >
                 {opt}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>

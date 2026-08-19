@@ -73,3 +73,22 @@ iOS reads none of the manifest's icons — only the `apple-touch-icon` link tag.
   on a play area.
 - Long-press callout and text selection are off for buttons, so holding a
   countable item counts it rather than selecting the emoji.
+
+
+## Switching between `npm run dev` and a production build
+
+They register different service workers on the same origin — `dev-sw.js` and
+`sw.js` — and the one already installed keeps control. Load the production build
+in a browser that has the dev worker installed and you get a **blank page**: the
+dev worker answers, and the modules it points at are not there any more.
+
+It looks like "offline is broken" and it is not. Clear it once, in the console:
+
+```js
+(await navigator.serviceWorker.getRegistrations()).forEach(r => r.unregister());
+(await caches.keys()).forEach(k => caches.delete(k));
+```
+
+then reload twice — once for the right worker to install, once for it to take
+control. DevTools → Application → Service Workers → *Update on reload* avoids
+the whole thing while you are switching back and forth.

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { motion } from "motion/react";
 import type { ActivityProps } from "../../types";
 import { SkillRound, useSkillRound, type RoundQuestion } from "../../kit";
 import { themeSystem } from "../../../lib/themeSystem";
@@ -10,6 +11,15 @@ import { themeSystem } from "../../../lib/themeSystem";
  * ten tens a hundred, or the number is right and the place value is not. Which
  * bundling a lesson asks for is a parameter, so the three lessons differ by data
  * rather than by level number.
+ *
+ * Blocks are dragged, because that is what base-ten blocks are: the child moves
+ * a rod into the tens column and sees that it is worth ten of the cubes next to
+ * it. A pair of +/- buttons can produce the same number but teaches nothing
+ * about size, so the buttons stay as the keyboard and screen-reader path rather
+ * than as the interaction.
+ *
+ * Dragging is built on Pointer Events, not HTML5 drag-and-drop, which does not
+ * fire at all on iOS Safari — where this is actually used.
  */
 
 export interface Base10Setup {
@@ -47,19 +57,116 @@ const buildQuestion = (setup: Base10Setup, index: number): BuildQuestion => {
   };
 };
 
+/** What the child is holding: a block of one place, taken from somewhere. */
+export interface Held {
+  kind: PlaceKey;
+  /** "supply" for a fresh block, or the column it was lifted out of. */
+  from: "supply" | PlaceKey;
+}
+
+export type PlaceKey = "hundreds" | "tens" | "ones";
+export type Built = Record<PlaceKey, number>;
+
+export interface DropResult {
+  built: Built;
+  /** False when the block goes back where it came from — a wrong column. */
+  accepted: boolean;
+  /** Set when the drop changed the number, for the sound and the log. */
+  change?: "added" | "removed";
+}
+
+/**
+ * Where a dragged block lands.
+ *
+ * Pure, and exported, because this is the whole rule of the manipulative and it
+ * is the part worth testing: a drop is judged by place value, so a ten cannot be
+ * dropped into the ones column just because that column is nearer.
+ */
+export function resolveDrop(
+  built: Built,
+  held: Held,
+  target: PlaceKey | null,
+  limits: Record<PlaceKey, number>,
+): DropResult {
+  // Dropped outside every column: a block lifted out of a column is discarded,
+  // a fresh one from the supply simply never arrived.
+  if (target === null) {
+    if (held.from === "supply") return { built, accepted: true };
+    return {
+      built: { ...built, [held.from]: Math.max(0, built[held.from] - 1) },
+      accepted: true,
+      change: "removed",
+    };
+  }
+
+  // A block only belongs in its own place. This is the lesson, not a validation.
+  if (target !== held.kind) return { built, accepted: false };
+
+  if (held.from === target) return { built, accepted: true }; // put back where it was
+
+  if (held.from === "supply") {
+    if (built[target] >= limits[target]) return { built, accepted: false };
+    return { built: { ...built, [target]: built[target] + 1 }, accepted: true, change: "added" };
+  }
+
+  // Moved between columns of the same kind cannot happen; treated as a no-op.
+  return { built, accepted: true };
+}
+
 interface Place {
-  key: "hundreds" | "tens" | "ones";
+  key: PlaceKey;
   label: string;
+  /** Singular name of one block, for the label a screen reader reads. */
+  one: string;
   worth: number;
   max: number;
   tone: string;
 }
 
 const PLACES: Place[] = [
-  { key: "hundreds", label: "Hundreds", worth: 100, max: 9, tone: "text-rose-700 dark:text-rose-400" },
-  { key: "tens", label: "Tens", worth: 10, max: 19, tone: "text-amber-700 dark:text-amber-400" },
-  { key: "ones", label: "Ones", worth: 1, max: 19, tone: "text-cyan-700 dark:text-cyan-400" },
+  { key: "hundreds", label: "Hundreds", one: "hundred flat", worth: 100, max: 9, tone: "text-rose-700 dark:text-rose-400" },
+  { key: "tens", label: "Tens", one: "ten rod", worth: 10, max: 19, tone: "text-amber-700 dark:text-amber-400" },
+  { key: "ones", label: "Ones", one: "one cube", worth: 1, max: 19, tone: "text-cyan-700 dark:text-cyan-400" },
 ];
+
+/* -------------------------------------------------------------------------- */
+/* The blocks                                                                  */
+/* -------------------------------------------------------------------------- */
+
+const BLOCK_TONE: Record<PlaceKey, string> = {
+  ones: "bg-cyan-400 border-cyan-600",
+  tens: "bg-amber-400 border-amber-600",
+  hundreds: "bg-rose-400 border-rose-600",
+};
+
+/**
+ * A base-ten block drawn to scale: a cube, a rod of ten cubes, a flat of a
+ * hundred. The size *is* the teaching — a rod has to look like ten cubes, or
+ * the child is only matching colours.
+ */
+const Block: React.FC<{ kind: PlaceKey; small?: boolean }> = ({ kind, small }) => {
+  const unit = small ? "w-1.5 h-1.5" : "w-2 h-2";
+  const tone = BLOCK_TONE[kind];
+  if (kind === "ones") {
+    return <span className={`block rounded-sm border ${tone} ${small ? "w-3 h-3" : "w-4 h-4"}`} />;
+  }
+  if (kind === "tens") {
+    return (
+      <span className={`flex flex-col gap-px p-px rounded-sm border ${tone}`}>
+        {Array.from({ length: 10 }, (_, i) => (
+          <span key={i} className={`${unit} bg-white/40 rounded-[1px]`} />
+        ))}
+      </span>
+    );
+  }
+  return (
+    <span className={`grid grid-cols-10 gap-px p-px rounded-sm border ${tone}`}>
+      {Array.from({ length: 100 }, (_, i) => (
+        <span key={i} className={`${small ? "w-1 h-1" : "w-1.5 h-1.5"} bg-white/40 rounded-[1px]`} />
+      ))}
+    </span>
+  );
+};
 
 export const Base10Foundry: React.FC<ActivityProps<Base10FoundryParams>> = ({
   params,
@@ -104,6 +211,74 @@ export const Base10Foundry: React.FC<ActivityProps<Base10FoundryParams>> = ({
     koda.haptics.tap();
     setBuilt((prev) => ({ ...prev, [key]: Math.max(0, Math.min(max, prev[key] + delta)) }));
   };
+
+  /* ---------------------------------------------------------------- drag -- */
+
+  const [held, setHeld] = useState<Held | null>(null);
+  const [ghost, setGhost] = useState<{ x: number; y: number } | null>(null);
+  const [hover, setHover] = useState<PlaceKey | null>(null);
+  /** Column that just refused a block, for a brief nudge. */
+  const [refused, setRefused] = useState<PlaceKey | null>(null);
+  /** Whether the pointer travelled far enough for this to be a drag, not a tap. */
+  const draggedRef = React.useRef(false);
+  const startedAt = React.useRef({ x: 0, y: 0 });
+
+  const limits = React.useMemo(
+    () => Object.fromEntries(PLACES.map((p) => [p.key, p.max])) as Record<PlaceKey, number>,
+    [],
+  );
+
+  /** Which column is under the pointer, found by hit-testing the real layout. */
+  const placeUnder = (x: number, y: number): PlaceKey | null => {
+    const el = document.elementFromPoint(x, y);
+    const zone = el?.closest("[data-place]");
+    return (zone?.getAttribute("data-place") as PlaceKey | undefined) ?? null;
+  };
+
+  const startDrag = (e: React.PointerEvent, next: Held) => {
+    // Only the primary pointer drags: a second finger landing mid-drag would
+    // otherwise take over the block and drop it somewhere the child did not aim.
+    if (held) return;
+    e.preventDefault();
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    setHeld(next);
+    setGhost({ x: e.clientX, y: e.clientY });
+    draggedRef.current = false;
+    startedAt.current = { x: e.clientX, y: e.clientY };
+    chime("pop");
+    koda.haptics.tap();
+  };
+
+  const moveDrag = (e: React.PointerEvent) => {
+    if (!held) return;
+    const { x, y } = startedAt.current;
+    if (Math.hypot(e.clientX - x, e.clientY - y) > 8) draggedRef.current = true;
+    setGhost({ x: e.clientX, y: e.clientY });
+    setHover(placeUnder(e.clientX, e.clientY));
+  };
+
+  const endDrag = (e: React.PointerEvent) => {
+    if (!held) return;
+    const target = placeUnder(e.clientX, e.clientY);
+    const result = resolveDrop(built, held, target, limits);
+
+    if (!result.accepted) {
+      setRefused(target);
+      window.setTimeout(() => setRefused(null), 600);
+      chime("error");
+    } else if (result.change) {
+      setBuilt(result.built);
+      chime(result.change === "added" ? "clink" : "pop");
+      koda.haptics.tap();
+    }
+
+    setHeld(null);
+    setGhost(null);
+    setHover(null);
+  };
+
+  /** A block already in a column, which can be dragged back out to remove it. */
+  const blocksIn = (key: PlaceKey) => Math.min(built[key], 12);
 
   const bundle = (from: "ones" | "tens") => {
     chime("clink");
@@ -156,10 +331,11 @@ export const Base10Foundry: React.FC<ActivityProps<Base10FoundryParams>> = ({
     }
     // Name only the columns this lesson actually shows, so a lesson without a
     // hundreds column never reports "0 Hundreds".
+    const name = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
     const parts = [
-      setup.hundreds ? `${built.hundreds} Hundreds` : null,
-      `${built.tens} Tens`,
-      `${built.ones} Ones`,
+      setup.hundreds ? name(built.hundreds, "Hundred", "Hundreds") : null,
+      name(built.tens, "Ten", "Tens"),
+      name(built.ones, "One", "Ones"),
     ].filter(Boolean) as string[];
     const built_as = parts.length > 2
       ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`
@@ -228,34 +404,119 @@ export const Base10Foundry: React.FC<ActivityProps<Base10FoundryParams>> = ({
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          {places.map((place) => (
-            <div
-              key={place.key}
-              className="bg-canvas rounded-2xl border border-line p-4 space-y-3 text-center"
-            >
-              <div className={`font-mono text-xs font-black ${place.tone}`}>{place.label}</div>
-              <div className="text-3xl font-black text-ink tabular-nums">{built[place.key]}</div>
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  onClick={() => adjust(place.key, -1, place.max)}
-                  disabled={built[place.key] === 0}
-                  aria-label={`One fewer ${place.label}`}
-                  className={themeSystem.button("secondary", "icon")}
-                >
-                  −
-                </button>
-                <button
-                  onClick={() => adjust(place.key, 1, place.max)}
-                  disabled={built[place.key] >= place.max}
-                  aria-label={`One more ${place.label}`}
-                  className={themeSystem.button("secondary", "icon")}
-                >
-                  +
-                </button>
-              </div>
+        <div
+          className="space-y-4"
+          onPointerMove={moveDrag}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+        >
+          {/* The supply. Blocks are taken from here, never used up. */}
+          <div className="bg-canvas rounded-2xl border border-line p-3">
+            <div className="text-[10px] font-mono font-bold tracking-wider text-muted uppercase mb-2 text-center">
+              Drag a block into its column
             </div>
-          ))}
+            <div className="flex items-end justify-center gap-6 min-h-[72px]">
+              {places.map((place) => (
+                <motion.button
+                  key={place.key}
+                  onPointerDown={(e) => startDrag(e, { kind: place.key, from: "supply" })}
+                  onClick={() => {
+                    // A drag already placed (or discarded) the block; a plain tap
+                    // has not, so it adds one. Dragging is the teaching, but a
+                    // five-year-old on a tablet — or anyone on a keyboard —
+                    // should not be locked out by it.
+                    if (draggedRef.current) return;
+                    adjust(place.key, 1, place.max);
+                  }}
+                  whileHover={{ scale: 1.1, y: -4 }}
+                  whileTap={{ scale: 0.85, y: 2 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                  aria-label={`Add one ${place.one}`}
+                  // touch-action:none stops iOS scrolling the page instead of
+                  // dragging the block.
+                  className="flex flex-col items-center gap-1 touch-none select-none cursor-grab active:cursor-grabbing transition"
+                >
+                  <Block kind={place.key} />
+                  <span className={`font-mono text-[10px] font-black ${place.tone}`}>
+                    {place.worth}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+
+          {/* The columns. Each is a drop zone for its own place only. */}
+          <div className="grid gap-3 sm:grid-cols-3">
+            {places.map((place) => (
+              <div
+                key={place.key}
+                data-place={place.key}
+                className={`bg-canvas rounded-2xl border-2 p-4 space-y-3 text-center transition ${
+                  refused === place.key
+                    ? "border-rose-500 bg-rose-500/10"
+                    : hover === place.key && held?.kind === place.key
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : hover === place.key && held
+                        ? "border-rose-400/60"
+                        : "border-line"
+                }`}
+              >
+                <div className={`font-mono text-xs font-black ${place.tone}`}>{place.label}</div>
+
+                <div className="min-h-[64px] flex flex-wrap items-end justify-center gap-1">
+                  {Array.from({ length: blocksIn(place.key) }, (_, i) => (
+                    <motion.span
+                      key={i}
+                      onPointerDown={(e) => startDrag(e, { kind: place.key, from: place.key })}
+                      role="button"
+                      tabIndex={-1}
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                      aria-label={`${place.one} in ${place.label}, drag out to remove`}
+                      className="touch-none select-none cursor-grab active:cursor-grabbing"
+                    >
+                      <Block kind={place.key} small />
+                    </motion.span>
+                  ))}
+                  {built[place.key] > 12 && (
+                    <span className="font-mono text-[10px] text-muted self-center">
+                      +{built[place.key] - 12}
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-3xl font-black text-ink tabular-nums">{built[place.key]}</div>
+
+                {/* The same moves without a pointer: keyboard, switch, screen
+                    reader. Dragging is the teaching, not the only way in. */}
+                <div className="flex items-center justify-center gap-2">
+                  <motion.button
+                    onClick={() => adjust(place.key, -1, place.max)}
+                    disabled={built[place.key] === 0}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.85 }}
+                    transition={{ type: "spring", stiffness: 600, damping: 15 }}
+                    aria-label={`One fewer ${place.label}`}
+                    className={themeSystem.button("secondary", "icon")}
+                  >
+                    −
+                  </motion.button>
+                  <motion.button
+                    onClick={() => adjust(place.key, 1, place.max)}
+                    disabled={built[place.key] >= place.max}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.85 }}
+                    transition={{ type: "spring", stiffness: 600, damping: 15 }}
+                    aria-label={`One more ${place.label}`}
+                    className={themeSystem.button("secondary", "icon")}
+                  >
+                    +
+                  </motion.button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="p-3 bg-canvas rounded-2xl border border-line font-mono text-xs text-center text-muted">
@@ -266,28 +527,50 @@ export const Base10Foundry: React.FC<ActivityProps<Base10FoundryParams>> = ({
 
         <div className="flex flex-wrap items-center justify-center gap-3">
           {setup.bundleOnes && (
-            <button
+            <motion.button
               onClick={() => bundle("ones")}
               disabled={built.ones < 10}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 400, damping: 16 }}
               className={themeSystem.button("secondary", "sm")}
             >
               Make a Ten
-            </button>
+            </motion.button>
           )}
           {setup.bundleTens && (
-            <button
+            <motion.button
               onClick={() => bundle("tens")}
               disabled={built.tens < 10}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 400, damping: 16 }}
               className={themeSystem.button("secondary", "sm")}
             >
               Make a Hundred
-            </button>
+            </motion.button>
           )}
-          <button onClick={check} className={themeSystem.button("primary", "sm")}>
+          <motion.button
+            onClick={check}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            className={themeSystem.button("primary", "sm")}
+          >
             Check
-          </button>
+          </motion.button>
         </div>
       </div>
+
+      {held && ghost && (
+        <div
+          className="fixed z-50 pointer-events-none -translate-x-1/2 -translate-y-1/2 scale-110 drop-shadow-lg"
+          style={{ left: ghost.x, top: ghost.y }}
+          aria-hidden="true"
+        >
+          <Block kind={held.kind} />
+        </div>
+      )}
     </SkillRound>
   );
 };

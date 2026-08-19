@@ -17,22 +17,34 @@ export APP_PORT
 help:
 	@grep -E '^## ' $(MAKEFILE_LIST) | sed 's/## //' | awk -F': ' '{printf "  \033[1m%-16s\033[0m %s\n", $$1, $$2}'
 
-## dev-local: build and run the app and Mongo in Docker
+## dev-local: build and run the whole stack — app, API and Mongo
 dev-local:
-	$(COMPOSE) up --build -d app
-	@echo
-	@echo "  Koda        http://localhost:$(APP_PORT)"
-	@echo "  Mongo       mongodb://localhost:$${MONGO_PORT:-27017}"
-	@echo "  Logs        make logs"
-	@echo
-
-## dev-local-api: the same, plus the FastAPI service
-dev-local-api:
-	$(COMPOSE) --profile api up --build -d
+	# --renew-anon-volumes: node_modules lives in an anonymous volume, and a
+	# stale one would shadow a dependency added since the last build.
+	$(COMPOSE) up --build -d --renew-anon-volumes
 	@echo
 	@echo "  Koda        http://localhost:$(APP_PORT)"
 	@echo "  API         http://localhost:$${API_PORT:-8000}/v1/health"
+	@echo "  API docs    http://localhost:$${API_PORT:-8000}/v1/docs"
+	@echo "  Mongo       mongodb://localhost:$${MONGO_PORT:-27017}"
+	@echo "  Logs        make logs · make logs-api"
 	@echo
+
+## logs-api: follow the API's output
+logs-api:
+	$(COMPOSE) logs -f api
+
+## test-api: run the API's tests against the compose Mongo
+test-api:
+	$(COMPOSE) run --rm api pytest -q
+
+## lint-api: ruff over the service
+lint-api:
+	$(COMPOSE) run --rm api ruff check app tests
+
+## migrate: apply every index
+migrate:
+	$(COMPOSE) exec api python -m app.cli migrate
 
 ## prod-local: build the production image and serve the built app
 prod-local:
@@ -57,10 +69,10 @@ mongo-shell:
 
 ## down: stop the stack, keep the database
 down:
-	$(COMPOSE) --profile api down
+	$(COMPOSE) down
 
 ## clean: stop the stack and delete the database volume
 clean:
-	$(COMPOSE) --profile api down -v
+	$(COMPOSE) down -v
 
-.PHONY: help dev-local dev-local-api prod-local logs ps shell mongo-shell down clean
+.PHONY: help dev-local prod-local logs logs-api test-api lint-api migrate ps shell mongo-shell down clean

@@ -393,6 +393,54 @@ tooling. And the codes drive nothing — they are displayed, never computed on. 
 the field that does the work, and unlike `standards` it must never be empty or invented,
 because mastery tracking aggregates on it.
 
+### 7.1 Tests — what a new skill inherits
+
+Testing a skill is mostly not writing tests. `src/skills/kit/testing/` holds the suite every
+skill is held to, so a new skill's structural test file is two lines:
+
+```ts
+import { describeSkillContract, describeActivitySmoke } from "../kit/testing";
+import { skill } from ".";
+
+describeSkillContract(skill);   // manifest, lessons, refs, requires chain, settings
+describeActivitySmoke(skill);   // every registered activity mounts and opens a round
+```
+
+That alone catches the class of bug that actually happens here: a lesson pointing at an
+activity that was renamed, a `requires` naming a concept nothing teaches, two lessons claiming
+level 7, a settings field describing a setting that does not exist. None of those are type
+errors — they are strings inside JSON — and every one of them shipped at least once while
+counting was being built.
+
+**Behaviour** needs one small driver per activity, because only the skill knows what its own
+buttons mean:
+
+```ts
+await expectStandardRound(activity, async (h) => {
+  await h.press(/^Show me$/);
+  await h.settle();                       // let a flash or animation finish
+  await h.press(new RegExp(`^${expected(h)}$`));
+});
+```
+
+`expectStandardRound` then asserts the part that is the same for every skill: `startLesson`
+lands before the first `present`, every answer is reported, the log closes once, XP is awarded
+once through the SDK, `onComplete` fires once, and a clean round is three stars.
+
+Two rules make these drivers stable:
+
+- **Read the answer out of the telemetry, never recompute it.** `expected(h)` reads what the
+  activity told the host via `learning.present`. A test that recomputes the answer can drift
+  from the activity; one that reads it cannot, and a missing `expected` fails loudly instead
+  of passing quietly.
+- **Drive by accessible name.** `press(/^Object 3\b/)` works because the button carries an
+  `aria-label`. An icon- or emoji-only control with no label is both untestable and unusable
+  with a screen reader — if a driver cannot find a control, that is the bug.
+
+The fake SDK (`createFakeKoda`) records every host call, so a test can assert on what the
+host *would have received* — which is the real contract, and is otherwise invisible: a round
+can look perfect on screen while filing no learning events at all.
+
 ### Definition of done
 
 - [ ] Imports nothing from another plugin folder. Reuse goes through
@@ -416,6 +464,9 @@ because mastery tracking aggregates on it.
       `trajectoryLevel`. See the rule above.
 - [ ] Keyboard reachable; state never carried by colour alone.
 - [ ] Entry component under ~300 lines. Past that, the generic part belongs in the kit.
+- [ ] Has `<skill>.test.ts` calling `describeSkillContract` and `describeActivitySmoke`, and a
+      round test per activity. See §7.1 — this is two lines plus one small driver each.
+- [ ] `npm test` green.
 
 ---
 

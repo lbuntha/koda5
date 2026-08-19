@@ -5,12 +5,44 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, LiveServerMessage, Modality, Type } from "@google/genai";
 import { WebSocketServer, WebSocket } from "ws";
 import dotenv from "dotenv";
+import { createProxyMiddleware } from "http-proxy-middleware";
 import { registerSvgAssetRoutes } from "./svgAssetRoutes";
 
 dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+
+/**
+ * The data API, reached through this origin.
+ *
+ * Mounted before the JSON body parser on purpose: the proxy streams the request
+ * through untouched, and a parsed body would have to be re-serialised to get
+ * there. One origin is what spares the app CORS and the service worker a second
+ * hostname — see docs/BACKEND.md §3.
+ */
+const API_URL = process.env.API_URL ?? "http://127.0.0.1:8000";
+app.use(
+  createProxyMiddleware({
+    // Matched rather than mounted: a mount path is stripped before the request
+    // is forwarded, and the API serves /v1 itself.
+    pathFilter: "/v1",
+    target: API_URL,
+    changeOrigin: true,
+    // The service is unreachable while it is starting, or simply not running.
+    // Say so in the shape the client already understands.
+    on: {
+      error: (_err, _req, res) => {
+        const response = res as express.Response;
+        if (!response.headersSent) {
+          response.status(503).json({
+            error: { code: "api_unreachable", message: "The data service is not running." },
+          });
+        }
+      },
+    },
+  }),
+);
 
 app.use(express.json({ limit: "10mb" }));
 

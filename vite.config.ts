@@ -6,6 +6,16 @@ import {VitePWA} from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
   return {
+    // Vitest runs the same resolution as the app, so a test imports a skill by
+    // the path the app uses. jsdom because activities are React components a
+    // child clicks; there is nothing to assert about a round without a DOM.
+    test: {
+      environment: 'jsdom',
+      globals: false,
+      include: ['src/**/*.test.{ts,tsx}'],
+      setupFiles: ['src/skills/kit/testing/setup.ts'],
+      restoreMocks: true,
+    },
     plugins: [
       react(),
       tailwindcss(),

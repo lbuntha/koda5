@@ -1,5 +1,5 @@
 import React from "react";
-import { Award, LogOut, Mic, Moon, Sun, User } from "lucide-react";
+import { Award, LogOut, Mic, Moon, Sun } from "lucide-react";
 import { UserProgress } from "../types";
 import { playSound } from "../utils/audio";
 import { useTheme } from "../context/ThemeContext";
@@ -16,6 +16,7 @@ import {
   resolveSidebarIcon,
 } from "./ui";
 import sidebarNav from "../data/sidebarNav.json";
+import { SessionAPI, useSession } from "../lib/sync";
 import { getCourseLessons } from "../curriculum";
 import { useViewer } from "../skills/viewer";
 import { svgAssetIds } from "../assets/svg";
@@ -35,9 +36,36 @@ interface SidebarNavProps {
   onOpenLexicon: () => void;
 }
 
-/** Account menu on the sidebar footer. Owns the light/dark switch. */
+/** Two letters from an email, so the avatar says something true. */
+const initialsFor = (email?: string): string => {
+  if (!email) return "?";
+  const name = email.split("@")[0];
+  const parts = name.split(/[._-]+/).filter(Boolean);
+  const letters = parts.length > 1 ? parts[0][0] + parts[1][0] : name.slice(0, 2);
+  return letters.toUpperCase();
+};
+
+/**
+ * Account menu on the sidebar footer. Owns the light/dark switch, and the one
+ * place in the app where signing out is a single gesture.
+ *
+ * The row itself stays the *learner's* name: the child is who is using the
+ * tablet. The account is the adult it syncs to, which is why it appears as a
+ * labelled section here rather than replacing the name.
+ */
 const ProfileMenu: React.FC<{ profile: SidebarProfileConfig }> = ({ profile }) => {
   const { theme, setTheme } = useTheme();
+  const session = useSession();
+
+  // Signed in, the row *is* the account: the JSON profile was a placeholder
+  // from before there was one, and a name nobody typed is worse than no name.
+  const shown: SidebarProfileConfig = session
+    ? {
+        name: session.email ?? "Signed in",
+        role: session.familyName ? `${session.role} · ${session.familyName}` : session.role,
+        initials: initialsFor(session.email),
+      }
+    : profile;
 
   return (
     <UIMenu
@@ -46,7 +74,7 @@ const ProfileMenu: React.FC<{ profile: SidebarProfileConfig }> = ({ profile }) =
       className="w-[calc(100%-0.25rem)]"
       trigger={({ toggle, isOpen }) => (
         <UISidebarProfile
-          profile={profile}
+          profile={shown}
           hasMenu
           isMenuOpen={isOpen}
           onClick={() => {
@@ -84,10 +112,19 @@ const ProfileMenu: React.FC<{ profile: SidebarProfileConfig }> = ({ profile }) =
 
           <UIMenuSeparator />
 
-          <UIMenuItem icon={<User />} onSelect={close}>
-            View profile
-          </UIMenuItem>
-          <UIMenuItem icon={<LogOut />} tone="danger" onSelect={close}>
+          {/* The app is behind the gate, so this menu only ever belongs to
+              somebody signed in — "sign in" here would be an offer with
+              nothing behind it. */}
+          <UIMenuLabel>{session?.email ?? "Signed in"}</UIMenuLabel>
+          <UIMenuItem
+            icon={<LogOut />}
+            tone="danger"
+            onSelect={() => {
+              playSound("pop");
+              void SessionAPI.signOut();
+              close();
+            }}
+          >
             Sign out
           </UIMenuItem>
         </>
@@ -108,6 +145,14 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   // badge counts real lessons, and an entry with nothing behind it is dropped
   // rather than leading to an empty page.
   const lessonCount = getCourseLessons(viewer).length;
+  const session = useSession();
+
+  // Plugins and Art write family settings, which is a parent's to do — see
+  // docs/BACKEND.md §5. Hiding them is courtesy; the server is what enforces it,
+  // and a signed-out device is the app as it has always been.
+  const parentOnly = new Set(["skills", "assets"]);
+  const isLearnerDevice = session?.role === "learner";
+
   const sections = config.sections.map((section) => ({
     ...section,
     items: section.items
@@ -117,7 +162,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         if (item.id === "assets") return { ...item, badge: `${svgAssetIds.length} SVG` };
         return item;
       })
-      .filter((item) => item.id !== "game" || lessonCount > 0),
+      .filter((item) => item.id !== "game" || lessonCount > 0)
+      .filter((item) => !(isLearnerDevice && parentOnly.has(item.id))),
   }));
 
   const BrandIcon = resolveSidebarIcon(config.brand.icon);
@@ -169,7 +215,11 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           </button>
         </>
       }
-      footer={config.profile && <ProfileMenu profile={config.profile} />}
+      footer={
+        config.profile && (
+          <ProfileMenu profile={config.profile} />
+        )
+      }
     >
       <UISidebarNav
         sections={sections}

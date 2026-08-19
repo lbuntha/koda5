@@ -257,8 +257,8 @@ export const SkillRoundTopBar: React.FC<SkillRoundTopBarProps> = ({
             <button
               onClick={toggleFullscreen}
               className={`${iconButton} hidden md:flex`}
-              title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
               aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
             >
               {isFullscreen ? (
                 <Minimize2 className="w-4 h-4 text-slate-800 dark:text-amber-400" />

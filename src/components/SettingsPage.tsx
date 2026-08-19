@@ -20,6 +20,7 @@ import { playSound } from "../utils/audio";
 import { themeSystem } from "../lib/themeSystem";
 import { UISectionHeader } from "./ui";
 import { ScoringAPI, type ScoringConfig } from "../lib/scoring";
+import { SignInPanel } from "./account/SignInPanel";
 import { clearProgress } from "../lib/learnerProgress";
 
 interface SettingsPageProps {
@@ -317,6 +318,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
           Preferences that apply across the whole app on this device.
         </p>
       </div>
+
+      <SignInPanel />
 
       {/* APPEARANCE */}
       <section className={themeSystem.card("default", `${themeSystem.spacing.card} space-y-4`)}>

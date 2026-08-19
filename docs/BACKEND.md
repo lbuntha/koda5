@@ -85,6 +85,32 @@ app.use("/v1", createProxyMiddleware({ target: process.env.API_URL ?? "http://12
 Add `/v1` to the service worker's `navigateFallbackDenylist` alongside `/api/`
 — a cached sync response would be worse than an offline one.
 
+### Deployment topology
+
+Two processes, always. One *origin* is the design decision; how many machines is
+a deployment choice the client never sees, because the base URL is one env var.
+
+| Topology | Shape | Trade |
+|---|---|---|
+| **One box** — start here | `docker compose`: Express published, FastAPI and Mongo on the internal network only | One origin, one certificate, no CORS. Cheapest to run and to reason about |
+| One box, proxy in front | Caddy or nginx serves `dist/` statically, routes `/api` → Node, `/v1` → FastAPI | Still one origin; Node stops serving files. Worth it when traffic justifies it |
+| Split | SPA on a CDN, API on its own host, Mongo Atlas | `VITE_API_BASE=https://api…`, a CORS allowlist, two certificates. Scales independently |
+
+Splitting stays cheap because auth is **bearer tokens, not cookies**: no
+`SameSite` rules, no credentialed CORS, just an `Authorization` header and an
+origin allowlist. The service worker is unaffected either way — `/v1` is on the
+denylist by design, so a sync response is never cached.
+
+What does not move: the Gemini proxy and `/api/live` stay with Express wherever
+it runs. FastAPI owns data, and only data.
+
+Production checklist, short version: TLS terminated in front, Mongo reachable
+only from the API (compose network, or Atlas with SCRAM and an IP allowlist),
+`JWT_SECRET` and `GEMINI_API_KEY` from the host's secret store rather than a
+`.env` file, `docker compose --profile api up -d` with restart policies, and a
+daily `mongodump` to object storage — a backup is what makes "a record that
+survives the device" true.
+
 ---
 
 ## 4. Identity: families, parents, learners, devices
@@ -107,6 +133,7 @@ Family ──┬── Parent (email + password)          can see every learner
 | Parent signs in | `POST /v1/auth/login` | Family-scoped tokens on this device |
 | Parent adds a child | `POST /v1/learners {displayName, birthYear?}` | Learner id; the local `learnerId` is claimed into it on first sync |
 | Child signs in elsewhere | parent: `POST /v1/learners/{id}/join-code` → child: `POST /v1/auth/join {code, deviceName}` | Learner-scoped tokens on the kid's device |
+| Staff sign in | `POST /v1/auth/login` | A family-less token whose `role` is the platform role; family routes refuse it |
 
 **Tokens.** Access token: JWT, 15 minutes, carries `familyId`, `scope`
 (`family` or `learner`), and `learnerId` when learner-scoped. Refresh token:
@@ -249,6 +276,12 @@ already the event stream.
 - No public admin signup, ever. First admin comes from a CLI seed
   (`python -m app.cli create-admin --email …`) gated on an env secret; after
   that, `staff:manage` invites the rest.
+- **Staff sign in through the same route as everyone else** and get a token with
+  **no `familyId`**, because they are in no family. Their `role` *is* their
+  platform role. Family-scoped routes then refuse them at the query layer —
+  `repos/base.scoped()` raises rather than quietly returning an unscoped filter,
+  which is precisely how "an admin reads one family" would otherwise become "an
+  admin reads all of them by accident".
 - TOTP is **mandatory** for `support` and `admin`, optional for parents.
 - Admin tokens carry `aud: "admin"` and are rejected by `/v1/sync/*`; the kid app
   cannot hold one even if someone pastes it in.
@@ -315,10 +348,19 @@ Index `{familyId: 1, kind: 1, key: 1}` unique, `{familyId: 1, serverSeq: 1}` for
 
 ### Derived: rollups
 
-`concept_totals` and `skill_totals`, one document per `(learnerId, conceptKey |
-pluginId)`, `$inc`-ed as events land — the same shape `LearningProfile` already
+`concept_totals`, one document per `(learnerId, conceptKey)`, `$inc`-ed as
+events land — the same shape `LearningProfile` already
 has locally. Because they are only touched when an event insert was *new*, they
-inherit the events' idempotency. They are also written back as a `profile` doc
+inherit the events' idempotency.
+
+**They fold events exactly the way the client does, and that is a contract.**
+`questionsAnswered` counts first attempts only — a retry of a question whose
+answer the child has just seen measures memory, not understanding — and a
+correct answer after a hint is not `correctFirstTry`. Errors count on every
+attempt, because the pattern is what a recommendation reads. The rule lives in
+`applyToProfile` (client) and `services/rollup.py` (server); if they drift, the
+app and the parent view will quietly disagree about the same child. Building P1
+found exactly that drift, and `test_sync_events.py` now pins it. They are also written back as a `profile` doc
 so other devices and the parent view pull them like anything else.
 
 ### Supporting collections
@@ -404,11 +446,29 @@ full tree, including the account screens, is in §10:
 
 ```
 src/lib/sync/
-  session.ts   tokens, signup/login/join, current learner, revoke
-  outbox.ts    the queue: append, coalesce, drain, cap
-  api.ts       fetch wrapper — base URL, auth header, retry classification
-  engine.ts    when to flush, backoff, applying pulled docs, status subscription
+  api.ts        ✅ fetch wrapper — base URL, auth header, error envelope
+  session.ts    ✅ tokens, sign up / in / out, refresh-before-expiry
+  useSession.ts ✅ the signed-in state, live
+  outbox.ts     the queue: append, coalesce, drain, cap                (P1)
+  engine.ts     when to flush, backoff, applying pulled docs, status   (P1)
 ```
+
+The parts marked ✅ are built, alongside the account UI:
+
+```
+src/components/account/
+  AccountForm.tsx    ✅ the credentials form — one copy, two homes
+  SignInScreen.tsx   ✅ the full page, reached from the account menu
+  SignInPanel.tsx    ✅ the Settings card: summary when signed in, form when not
+```
+
+The screen is **not a gate**. Koda is playable with no account and no network,
+so "keep playing without an account" is a first-class button on it, not fine
+print — and the sidebar's account menu is where signing out lives.
+Two rules it follows that the rest will too: a failed `fetch` is the *offline*
+case and never signs anyone out, while a **rejected** refresh means the device
+was revoked and does. Sign-out clears local state first and tells the server
+after — a person pressing it on a plane means it.
 
 **The outbox** is a `localStorage` array under `koda_outbox_v1`, capped at 2 000
 entries. Mutations coalesce by `(kind, key)` — only the latest body of a doc
@@ -454,10 +514,19 @@ notice: never a blocking banner.
 | Access token expired offline | Ignored — refresh happens on the next successful connection |
 | Device revoked by a parent | Local play continues, queue is kept, quiet "sign in again" note |
 | Two devices edited the same lesson | Server's copy wins, the loser's UI updates; XP counters merge by max |
-| Never signed in | The app is exactly what it is today — the backend is opt-in |
+| Never signed in, offline | **Blocked at the gate.** First sign-in is the one thing that needs a network |
+| Signed in once, then offline forever | Everything works — the session is in `localStorage` and a failed check leaves it alone |
 
-That last row is the acceptance test for the whole design: with the backend
-switched off, nothing about the app changes.
+Signing in is now required to reach the app (`App.tsx`), so the table's last two
+rows are the trade that was accepted: a device that has signed in once is
+untouched by losing the network, and a device that never has cannot start.
+
+Proven rather than assumed. `src/lib/sync/session.test.ts` covers the rules —
+a failed `fetch` and a 503 from the proxy both keep the session, a 401 from
+`/auth/me` clears it, and signing out clears this device even when the server
+cannot be told. Live: with the API container stopped the app still loads and
+stays signed in; with **everything** stopped, a production build boots from the
+service worker cache, still signed in.
 
 ---
 
@@ -586,9 +655,72 @@ becomes a switch statement that every new setting has to remember to update.
 | Tests | pytest · pytest-asyncio · httpx ASGI transport | Real routes, real Mongo, throwaway database per run |
 | Migrations | `app/indexes.py` + `cli migrate` | Mongo needs index management, not schema migration |
 
-Dev loop: `docker compose up -d mongo`, then `npm run dev` and
-`npm run dev:api` (`uvicorn app.main:app --reload --port 8000`) in two terminals.
-`server/.env` holds the service's secrets; the repo's `.env` keeps Node's.
+### Running it locally
+
+The whole stack is Docker, driven by one target:
+
+```bash
+make dev-local        # app + API + Mongo, built and running
+make logs · logs-api  # follow either service
+make test-api         # pytest against the compose Mongo
+make lint-api         # ruff
+make migrate          # apply every index
+make down             # stop, keep the database
+make clean            # stop and drop the database volume
+```
+
+`make dev-local` renews the anonymous `node_modules` volume, so a dependency
+added since the last build is actually picked up rather than shadowed by a stale
+one — the failure mode that looks like "the package is installed but not found".
+
+`make dev-local` runs the `dev` stage of the root `Dockerfile`: the working tree
+is bind-mounted, so an edit on the host reloads inside the container, while
+`node_modules` stays the Linux copy baked into the image rather than the host's.
+Mongo keeps its data in the `mongo-data` volume, so `make down` is not
+destructive and `make clean` is.
+
+Ports are overridable, which matters on a machine already running things:
+
+| Service | Default | Override |
+|---|---|---|
+| App | 3001 | `APP_PORT=3002 make dev-local` |
+| Mongo | 27017 | `MONGO_PORT=27018 make dev-local` |
+| FastAPI | 8000 | `API_PORT=…` |
+
+Those are only the *published* ports. Inside compose, containers reach each
+other by service name — `mongo:27017`, `api:8000` — which is why the Node
+process is told `API_URL=http://api:8000` and not a localhost address. If
+another stack on the machine already holds a number, move the published one and
+nothing inside changes.
+
+### What reloads, and what needs a rebuild
+
+Every layer watches its own files, and each watches only its own — a component
+edit must not restart the Node process, or Vite's HMR is pointless.
+
+| You edit | What happens | How |
+|---|---|---|
+| `src/**` — React, styles | The browser updates in place, state kept | Vite HMR through the `.:/app` mount |
+| `server.ts`, `svgAssetRoutes.ts` | Node restarts in ~1s | `tsx watch`, with `src/**` ignored so it stays out of Vite's way |
+| `server/app/**` — Python | uvicorn restarts in ~1s | `--reload` over the `./server/app:/srv/app` mount |
+| `server/tests/**` | Nothing runs by itself | `make test-api` |
+
+And the things a watcher cannot pick up, because they change the *image* rather
+than the code inside it:
+
+| You change | Do this |
+|---|---|
+| `package.json` — a new npm dependency | `make dev-local` (rebuilds, and renews the `node_modules` volume) |
+| `server/pyproject.toml` — a new Python dependency | `make dev-local` |
+| `Dockerfile`, `docker-compose.yml`, env vars | `make dev-local` |
+| `server/app/indexes.py` — a new index | `make migrate`, or restart the API (startup applies them) |
+
+`make dev-local` is idempotent and safe to re-run at any time: it rebuilds what
+changed, leaves the database volume alone, and reprints the URLs.
+
+Prefer running Node on the host? `docker compose up -d mongo api` for the
+database and the service, then `npm run dev` in a terminal. `server/.env` holds
+the service's secrets; the repo's `.env` keeps Node's.
 
 **Model parity is the one thing that will rot.** `events.ts` and
 `models/events.py` describe the same wire format in two languages. Keep
@@ -600,7 +732,7 @@ locked out by a newer server.
 
 | Phase | Files that appear |
 |---|---|
-| P0 | `main` · `settings` · `db` · `indexes` · `rbac` · `deps` · `errors` · `models/auth` · `repos/{base,users,families,devices}` · `services/tokens` · `routers/{health,auth}` · client `api`/`session` |
+| P0 ✅ | `main` · `settings` · `db` · `indexes` · `rbac` · `deps` · `errors` · `models/{common,auth,family}` · `repos/{base,users,families,memberships,devices}` · `services/{passwords,tokens}` · `routers/{health,auth,devices}` · `middleware/requests` · `cli` · `tests/{auth,rbac,tenancy}`. Client `api`/`session` still to come |
 | P1 | `models/events` · `repos/{events,rollups,counters}` · `services/{sync,rollup}` · `routers/sync` (push) · client `outbox`/`engine` |
 | P2 | `models/{sync,family}` · `repos/{docs,memberships,invitations}` · `services/codes` · `routers/{family,learners,devices}` · changes endpoint · client `apply`/`kinds`/account UI |
 | P2.5 | `repos/{grants,audit}` · `services/{grants,audit,mailer}` · `routers/admin` · `cli create-admin` · TOTP |
@@ -635,17 +767,23 @@ locked out by a newer server.
 
 Each phase is shippable and leaves the app working if the next never happens.
 
-**P0 — skeleton.** Compose file, FastAPI health check, Mongo indexes on startup,
-Express `/v1` proxy, `api.ts` + `session.ts`, parent signup/login in Settings.
-The `rbac.py` table and `require()` exist from the first route — retrofitting
-authorisation is what makes it leaky — with two roles filled in, `owner` and
-`learner`.
+**P0 — skeleton. Built.** `server/` with the layering below, Mongo indexes
+applied on startup, the Express `/v1` proxy, and auth end to end: signup, login,
+refresh with rotation, logout, `/auth/me`, `/devices`. The `rbac.py` table and
+`require()` exist from the first route — retrofitting authorisation is what
+makes it leaky — with all four family roles and both staff roles filled in, and
+`tests/test_rbac.py` asserting the §5 matrix cell by cell. What is *not* here
+yet: the client half (`api.ts`, `session.ts`) and any sign-in UI.
 *Done when:* a parent can sign in and the app is otherwise unchanged.
 
-**P1 — events up.** Outbox, engine, `POST /v1/sync/push` (events only), rollup
-service, `GET /v1/learners/{id}/profile`.
+**P1 — events up. Built.** `outbox.ts`, `engine.ts`, `POST /v1/sync/push`,
+the rollup service and `GET /v1/sync/profile/{learnerId}`, plus a one-time
+**backfill**: a device played on before it had an account hands its whole local
+ring to the outbox on first install, because signing in must not restart the
+record from zero.
 *Done when:* play a round in airplane mode, reconnect, and the server's concept
-totals match the local profile exactly.
+totals match the local profile exactly. **They do** — 441 events uploaded from a
+real device, 16 concepts, zero mismatches.
 
 **P2 — documents both ways, and the family.** Mutations, conflicts,
 `GET /v1/sync/changes`, learner creation, join codes, learner deletion — plus

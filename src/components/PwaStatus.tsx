@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { CloudOff, Download, X } from "lucide-react";
+import { CloudOff, Download, UploadCloud, X } from "lucide-react";
 import { themeSystem } from "../lib/themeSystem";
 import { useOnlineStatus, useServiceWorker } from "../pwa/useServiceWorker";
+import { useSyncStatus } from "../lib/sync";
 
 /**
  * The two things a child or parent needs told about the app itself.
@@ -14,6 +15,7 @@ import { useOnlineStatus, useServiceWorker } from "../pwa/useServiceWorker";
  */
 export const PwaStatus: React.FC = () => {
   const online = useOnlineStatus();
+  const sync = useSyncStatus();
   const { updateReady, offlineReady, applyUpdate, dismiss } = useServiceWorker();
   const [showOfflineReady, setShowOfflineReady] = useState(false);
   /**
@@ -44,7 +46,16 @@ export const PwaStatus: React.FC = () => {
     return () => clearTimeout(timer);
   }, [offlineReady]);
 
-  const anything = !online || updateReady || showOfflineReady;
+  /**
+   * Work waiting to reach the server.
+   *
+   * Only shown once it is enough to be worth a sentence, and never while
+   * offline — the offline pill already says everything a person needs, and two
+   * notices about the same fact is one too many.
+   */
+  const waiting = online && sync.pending > 20 ? sync.pending : 0;
+
+  const anything = !online || updateReady || showOfflineReady || waiting > 0;
   if (!anything) return null;
 
   return (
@@ -72,6 +83,16 @@ export const PwaStatus: React.FC = () => {
               No internet — you can still play!
             </p>
           )}
+        </div>
+      )}
+
+      {waiting > 0 && (
+        <div
+          className="flex items-center gap-2.5 rounded-2xl border-2 border-line bg-surface px-4 py-2.5 shadow-sm"
+          title={`${waiting} things still to save`}
+        >
+          <UploadCloud className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <p className="text-xs font-bold text-ink whitespace-nowrap">Saving your work…</p>
         </div>
       )}
 

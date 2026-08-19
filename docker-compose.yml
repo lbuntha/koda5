@@ -4,11 +4,15 @@
 # Ports are overridable so a container can run beside a host `npm run dev`:
 #   APP_PORT=3002 make dev-local
 
+
 services:
   app:
     build:
       context: .
       target: dev
+    # Watch mode in the container: server.ts and its imports restart the Node
+    # process, while everything under src/ reaches the browser as Vite HMR.
+    command: ["npm", "run", "dev:watch"]
     ports:
       - "${APP_PORT:-3001}:3001"
     environment:
@@ -26,6 +30,8 @@ services:
       # rather than whatever the host installed for its own platform.
       - /app/node_modules
     depends_on:
+      api:
+        condition: service_started
       mongo:
         condition: service_healthy
 
@@ -42,20 +48,25 @@ services:
       retries: 12
       start_period: 10s
 
-  # Not built until server/ exists. `make dev-local-api` turns it on.
   api:
-    profiles: ["api"]
     build:
       context: ./server
     ports:
       - "${API_PORT:-8000}:8000"
     environment:
-      MONGODB_URI: "mongodb://mongo:27017/koda"
+      MONGODB_URI: "mongodb://mongo:27017"
+      MONGODB_DB: "koda"
+      # Development only. Production supplies a real one, and the service
+      # refuses to start while this value is in place.
+      JWT_SECRET: "${JWT_SECRET:-dev-only-change-me-not-a-real-secret-32b}"
+      ENVIRONMENT: "development"
     env_file:
       - path: server/.env
         required: false
     volumes:
-      - ./server:/srv
+      # Source only — installed packages stay in the image.
+      - ./server/app:/srv/app
+      - ./server/tests:/srv/tests
     depends_on:
       mongo:
         condition: service_healthy
